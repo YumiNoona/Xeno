@@ -1,0 +1,86 @@
+/*
+ * Xeno — Minimap Core Styles
+ * Secondary viewer styling and scene dot hotspots.
+ */
+
+#xeno-minimap {
+  position: absolute;
+  width: 280px;
+  height: 200px;
+  background: var(--bg-panel-solid);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  z-index: 18;
+  display: none; /* toggled via JS */
+  transition: all var(--transition);
+}
+
+/* Positions (bottom-left, bottom-right, top-left, top-right) */
+#xeno-minimap.pos-bottom-left {
+  bottom: 20px;
+  left: 20px;
+}
+#xeno-minimap.pos-bottom-right {
+  bottom: 20px;
+  right: 80px; /* offset from controls */
+}
+#xeno-minimap.pos-top-left {
+  top: 70px; /* offset from title bar */
+  left: 20px;
+}
+#xeno-minimap.pos-top-right {
+  top: 70px;
+  right: 20px;
+}
+
+body.mobile #xeno-minimap {
+  width: 220px;
+  height: 160px;
+}
+
+/* ─── Map Hotspot Dots ───────────────────────────────────── */
+.minimap-dot {
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  margin-top: -7px;
+  background: #fff;
+  border-radius: 50%;
+  border: 2px solid #000;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.minimap-dot:hover {
+  transform: scale(1.3);
+  z-index: 12;
+}
+
+.minimap-dot.active {
+  background: var(--accent);
+  border-color: #fff;
+  transform: scale(1.4);
+  box-shadow: 0 0 10px var(--accent-glow);
+  z-index: 15;
+}
+
+/* Minimap pulse effect for active dot */
+.minimap-dot.active::after {
+  content: '';
+  position: absolute;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}

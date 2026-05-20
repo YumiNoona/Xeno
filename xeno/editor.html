@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Xeno Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  
+  <link rel="stylesheet" href="css/editor.css">
+  <link rel="stylesheet" href="css/viewer.css">
+  <link rel="stylesheet" href="css/hotspots.css">
+</head>
+<body>
+
+  <!-- Dashboard View -->
+  <div id="dashboard-view">
+    <div class="dashboard-header">
+      <div class="logo">✦ <span>Xeno</span> Tour Studio</div>
+      <button class="btn btn-new-project" id="btn-new-project">
+        <i class="ti ti-plus"></i> New Project
+      </button>
+    </div>
+    
+    <div class="dashboard-toolbar">
+      <div class="search-box">
+        <i class="ti ti-search search-icon"></i>
+        <input type="text" id="project-search" placeholder="Search tours...">
+      </div>
+      <div class="toolbar-stats">
+        Total Projects: <span id="project-count">0</span>
+      </div>
+    </div>
+
+    <div id="project-grid" class="project-grid">
+      <!-- Project cards populated by JS -->
+    </div>
+  </div>
+
+  <!-- Workspace View -->
+  <div id="workspace-view" style="display: none;">
+    <!-- Top Navigation Bar -->
+    <div id="editor-topbar">
+      <div class="logo" id="logo-back" style="cursor: pointer;">
+        <i class="ti ti-chevron-left" style="font-size: 16px; vertical-align: middle;"></i> Dashboard
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" id="btn-media-manager">Media</button>
+        <button class="btn btn-primary" id="btn-preview-tour">Preview</button>
+        <button class="btn btn-publish" id="btn-export">Export Zip</button>
+      </div>
+    </div>
+
+    <div id="editor-main">
+      
+      <!-- Left Sidebar (Scenes) -->
+      <div id="editor-sidebar">
+        <div class="sidebar-header">
+          <button class="add-item-btn" id="btn-add-scene">+ Add item</button>
+        </div>
+        <div id="scene-grid">
+          <!-- Scene cards rendered via JS -->
+        </div>
+      </div>
+
+      <!-- Pano Workspace -->
+      <div id="pano-wrapper">
+        <div id="pano"></div>
+
+        <!-- Mode indicator badge -->
+        <div id="mode-badge">Select</div>
+
+        <!-- Save Default View Floating Button -->
+        <button id="btn-save-view" title="Save current camera direction as the starting view">
+          <i class="ti ti-camera" style="font-size: 14px; vertical-align: middle;"></i> Save Default View
+        </button>
+
+        <!-- Tools Pill -->
+        <div id="tools-pill">
+          <!-- Group 1: mode -->
+          <div class="pill-tool active" data-tool="select" title="Select">
+            <i class="ti ti-pointer"></i>
+          </div>
+          <div class="pill-sep"></div>
+          <!-- Group 2: hotspot types -->
+          <div class="pill-tool" data-tool="navigate" title="Navigate">
+            <i class="ti ti-arrow-right-circle"></i>
+          </div>
+          <div class="pill-tool" data-tool="info" title="Info card">
+            <i class="ti ti-info-circle"></i>
+          </div>
+          <div class="pill-tool" data-tool="url" title="URL link">
+            <i class="ti ti-link"></i>
+          </div>
+          <div class="pill-tool" data-tool="image" title="Image">
+            <i class="ti ti-photo"></i>
+          </div>
+          <div class="pill-tool" data-tool="video" title="Video">
+            <i class="ti ti-video"></i>
+          </div>
+          <div class="pill-tool" data-tool="audio" title="Audio">
+            <i class="ti ti-volume"></i>
+          </div>
+          <div class="pill-sep"></div>
+          <!-- Group 3: view tools -->
+          <div class="pill-tool" data-tool="autorotate" title="Autorotate">
+            <i class="ti ti-rotate-clockwise-2"></i>
+          </div>
+          <div class="pill-tool" data-tool="minimap" title="Minimap">
+            <i class="ti ti-map-2"></i>
+          </div>
+          <div class="pill-tool" data-tool="scene-settings" title="Scene settings">
+            <i class="ti ti-adjustments-horizontal"></i>
+          </div>
+        </div>
+
+        <!-- Right Properties Panel (slides in from right) -->
+        <div id="properties-panel">
+          <div class="panel-header">
+            <h3 id="panel-title">Hotspot Properties</h3>
+            <button class="close-panel" id="btn-close-properties">&times;</button>
+          </div>
+          <div class="panel-body">
+            <!-- Common fields -->
+            <div class="form-group">
+              <label>Type</label>
+              <select id="prop-type">
+                <option value="navigate">Navigate</option>
+                <option value="info">Info Card</option>
+                <option value="url">URL Link</option>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+                <option value="audio">Audio</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Label / Title</label>
+              <input type="text" id="prop-title" placeholder="Hotspot title">
+            </div>
+            <div class="form-group">
+              <label>Animation</label>
+              <select id="prop-animation">
+                <option value="none">None</option>
+                <option value="pulse">Pulse</option>
+                <option value="bounce">Bounce</option>
+                <option value="spin">Spin</option>
+                <option value="float">Float</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Icon Style</label>
+              <select id="prop-icon-style">
+                <option value="default">Default</option>
+                <option value="dot">Dot</option>
+                <option value="arrow">Arrow</option>
+                <option value="custom">Custom Image</option>
+              </select>
+            </div>
+
+            <!-- Type-specific: navigate -->
+            <div class="type-fields" id="fields-navigate">
+              <div class="form-group">
+                <label>Target Scene</label>
+                <select id="prop-target-scene"></select>
+              </div>
+              <div class="form-group">
+                <label>Transition Effect</label>
+                <select id="prop-transition">
+                  <option value="opacity">Opacity</option>
+                  <option value="fromRight">From Right</option>
+                  <option value="throughBlack">Through Black</option>
+                  <option value="fromCenter">From Center</option>
+                  <option value="fromWhite">From White</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Transition Duration <span id="prop-trans-dur-label">800ms</span></label>
+                <input type="range" id="prop-trans-duration" min="300" max="2000" value="800" step="100">
+              </div>
+            </div>
+
+            <!-- Type-specific: info -->
+            <div class="type-fields" id="fields-info" style="display:none;">
+              <div class="form-group">
+                <label>Body Text</label>
+                <textarea id="prop-body-text" rows="3" placeholder="Description..."></textarea>
+              </div>
+              <div class="form-group">
+                <label>Link URL (optional)</label>
+                <input type="text" id="prop-link-url" placeholder="https://...">
+              </div>
+              <div class="form-group">
+                <label>Link opens in</label>
+                <div class="radio-group">
+                  <label class="radio-label"><input type="radio" name="prop-link-type" value="external" checked> External tab</label>
+                  <label class="radio-label"><input type="radio" name="prop-link-type" value="scene"> Scene in tour</label>
+                </div>
+              </div>
+              <div class="form-group" id="info-scene-target-group" style="display:none;">
+                <label>Target Scene</label>
+                <select id="prop-info-target-scene"></select>
+              </div>
+              <div class="form-group">
+                <label>Link Button Label</label>
+                <input type="text" id="prop-link-label" placeholder="Open link">
+              </div>
+            </div>
+
+            <!-- Type-specific: url -->
+            <div class="type-fields" id="fields-url" style="display:none;">
+              <div class="form-group">
+                <label>URL</label>
+                <input type="text" id="prop-url-href" placeholder="https://...">
+              </div>
+              <div class="form-group">
+                <label>Button Label</label>
+                <input type="text" id="prop-url-label" placeholder="Open link">
+              </div>
+              <div class="form-group">
+                <label>Open in</label>
+                <select id="prop-url-open-in">
+                  <option value="newtab">New Tab</option>
+                  <option value="popup">Popup Overlay</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Type-specific: image -->
+            <div class="type-fields" id="fields-image" style="display:none;">
+              <div class="form-group">
+                <label>Image</label>
+                <button class="btn btn-primary" id="btn-pick-image" style="width:100%; justify-content:center;">Pick from Media</button>
+              </div>
+              <div class="form-group">
+                <label>Caption</label>
+                <input type="text" id="prop-image-caption" placeholder="Optional caption">
+              </div>
+              <div class="form-group">
+                <label>Link URL (optional)</label>
+                <input type="text" id="prop-image-link" placeholder="https://...">
+              </div>
+            </div>
+
+            <!-- Type-specific: video -->
+            <div class="type-fields" id="fields-video" style="display:none;">
+              <div class="form-group">
+                <label>Video</label>
+                <button class="btn btn-primary" id="btn-pick-video" style="width:100%; justify-content:center;">Pick from Media</button>
+              </div>
+              <div class="form-group toggle-group">
+                <label>Autoplay</label>
+                <input type="checkbox" id="prop-video-autoplay">
+              </div>
+              <div class="form-group toggle-group">
+                <label>Loop</label>
+                <input type="checkbox" id="prop-video-loop" checked>
+              </div>
+              <div class="form-group toggle-group">
+                <label>Muted</label>
+                <input type="checkbox" id="prop-video-muted" checked>
+              </div>
+            </div>
+
+            <!-- Type-specific: audio -->
+            <div class="type-fields" id="fields-audio" style="display:none;">
+              <div class="form-group">
+                <label>Audio File</label>
+                <button class="btn btn-primary" id="btn-pick-audio" style="width:100%; justify-content:center;">Pick from Media</button>
+              </div>
+              <div class="form-group toggle-group">
+                <label>Autoplay</label>
+                <input type="checkbox" id="prop-audio-autoplay">
+              </div>
+              <div class="form-group toggle-group">
+                <label>Show Player Label</label>
+                <input type="checkbox" id="prop-audio-label" checked>
+              </div>
+            </div>
+
+            <!-- Scene Settings (shown when scene-settings tool is clicked) -->
+            <div class="type-fields" id="fields-scene-settings" style="display:none;">
+              <div class="form-group">
+                <label>Scene Name</label>
+                <input type="text" id="prop-scene-name" placeholder="Scene name">
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="panel-actions" id="panel-actions-hotspot">
+              <button class="btn btn-primary" id="btn-save-properties">Save</button>
+              <button class="btn btn-danger" id="btn-delete-hotspot">Delete</button>
+            </div>
+
+            <!-- Position readout -->
+            <div class="panel-position" id="panel-position">
+              <span>yaw: <span id="pos-yaw">0.00</span></span>
+              <span>pitch: <span id="pos-pitch">0.00</span></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Menu -->
+  <div id="context-menu">
+    <div class="ctx-item" data-action="rename">✏ Rename</div>
+    <div class="ctx-item" data-action="set-default">⭐ Set as default scene</div>
+    <div class="ctx-item" data-action="duplicate">⧉ Duplicate</div>
+    <div class="ctx-item ctx-danger" data-action="delete">🗑 Delete</div>
+  </div>
+
+  <!-- Media Folder Context Menu -->
+  <div id="media-folder-ctx" class="xeno-ctx-menu">
+    <div class="ctx-item" data-action="rename-folder">✏ Rename Album</div>
+    <div class="ctx-item ctx-danger" data-action="delete-folder">🗑 Delete Album</div>
+  </div>
+
+  <!-- Media Item Context Menu -->
+  <div id="media-item-ctx" class="xeno-ctx-menu">
+    <div class="ctx-item" data-action="rename-media">✏ Rename</div>
+    <div class="ctx-item" data-action="move-media">⟴ Move</div>
+    <div class="ctx-item" data-action="download-media">⬇ Download</div>
+    <div class="ctx-item ctx-danger" data-action="delete-media">🗑 Delete</div>
+  </div>
+
+  <!-- Move Media Modal -->
+  <div id="move-media-modal" class="move-modal-overlay">
+    <div class="move-modal-content">
+      <div class="move-modal-header">
+        <h3>Move Media</h3>
+        <button class="close-move-modal" id="btn-close-move-modal">&times;</button>
+      </div>
+      <div class="move-modal-body">
+        <div class="form-group">
+          <label>Select Target Album</label>
+          <select id="move-target-album">
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+      </div>
+      <div class="move-modal-actions">
+        <button class="btn" id="btn-cancel-move">Cancel</button>
+        <button class="btn btn-primary" id="btn-confirm-move">Confirm Move</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Hidden file input for adding scenes -->
+  <input type="file" id="scene-file-input" style="display:none" accept="image/*" multiple>
+
+  <!-- Media Manager Modal -->
+  <div id="media-modal">
+    <div class="media-header">
+      <div class="logo">Media Manager</div>
+      <button class="btn" id="btn-close-media">Close</button>
+    </div>
+    <div class="media-body">
+      <div class="media-sidebar">
+        <button class="btn btn-primary" style="width:100%; margin-bottom: 15px; justify-content:center;">+ Add Album</button>
+        <div class="album-list"></div>
+      </div>
+      <div class="media-content">
+        <div class="media-upload-area" id="media-upload-area">
+          <h3>Cloud Upload Media</h3>
+          <p>Drag & drop 360 images here or click to browse</p>
+          <input type="file" id="media-file-input" style="display:none" accept="image/*,video/*" multiple>
+        </div>
+        <div class="media-grid" id="media-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="config.js"></script>
+  <script src="js/xeno.js"></script>
+  <script src="data.js"></script>
+  <script src="js/transitions.js"></script>
+  <script src="js/VideoAsset.js"></script>
+  <script src="js/hotspots/HotspotFactory.js"></script>
+  <script src="js/ui/Supabase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="js/editor.js"></script>
+
+</body>
+</html>

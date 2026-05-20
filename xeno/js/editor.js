@@ -1,0 +1,1376 @@
+/*
+ * Xeno — Editor Logic (v2 — Tools Pill + Properties Panel + Scene Grid)
+ */
+'use strict';
+
+(function() {
+
+  var Xeno = window.Xeno;
+  
+  // Init Supabase
+  if (window.XenoSupabase) window.XenoSupabase.init();
+
+  var projectSlug = new URLSearchParams(window.location.search).get('project');
+  
+  if (!projectSlug) {
+    // Hide workspace view, show dashboard
+    document.getElementById('workspace-view').style.display = 'none';
+    document.getElementById('dashboard-view').style.display = 'flex';
+    initDashboard();
+    return; // early exit
+  }
+  
+  // Workspace Active
+  document.getElementById('workspace-view').style.display = 'flex';
+  document.getElementById('dashboard-view').style.display = 'none';
+
+  // Load data
+  var savedData = window.XenoSupabase ? window.XenoSupabase.loadTour(projectSlug) : null;
+  if (projectSlug === 'sample-tour' && !savedData) {
+    savedData = window.data; // fallback to static data.js
+    if (window.XenoSupabase) window.XenoSupabase.saveTour('sample-tour', savedData);
+  }
+  
+  if (!savedData) {
+    savedData = {
+      settings: {
+        title: "New Tour",
+        name: "New Tour",
+        mouseViewMode: "drag",
+        autorotateEnabled: false,
+        autorotateSpeed: 0.03,
+        autorotateInactivityDelay: 3000,
+        fullscreenButton: true,
+        sceneListStyle: "sidebar",
+        showMinimap: false,
+        minimapPosition: "bottom-left",
+        showControls: true,
+        gyroscopeEnabled: false,
+        vrEnabled: false,
+        anaglyphEnabled: false,
+        defaultTransition: "opacity",
+        defaultTransitionDuration: 1000,
+        defaultTransitionEasing: "easeInOut",
+        branding: { logoUrl: null, accentColor: "#e62e5a", logoPosition: "top-left" },
+        intro: { enabled: false, title: "", subtitle: "", buttonText: "Enter Tour" }
+      },
+      scenes: [],
+      floorplan: { enabled: false, imageUrl: "media/floorplan.jpg", width: 800, height: 600 }
+    };
+    if (window.XenoSupabase) window.XenoSupabase.saveTour(projectSlug, savedData);
+  }
+
+  window.data = savedData;
+  var data = window.data;
+
+  // ─── Viewer Init ──────────────────────────────────────────
+  var viewerOpts = { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } };
+  var viewer = new Xeno.Viewer(document.getElementById('pano'), viewerOpts);
+
+  var scenes = [];
+  var currentSceneCtx = null;
+  var selectedHotspotData = null;
+
+  // Debounced Save
+  var saveTimeout = null;
+  function debouncedSave() {
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(function() {
+      if (projectSlug && window.XenoSupabase) {
+        window.XenoSupabase.saveTour(projectSlug, window.data);
+        console.log('[Xeno] Tour progress auto-saved');
+      }
+    }, 500);
+  }
+
+  // Autorotate movement definition and tracking state
+  var autorotate = Xeno.autorotate({
+    yawSpeed: (data.settings && data.settings.autorotateSpeed) || 0.03,
+    targetPitch: 0,
+    targetFov: Math.PI / 2
+  });
+  var autorotateEnabled = !!(data.settings && data.settings.autorotateEnabled);
+
+  // Build scenes from data.js
+  data.scenes.forEach(function(sData) {
+    var source = Xeno.ImageUrlSource.fromString(sData.mediaUrl);
+    var geometry = new Xeno.EquirectGeometry([{ width: 4000 }]);
+    var limiter = Xeno.RectilinearView.limit.traditional(1024, 100 * Math.PI / 180);
+    var view = new Xeno.RectilinearView(sData.initialViewParameters, limiter);
+    var scene = viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
+    scenes.push({ data: sData, scene: scene, view: view });
+  });
+
+  // ─── Editor State ─────────────────────────────────────────
+  var editorState = {
+    activeTool: 'select',     // current tool
+    placeMode: false          // waiting for click to place hotspot
+  };
+
+  var HOTSPOT_TOOLS = ['navigate', 'info', 'url', 'image', 'video', 'audio'];
+  var TOGGLE_TOOLS = ['select', 'autorotate', 'minimap', 'scene-settings'];
+
+  // ─── DOM Refs ─────────────────────────────────────────────
+  var panoWrapper = document.getElementById('pano-wrapper');
+  var panoEl = document.getElementById('pano');
+  var modeBadge = document.getElementById('mode-badge');
+  var pillTools = document.querySelectorAll('.pill-tool');
+  var propsPanel = document.getElementById('properties-panel');
+  var panelTitle = document.getElementById('panel-title');
+  var sceneGridEl = document.getElementById('scene-grid');
+  var contextMenu = document.getElementById('context-menu');
+  var sceneFileInput = document.getElementById('scene-file-input');
+
+  // Media Manager DOM Elements
+  var mediaFolderCtx = document.getElementById('media-folder-ctx');
+  var mediaItemCtx = document.getElementById('media-item-ctx');
+  var moveMediaModal = document.getElementById('move-media-modal');
+  var moveTargetAlbum = document.getElementById('move-target-album');
+  var btnCancelMove = document.getElementById('btn-cancel-move');
+  var btnConfirmMove = document.getElementById('btn-confirm-move');
+  var btnCloseMoveModal = document.getElementById('btn-close-move-modal');
+
+  var albumCtxTarget = null;
+  var mediaCtxTarget = null;
+
+  // Props fields
+  var propType = document.getElementById('prop-type');
+  var propTitle = document.getElementById('prop-title');
+  var propAnimation = document.getElementById('prop-animation');
+  var propIconStyle = document.getElementById('prop-icon-style');
+  var propTargetScene = document.getElementById('prop-target-scene');
+  var propTransition = document.getElementById('prop-transition');
+  var propTransDuration = document.getElementById('prop-trans-duration');
+  var propTransDurLabel = document.getElementById('prop-trans-dur-label');
+  var propBodyText = document.getElementById('prop-body-text');
+  var propLinkUrl = document.getElementById('prop-link-url');
+  var propLinkLabel = document.getElementById('prop-link-label');
+  var propInfoTargetScene = document.getElementById('prop-info-target-scene');
+  var propUrlHref = document.getElementById('prop-url-href');
+  var propUrlLabel = document.getElementById('prop-url-label');
+  var propUrlOpenIn = document.getElementById('prop-url-open-in');
+  var posYaw = document.getElementById('pos-yaw');
+  var posPitch = document.getElementById('pos-pitch');
+  var propSceneName = document.getElementById('prop-scene-name');
+
+  // ─── Tools Pill Logic ─────────────────────────────────────
+  pillTools.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var tool = this.getAttribute('data-tool');
+      handleToolClick(tool, this);
+    });
+  });
+
+  // Initialize pill buttons from saved settings
+  var autorotateBtn = Array.prototype.find.call(pillTools, function(btn) {
+    return btn.getAttribute('data-tool') === 'autorotate';
+  });
+  if (autorotateBtn && autorotateEnabled) {
+    autorotateBtn.classList.add('active');
+    viewer.startMovement(autorotate);
+    viewer.setIdleMovement((data.settings && data.settings.autorotateInactivityDelay) || 3000, autorotate);
+  }
+
+  var minimapBtn = Array.prototype.find.call(pillTools, function(btn) {
+    return btn.getAttribute('data-tool') === 'minimap';
+  });
+  if (minimapBtn && data.settings && data.settings.showMinimap) {
+    minimapBtn.classList.add('active');
+  }
+
+  function handleToolClick(tool, btnEl) {
+    if (HOTSPOT_TOOLS.indexOf(tool) !== -1) {
+      // Enter place mode
+      setActiveTool(tool);
+      editorState.placeMode = true;
+      panoWrapper.classList.add('crosshair-mode');
+      showModeBadge('Place: ' + tool);
+    } else if (tool === 'select') {
+      setActiveTool('select');
+      editorState.placeMode = false;
+      panoWrapper.classList.remove('crosshair-mode');
+      hideModeBadge();
+      closePropertiesPanel();
+    } else if (tool === 'autorotate') {
+      btnEl.classList.toggle('active');
+      autorotateEnabled = !autorotateEnabled;
+      if (!data.settings) data.settings = {};
+      data.settings.autorotateEnabled = autorotateEnabled;
+      if (autorotateEnabled) {
+        viewer.startMovement(autorotate);
+        viewer.setIdleMovement((data.settings && data.settings.autorotateInactivityDelay) || 3000, autorotate);
+      } else {
+        viewer.stopMovement();
+        viewer.setIdleMovement(Infinity);
+      }
+      debouncedSave();
+    } else if (tool === 'scene-settings') {
+      setActiveTool('select');
+      editorState.placeMode = false;
+      panoWrapper.classList.remove('crosshair-mode');
+      hideModeBadge();
+      openSceneSettingsPanel();
+    } else if (tool === 'minimap') {
+      btnEl.classList.toggle('active');
+      if (!data.settings) data.settings = {};
+      data.settings.showMinimap = btnEl.classList.contains('active');
+      debouncedSave();
+    }
+  }
+
+  function setActiveTool(tool) {
+    editorState.activeTool = tool;
+    pillTools.forEach(function(p) {
+      if (p.getAttribute('data-tool') === tool) {
+        p.classList.add('active');
+      } else if (HOTSPOT_TOOLS.indexOf(p.getAttribute('data-tool')) !== -1 || p.getAttribute('data-tool') === 'select') {
+        p.classList.remove('active');
+      }
+    });
+  }
+
+  function showModeBadge(text) {
+    modeBadge.textContent = text;
+    modeBadge.classList.add('visible');
+  }
+
+  function hideModeBadge() {
+    modeBadge.classList.remove('visible');
+  }
+
+  // ─── Pano Click → Place Hotspot ───────────────────────────
+  panoEl.addEventListener('click', function(e) {
+    if (!editorState.placeMode || !currentSceneCtx) return;
+
+    var rect = panoEl.getBoundingClientRect();
+    var coords = currentSceneCtx.view.screenToCoordinates({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+
+    var newHs = {
+      id: 'hs_' + Date.now(),
+      type: editorState.activeTool,
+      style: editorState.activeTool,
+      yaw: coords.yaw,
+      pitch: coords.pitch,
+      title: 'New ' + editorState.activeTool,
+      text: '',
+      animation: 'none',
+      iconStyle: 'default',
+      // Navigate fields
+      target: null,
+      transition: 'opacity',
+      transitionDuration: 800,
+      // Info fields
+      linkUrl: '',
+      linkType: 'external',
+      linkTarget: null,
+      linkLabel: '',
+      // URL fields
+      urlHref: '',
+      urlLabel: 'Open link',
+      urlOpenIn: 'newtab',
+      // Media fields
+      content: { src: '', caption: '', linkUrl: '' }
+    };
+
+    currentSceneCtx.data.hotspots = currentSceneCtx.data.hotspots || [];
+    currentSceneCtx.data.hotspots.push(newHs);
+    createVisualHotspot(newHs);
+
+    // Revert to select
+    setActiveTool('select');
+    editorState.placeMode = false;
+    panoWrapper.classList.remove('crosshair-mode');
+    hideModeBadge();
+
+    // Open properties for new hotspot
+    openPropertiesPanel(newHs);
+
+    debouncedSave();
+  });
+
+  // ─── Scene Grid ───────────────────────────────────────────
+  var contextTarget = null; // scene being right-clicked
+  var dragSourceIndex = null; // scene being dragged index
+
+  function renderSceneGrid() {
+    sceneGridEl.innerHTML = '';
+    populateTargetDropdowns();
+
+    scenes.forEach(function(s, index) {
+      var card = document.createElement('div');
+      card.className = 'scene-card';
+      if (s.data.hidden) {
+        card.classList.add('hidden-scene');
+      }
+      if (currentSceneCtx && currentSceneCtx.data.id === s.data.id) {
+        card.classList.add('active');
+      }
+
+      var thumb = s.data.thumbnailUrl || s.data.mediaUrl || 'img/photo.png';
+      var eyeIconClass = s.data.hidden ? 'ti-eye-off' : 'ti-eye';
+
+      card.innerHTML =
+        '<img class="scene-card-thumb" src="' + thumb + '">' +
+        '<div class="scene-card-eye"><i class="ti ' + eyeIconClass + '"></i></div>' +
+        '<div class="scene-card-overlay">' +
+          '<div class="scene-card-label">' + (s.data.name || 'Untitled') + '</div>' +
+        '</div>';
+
+      // Drag and Drop implementation
+      card.draggable = true;
+
+      card.addEventListener('dragstart', function(e) {
+        dragSourceIndex = index;
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', index);
+      });
+
+      card.addEventListener('dragend', function() {
+        card.classList.remove('dragging');
+        var allCards = sceneGridEl.querySelectorAll('.scene-card');
+        allCards.forEach(function(c) {
+          c.classList.remove('drag-over');
+        });
+        dragSourceIndex = null;
+      });
+
+      card.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+      });
+
+      card.addEventListener('dragenter', function() {
+        if (dragSourceIndex !== null && dragSourceIndex !== index) {
+          card.classList.add('drag-over');
+        }
+      });
+
+      card.addEventListener('dragleave', function() {
+        card.classList.remove('drag-over');
+      });
+
+      card.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (dragSourceIndex !== null && dragSourceIndex !== index) {
+          // Splice out the dragged scene
+          var draggedScene = scenes.splice(dragSourceIndex, 1)[0];
+          // Insert at the drop target index
+          scenes.splice(index, 0, draggedScene);
+
+          // Update underlying database configurations array order
+          data.scenes = scenes.map(function(item) { return item.data; });
+
+          renderSceneGrid();
+          debouncedSave();
+        }
+        return false;
+      });
+
+      card.addEventListener('click', function() {
+        switchSceneById(s.data.id);
+      });
+
+      // Handle clicking the eye icon to toggle visibility
+      var eyeBtn = card.querySelector('.scene-card-eye');
+      eyeBtn.addEventListener('click', function(e) {
+        e.stopPropagation(); // prevent switching scene
+        s.data.hidden = !s.data.hidden;
+        renderSceneGrid();
+        debouncedSave();
+      });
+
+      // Right-click context menu
+      card.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        contextTarget = s;
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = e.clientX + 'px';
+        contextMenu.style.top = e.clientY + 'px';
+      });
+
+      sceneGridEl.appendChild(card);
+    });
+  }
+
+  // "+ Add item" button opens the Media Manager modal
+  document.getElementById('btn-add-scene').addEventListener('click', function() {
+    mediaModal.classList.add('visible');
+    loadAlbums();
+    loadMedia(currentAlbumId);
+  });
+
+  // Context menu actions
+  document.addEventListener('click', function() {
+    contextMenu.style.display = 'none';
+    if (mediaFolderCtx) mediaFolderCtx.style.display = 'none';
+    if (mediaItemCtx) mediaItemCtx.style.display = 'none';
+  });
+
+  contextMenu.querySelectorAll('.ctx-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      if (!contextTarget) return;
+      var action = this.getAttribute('data-action');
+
+      if (action === 'rename') {
+        var newName = prompt('Rename scene:', contextTarget.data.name);
+        if (newName) {
+          contextTarget.data.name = newName;
+          renderSceneGrid();
+          debouncedSave();
+        }
+      } else if (action === 'set-default') {
+        // Move to front
+        var idx = scenes.indexOf(contextTarget);
+        if (idx > 0) {
+          scenes.splice(idx, 1);
+          scenes.unshift(contextTarget);
+          data.scenes.splice(idx, 1);
+          data.scenes.unshift(contextTarget.data);
+          renderSceneGrid();
+          debouncedSave();
+        }
+      } else if (action === 'duplicate') {
+        var clone = JSON.parse(JSON.stringify(contextTarget.data));
+        clone.id = 'scene_' + Date.now();
+        clone.name = clone.name + ' (copy)';
+        data.scenes.push(clone);
+
+        var source = Xeno.ImageUrlSource.fromString(clone.mediaUrl);
+        var geometry = new Xeno.EquirectGeometry([{ width: 4000 }]);
+        var limiter = Xeno.RectilinearView.limit.traditional(1024, 100 * Math.PI / 180);
+        var view = new Xeno.RectilinearView(clone.initialViewParameters, limiter);
+        var scene = viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
+        scenes.push({ data: clone, scene: scene, view: view });
+        renderSceneGrid();
+        debouncedSave();
+      } else if (action === 'delete') {
+        if (scenes.length <= 1) { alert('Cannot delete the only scene.'); return; }
+        if (!confirm('Delete "' + contextTarget.data.name + '"?')) return;
+        var dIdx = scenes.indexOf(contextTarget);
+        scenes.splice(dIdx, 1);
+        data.scenes.splice(dIdx, 1);
+        if (currentSceneCtx === contextTarget) {
+          switchSceneById(scenes[0].data.id);
+        }
+        renderSceneGrid();
+        debouncedSave();
+      }
+      contextTarget = null;
+    });
+  });
+
+  // Scene file input (add from local disk directly)
+  sceneFileInput.addEventListener('change', function() {
+    var files = this.files;
+    for (var i = 0; i < files.length; i++) {
+      (function(file) {
+        var url = URL.createObjectURL(file);
+        addSceneFromUrl(url, file.name);
+      })(files[i]);
+    }
+    this.value = '';
+  });
+
+  // ─── Scene Switching ──────────────────────────────────────
+  function switchSceneById(id) {
+    var sceneCtx = scenes.find(function(s) { return s.data.id === id; });
+    if (!sceneCtx) return;
+    currentSceneCtx = sceneCtx;
+    sceneCtx.scene.switchTo({}, function() {
+      if (autorotateEnabled) {
+        viewer.startMovement(autorotate);
+      }
+    });
+    renderSceneGrid();
+    renderSceneHotspots();
+    closePropertiesPanel();
+  }
+
+  // ─── Hotspots Rendering ───────────────────────────────────
+  function renderSceneHotspots() {
+    if (!currentSceneCtx) return;
+
+    var container = currentSceneCtx.scene.hotspotContainer();
+    var existing = container.listHotspots();
+    for (var i = 0; i < existing.length; i++) {
+      container.destroyHotspot(existing[i]);
+    }
+
+    var hotspots = currentSceneCtx.data.hotspots || [];
+    // Also add legacy linkHotspots/infoHotspots/mediaHotspots
+    (currentSceneCtx.data.linkHotspots || []).forEach(function(h) {
+      h.type = h.type || 'navigate';
+      h.style = h.style || 'link';
+      hotspots.push(h);
+    });
+    (currentSceneCtx.data.infoHotspots || []).forEach(function(h) {
+      h.type = h.type || 'info';
+      h.style = h.style || 'info';
+      hotspots.push(h);
+    });
+    (currentSceneCtx.data.mediaHotspots || []).forEach(function(h) {
+      h.type = h.type || 'image';
+      h.style = h.style || 'media';
+      hotspots.push(h);
+    });
+
+    hotspots.forEach(function(hsData) {
+      createVisualHotspot(hsData);
+    });
+  }
+
+  function createVisualHotspot(hsData) {
+    if (!currentSceneCtx) return;
+    var el = window.HotspotFactory.create(
+      currentSceneCtx.scene,
+      hsData,
+      hsData.type || 'info',
+      function() { /* editor doesn't auto-navigate */ },
+      function(id) { return scenes.find(function(s) { return s.data.id === id; }); }
+    );
+
+    // In editor, clicking a hotspot opens its properties
+    el.addEventListener('click', function(e) {
+      if (editorState.placeMode) return; // don't intercept during place mode
+      e.stopPropagation();
+      openPropertiesPanel(hsData);
+    });
+  }
+
+  // ─── Properties Panel ─────────────────────────────────────
+  function openPropertiesPanel(hsData) {
+    selectedHotspotData = hsData;
+    panelTitle.textContent = 'Hotspot Properties';
+    
+    // Show hotspot actions, hide scene settings
+    document.getElementById('panel-actions-hotspot').style.display = 'flex';
+    document.getElementById('panel-position').style.display = 'flex';
+    document.getElementById('fields-scene-settings').style.display = 'none';
+
+    // Common fields
+    propType.value = hsData.type || 'info';
+    propTitle.value = hsData.title || hsData.label || '';
+    propAnimation.value = hsData.animation || 'none';
+    propIconStyle.value = hsData.iconStyle || 'default';
+
+    // Position readout
+    posYaw.textContent = (hsData.yaw || 0).toFixed(2);
+    posPitch.textContent = (hsData.pitch || 0).toFixed(2);
+
+    // Fill type-specific
+    fillTypeFields(hsData);
+
+    // Show correct type fields
+    showTypeFields(hsData.type);
+
+    propsPanel.classList.add('visible');
+  }
+
+  function openSceneSettingsPanel() {
+    selectedHotspotData = null;
+    panelTitle.textContent = 'Scene Settings';
+
+    document.getElementById('panel-actions-hotspot').style.display = 'none';
+    document.getElementById('panel-position').style.display = 'none';
+
+    // Hide all type fields, show scene settings
+    hideAllTypeFields();
+    document.getElementById('fields-scene-settings').style.display = 'block';
+
+    if (currentSceneCtx) {
+      propSceneName.value = currentSceneCtx.data.name || '';
+    }
+
+    propsPanel.classList.add('visible');
+  }
+
+  function closePropertiesPanel() {
+    selectedHotspotData = null;
+    propsPanel.classList.remove('visible');
+  }
+
+  function hideAllTypeFields() {
+    var allFields = document.querySelectorAll('.type-fields');
+    allFields.forEach(function(f) { f.style.display = 'none'; });
+  }
+
+  function showTypeFields(type) {
+    hideAllTypeFields();
+    var el = document.getElementById('fields-' + type);
+    if (el) el.style.display = 'block';
+  }
+
+  function fillTypeFields(hsData) {
+    // Navigate
+    propTargetScene.value = hsData.target || '';
+    propTransition.value = hsData.transition || 'opacity';
+    propTransDuration.value = hsData.transitionDuration || 800;
+    propTransDurLabel.textContent = (hsData.transitionDuration || 800) + 'ms';
+
+    // Info
+    propBodyText.value = hsData.text || '';
+    propLinkUrl.value = hsData.linkUrl || '';
+    propLinkLabel.value = hsData.linkLabel || '';
+    var linkTypeRadios = document.querySelectorAll('input[name="prop-link-type"]');
+    linkTypeRadios.forEach(function(r) { r.checked = r.value === (hsData.linkType || 'external'); });
+    propInfoTargetScene.value = hsData.linkTarget || '';
+    toggleInfoSceneTarget();
+
+    // URL
+    propUrlHref.value = hsData.urlHref || '';
+    propUrlLabel.value = hsData.urlLabel || 'Open link';
+    propUrlOpenIn.value = hsData.urlOpenIn || 'newtab';
+  }
+
+  // Type change
+  propType.addEventListener('change', function() {
+    if (selectedHotspotData) {
+      selectedHotspotData.type = this.value;
+      selectedHotspotData.style = this.value;
+    }
+    showTypeFields(this.value);
+  });
+
+  // Transition duration slider
+  propTransDuration.addEventListener('input', function() {
+    propTransDurLabel.textContent = this.value + 'ms';
+  });
+
+  // Info link type toggle
+  var linkTypeRadios = document.querySelectorAll('input[name="prop-link-type"]');
+  linkTypeRadios.forEach(function(r) {
+    r.addEventListener('change', toggleInfoSceneTarget);
+  });
+
+  function toggleInfoSceneTarget() {
+    var val = document.querySelector('input[name="prop-link-type"]:checked');
+    var group = document.getElementById('info-scene-target-group');
+    group.style.display = (val && val.value === 'scene') ? 'block' : 'none';
+  }
+
+  // ─── Save Properties ─────────────────────────────────────
+  document.getElementById('btn-save-properties').addEventListener('click', function() {
+    if (!selectedHotspotData) return;
+
+    // Common
+    selectedHotspotData.type = propType.value;
+    selectedHotspotData.style = propType.value;
+    selectedHotspotData.title = propTitle.value;
+    selectedHotspotData.label = propTitle.value;
+    selectedHotspotData.animation = propAnimation.value;
+    selectedHotspotData.iconStyle = propIconStyle.value;
+
+    // Type-specific
+    if (selectedHotspotData.type === 'navigate') {
+      selectedHotspotData.target = propTargetScene.value;
+      selectedHotspotData.transition = propTransition.value;
+      selectedHotspotData.transitionDuration = parseInt(propTransDuration.value);
+    } else if (selectedHotspotData.type === 'info') {
+      selectedHotspotData.text = propBodyText.value;
+      selectedHotspotData.linkUrl = propLinkUrl.value;
+      selectedHotspotData.linkLabel = propLinkLabel.value;
+      var linkTypeVal = document.querySelector('input[name="prop-link-type"]:checked');
+      selectedHotspotData.linkType = linkTypeVal ? linkTypeVal.value : 'external';
+      selectedHotspotData.linkTarget = propInfoTargetScene.value;
+    } else if (selectedHotspotData.type === 'url') {
+      selectedHotspotData.urlHref = propUrlHref.value;
+      selectedHotspotData.urlLabel = propUrlLabel.value;
+      selectedHotspotData.urlOpenIn = propUrlOpenIn.value;
+    }
+
+    renderSceneHotspots();
+    closePropertiesPanel();
+    debouncedSave();
+  });
+
+  // ─── Delete Hotspot ───────────────────────────────────────
+  document.getElementById('btn-delete-hotspot').addEventListener('click', function() {
+    if (!selectedHotspotData || !currentSceneCtx) return;
+    if (!confirm('Delete this hotspot?')) return;
+
+    var arr = currentSceneCtx.data.hotspots || [];
+    var idx = arr.indexOf(selectedHotspotData);
+    if (idx !== -1) arr.splice(idx, 1);
+
+    renderSceneHotspots();
+    closePropertiesPanel();
+    debouncedSave();
+  });
+
+  // ─── Close Panel ──────────────────────────────────────────
+  document.getElementById('btn-close-properties').addEventListener('click', closePropertiesPanel);
+
+  // ─── Scene Settings Save ──────────────────────────────────
+  document.getElementById('btn-save-view').addEventListener('click', function() {
+    if (!currentSceneCtx) return;
+    currentSceneCtx.data.initialViewParameters = {
+      yaw: currentSceneCtx.view.yaw(),
+      pitch: currentSceneCtx.view.pitch(),
+      fov: currentSceneCtx.view.fov()
+    };
+    debouncedSave();
+    alert('Default view saved for "' + currentSceneCtx.data.name + '"');
+  });
+
+  propSceneName.addEventListener('change', function() {
+    if (currentSceneCtx) {
+      currentSceneCtx.data.name = this.value;
+      renderSceneGrid();
+      debouncedSave();
+    }
+  });
+
+  // ─── Populate Target Dropdowns ────────────────────────────
+  function populateTargetDropdowns() {
+    [propTargetScene, propInfoTargetScene].forEach(function(sel) {
+      sel.innerHTML = '<option value="">-- select --</option>';
+      scenes.forEach(function(s) {
+        var opt = document.createElement('option');
+        opt.value = s.data.id;
+        opt.textContent = s.data.name;
+        sel.appendChild(opt);
+      });
+    });
+  }
+
+  // ─── Add Scene Helper ─────────────────────────────────────
+  function addSceneFromUrl(url, name) {
+    var newId = 'scene_' + Date.now();
+    var sData = {
+      id: newId,
+      name: name || 'Untitled',
+      type: 'image',
+      mediaUrl: url,
+      thumbnailUrl: url,
+      initialViewParameters: { yaw: 0, pitch: 0, fov: 1.57 },
+      hotspots: []
+    };
+
+    data.scenes.push(sData);
+
+    var source = Xeno.ImageUrlSource.fromString(sData.mediaUrl);
+    var geometry = new Xeno.EquirectGeometry([{ width: 4000 }]);
+    var limiter = Xeno.RectilinearView.limit.traditional(1024, 100 * Math.PI / 180);
+    var view = new Xeno.RectilinearView(sData.initialViewParameters, limiter);
+    var scene = viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
+    scenes.push({ data: sData, scene: scene, view: view });
+
+    renderSceneGrid();
+    switchSceneById(newId);
+    debouncedSave();
+  }
+
+  // ─── Media Manager ────────────────────────────────────────
+  var mediaModal = document.getElementById('media-modal');
+  var currentAlbumId = null;
+
+  document.getElementById('btn-media-manager').addEventListener('click', function() {
+    mediaModal.classList.add('visible');
+    loadAlbums();
+    loadMedia(currentAlbumId);
+  });
+
+  document.getElementById('btn-close-media').addEventListener('click', function() {
+    mediaModal.classList.remove('visible');
+  });
+
+  var btnAddAlbum = document.querySelector('.media-sidebar .btn-primary');
+  var albumListEl = document.querySelector('.album-list');
+  var mediaGridEl = document.getElementById('media-grid');
+
+  if (btnAddAlbum) {
+    btnAddAlbum.addEventListener('click', function() {
+      var name = prompt('Enter album name:');
+      if (name) {
+        window.XenoSupabase.createAlbum(name).then(function() { loadAlbums(); })
+          .catch(function(err) { alert('Error: ' + err.message); });
+      }
+    });
+  }
+
+  function loadAlbums() {
+    window.XenoSupabase.fetchAlbums().then(function(albums) {
+      albumListEl.innerHTML = '';
+
+      var rootEl = document.createElement('div');
+      rootEl.innerHTML = '📁 Root';
+      rootEl.style.cssText = 'padding:8px 10px;cursor:pointer;border-radius:4px;font-size:12px;' +
+        (currentAlbumId === null ? 'background:#1e1e2e;color:#fff;' : 'color:#8080a0;');
+      rootEl.addEventListener('click', function() { currentAlbumId = null; loadAlbums(); loadMedia(null); });
+      albumListEl.appendChild(rootEl);
+
+      albums.forEach(function(album) {
+        var el = document.createElement('div');
+        el.innerHTML = '📁 ' + album.name;
+        el.style.cssText = 'padding:8px 10px;cursor:pointer;border-radius:4px;font-size:12px;' +
+          (currentAlbumId === album.id ? 'background:#1e1e2e;color:#fff;' : 'color:#8080a0;');
+        el.addEventListener('click', function() { currentAlbumId = album.id; loadAlbums(); loadMedia(album.id); });
+        
+        // Right click album context menu
+        el.addEventListener('contextmenu', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          albumCtxTarget = album;
+
+          // Hide other menus
+          contextMenu.style.display = 'none';
+          mediaItemCtx.style.display = 'none';
+
+          mediaFolderCtx.style.display = 'block';
+          mediaFolderCtx.style.left = e.clientX + 'px';
+          mediaFolderCtx.style.top = e.clientY + 'px';
+        });
+
+        albumListEl.appendChild(el);
+      });
+    });
+  }
+
+  function loadMedia(albumId) {
+    mediaGridEl.innerHTML = '<div style="color:#60607a;font-size:12px;">Loading...</div>';
+    window.XenoSupabase.fetchMedia(albumId).then(function(mediaList) {
+      mediaGridEl.innerHTML = '';
+      mediaList.forEach(function(media) {
+        var item = document.createElement('div');
+        item.className = 'media-item';
+        var thumb = media.type.startsWith('video') ? 'img/photo.png' : media.url;
+        item.innerHTML = '<img src="' + thumb + '"><div class="title">' + media.filename + '</div>';
+        item.addEventListener('click', function() {
+          if (confirm('Add "' + media.filename + '" as a new scene?')) {
+            addSceneFromUrl(media.url, media.filename);
+            mediaModal.classList.remove('visible');
+          }
+        });
+
+        // Right click media item context menu
+        item.addEventListener('contextmenu', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          mediaCtxTarget = media;
+
+          // Hide other menus
+          contextMenu.style.display = 'none';
+          mediaFolderCtx.style.display = 'none';
+
+          mediaItemCtx.style.display = 'block';
+          mediaItemCtx.style.left = e.clientX + 'px';
+          mediaItemCtx.style.top = e.clientY + 'px';
+        });
+
+        mediaGridEl.appendChild(item);
+      });
+    }).catch(function(err) {
+      mediaGridEl.innerHTML = '<div style="color:#ef4444;font-size:12px;">Error: ' + err.message + '</div>';
+    });
+  }
+
+  // ─── Album Context Menu Action Listeners ────────────────────
+  mediaFolderCtx.querySelectorAll('.ctx-item').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (!albumCtxTarget) return;
+      var targetAlbum = albumCtxTarget; // Capture in local variable to avoid race conditions when cleared synchronously
+      var action = this.getAttribute('data-action');
+
+      if (action === 'rename-folder') {
+        var newName = prompt('Rename Album:', targetAlbum.name);
+        if (newName && newName.trim() !== '') {
+          window.XenoSupabase.renameAlbum(targetAlbum.id, newName.trim())
+            .then(function() {
+              loadAlbums();
+            })
+            .catch(function(err) {
+              alert('Error renaming album: ' + err.message);
+            });
+        }
+      } else if (action === 'delete-folder') {
+        if (confirm('Are you sure you want to delete album "' + targetAlbum.name + '"? Contained media will be moved back to Root.')) {
+          window.XenoSupabase.deleteAlbum(targetAlbum.id)
+            .then(function() {
+              if (currentAlbumId === targetAlbum.id) {
+                currentAlbumId = null;
+              }
+              loadAlbums();
+              loadMedia(currentAlbumId);
+            })
+            .catch(function(err) {
+              alert('Error deleting album: ' + err.message);
+            });
+        }
+      }
+      albumCtxTarget = null;
+      mediaFolderCtx.style.display = 'none';
+    });
+  });
+
+  // ─── Media Context Menu Action Listeners ────────────────────
+  mediaItemCtx.querySelectorAll('.ctx-item').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (!mediaCtxTarget) return;
+      var targetMedia = mediaCtxTarget; // Capture in local variable for closure robustness
+      var action = this.getAttribute('data-action');
+
+      if (action === 'rename-media') {
+        var newName = prompt('Rename Media:', targetMedia.filename);
+        if (newName && newName.trim() !== '') {
+          window.XenoSupabase.renameMedia(targetMedia.id, newName.trim())
+            .then(function() {
+              loadMedia(currentAlbumId);
+            })
+            .catch(function(err) {
+              alert('Error renaming media: ' + err.message);
+            });
+        }
+      } else if (action === 'delete-media') {
+        if (confirm('Are you sure you want to delete "' + targetMedia.filename + '" from cloud storage and database? This cannot be undone.')) {
+          window.XenoSupabase.deleteMedia(targetMedia.id, targetMedia.url)
+            .then(function() {
+              loadMedia(currentAlbumId);
+            })
+            .catch(function(err) {
+              alert('Error deleting media: ' + err.message);
+            });
+        }
+      } else if (action === 'move-media') {
+        openMoveMediaModal();
+      } else if (action === 'download-media') {
+        downloadMediaFile(targetMedia.url, targetMedia.filename);
+      }
+
+      if (action !== 'move-media') {
+        mediaCtxTarget = null;
+      }
+      mediaItemCtx.style.display = 'none';
+    });
+  });
+
+  // ─── Move Media Dialog Logic ────────────────────────────────
+  function openMoveMediaModal() {
+    if (!mediaCtxTarget) return;
+
+    window.XenoSupabase.fetchAlbums().then(function(albums) {
+      moveTargetAlbum.innerHTML = '';
+
+      var rootOpt = document.createElement('option');
+      rootOpt.value = '';
+      rootOpt.textContent = '📁 Root (No Album)';
+      moveTargetAlbum.appendChild(rootOpt);
+
+      albums.forEach(function(album) {
+        var opt = document.createElement('option');
+        opt.value = album.id;
+        opt.textContent = '📁 ' + album.name;
+        if (mediaCtxTarget.album_id === album.id) {
+          opt.selected = true;
+        }
+        moveTargetAlbum.appendChild(opt);
+      });
+
+      moveMediaModal.style.display = 'flex';
+    }).catch(function(err) {
+      alert('Error fetching albums: ' + err.message);
+    });
+  }
+
+  function closeMoveMediaModal() {
+    moveMediaModal.style.display = 'none';
+    mediaCtxTarget = null;
+  }
+
+  if (btnCancelMove) {
+    btnCancelMove.addEventListener('click', closeMoveMediaModal);
+  }
+  if (btnCloseMoveModal) {
+    btnCloseMoveModal.addEventListener('click', closeMoveMediaModal);
+  }
+  if (btnConfirmMove) {
+    btnConfirmMove.addEventListener('click', function() {
+      if (!mediaCtxTarget) return;
+      var targetAlbumId = moveTargetAlbum.value || null;
+
+      window.XenoSupabase.moveMedia(mediaCtxTarget.id, targetAlbumId)
+        .then(function() {
+          closeMoveMediaModal();
+          loadMedia(currentAlbumId);
+        })
+        .catch(function(err) {
+          alert('Error moving media: ' + err.message);
+        });
+    });
+  }
+
+  // ─── Elegant CORS/Blob Download Helper ──────────────────────
+  function downloadMediaFile(url, filename) {
+    fetch(url)
+      .then(function(r) { return r.blob(); })
+      .then(function(blob) {
+        var blobUrl = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      })
+      .catch(function(err) {
+        console.warn('CORS blob download failed, falling back to new tab', err);
+        window.open(url, '_blank');
+      });
+  }
+
+
+  // Upload
+  var uploadArea = document.getElementById('media-upload-area');
+  var fileInput = document.getElementById('media-file-input');
+
+  if (uploadArea) {
+    uploadArea.addEventListener('click', function() { fileInput.click(); });
+    uploadArea.addEventListener('dragover', function(e) { e.preventDefault(); uploadArea.style.borderColor = '#006fff'; });
+    uploadArea.addEventListener('dragleave', function(e) { e.preventDefault(); uploadArea.style.borderColor = ''; });
+    uploadArea.addEventListener('drop', function(e) {
+      e.preventDefault(); uploadArea.style.borderColor = '';
+      if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', function() {
+      if (this.files.length > 0) handleFiles(this.files);
+    });
+  }
+
+  function handleFiles(files) {
+    if (!window.XenoSupabase.isConfigured()) {
+      alert('Please configure Supabase in config.js to enable cloud uploads.');
+      return;
+    }
+    uploadArea.innerHTML = '<h3>Uploading...</h3><p>Please wait.</p>';
+    var promises = [];
+    for (var i = 0; i < files.length; i++) {
+      promises.push(window.XenoSupabase.uploadAndRecordMedia(files[i], currentAlbumId));
+    }
+    Promise.all(promises).then(function() {
+      uploadArea.innerHTML = '<h3>Cloud Upload Media</h3><p>Drag & drop 360 images here or click to browse</p>';
+      loadMedia(currentAlbumId);
+    }).catch(function(err) {
+      alert('Error uploading: ' + err.message);
+      uploadArea.innerHTML = '<h3>Cloud Upload Media</h3><p>Drag & drop 360 images here or click to browse</p>';
+    });
+  }
+
+  // ─── Workspace Header Action Handlers ───────────────────────
+  var logoBack = document.getElementById('logo-back');
+  if (logoBack) {
+    logoBack.addEventListener('click', function() {
+      window.location.search = ''; // back to dashboard
+    });
+  }
+
+  var btnPreview = document.getElementById('btn-preview-tour');
+  if (btnPreview) {
+    btnPreview.addEventListener('click', function() {
+      if (projectSlug) {
+        window.open('preview.html?project=' + encodeURIComponent(projectSlug), '_blank');
+      }
+    });
+  }
+
+  var btnExport = document.getElementById('btn-export');
+  if (btnExport) {
+    btnExport.addEventListener('click', function() {
+      if (!window.JSZip) {
+        alert('JSZip library is not loaded.');
+        return;
+      }
+      
+      var exportBtn = this;
+      var originalText = exportBtn.innerHTML;
+      exportBtn.innerHTML = '<i class="ti ti-loader animate-spin"></i> Exporting...';
+      exportBtn.disabled = true;
+      
+      var zip = new window.JSZip();
+      
+      var filesToBundle = [
+        'css/viewer.css',
+        'css/hotspots.css',
+        'css/minimap.css',
+        'css/hint.css',
+        'js/vendor/screenfull.js',
+        'js/vendor/bowser.js',
+        'js/vendor/webvr-polyfill.js',
+        'js/xeno.js',
+        'js/transitions.js',
+        'js/VideoAsset.js',
+        'js/DeviceOrientation.js',
+        'js/colorEffects.js',
+        'js/hotspots/HotspotFactory.js',
+        'js/ui/Minimap.js',
+        'js/ui/SceneList.js',
+        'js/ui/Supabase.js',
+        'js/viewer.js',
+        'config.js'
+      ];
+
+      var imagesToBundle = [
+        'img/link.png',
+        'img/photo.png',
+        'img/info.png',
+        'img/hotspot.png',
+        'img/logo.png',
+        'img/tooltip.svg'
+      ];
+
+      // Clone data to avoid altering active workspace state
+      var exportedData = JSON.parse(JSON.stringify(window.data));
+      var mediaPromises = [];
+
+      exportedData.scenes.forEach(function(sceneData) {
+        var originalUrl = sceneData.mediaUrl;
+        if (originalUrl) {
+          // Determine extension
+          var ext = 'jpg';
+          if (originalUrl.indexOf('.png') !== -1) ext = 'png';
+          else if (originalUrl.indexOf('.gif') !== -1) ext = 'gif';
+          
+          var filename = 'scene_' + sceneData.id + '.' + ext;
+          var relativePath = 'media/' + filename;
+          
+          var p = fetch(originalUrl)
+            .then(function(res) {
+              if (!res.ok) throw new Error('Failed to fetch media for scene: ' + sceneData.name);
+              return res.blob();
+            })
+            .then(function(blob) {
+              zip.file(relativePath, blob);
+              sceneData.mediaUrl = relativePath;
+              if (sceneData.thumbnailUrl) {
+                sceneData.thumbnailUrl = relativePath;
+              }
+            })
+            .catch(function(err) {
+              console.warn('Could not bundle media for scene ' + sceneData.name + ', keeping original URL.', err);
+            });
+          mediaPromises.push(p);
+        }
+      });
+
+      // Add dynamic data.js when media promises resolve
+      var makeDataJsContent = function() {
+        return 'var data = ' + JSON.stringify(exportedData, null, 2) + ';\n';
+      };
+
+      // Add README.txt
+      var readmeContent = 
+        "Xeno 360° Tour Export\n" +
+        "=====================\n\n" +
+        "This tour was exported from Xeno 360° Tour Platform.\n\n" +
+        "Running the Tour Locally:\n" +
+        "-------------------------\n" +
+        "For security reasons, modern web browsers restrict local file access (CORS policies)\n" +
+        "when opening files directly using the file:// protocol (e.g. by double-clicking index.html).\n\n" +
+        "To view this tour locally, you must run it through a local HTTP server:\n" +
+        "- If you have Node.js installed, run:\n" +
+        "    npx serve\n" +
+        "  or\n" +
+        "    npm install -g http-server && http-server\n\n" +
+        "- If you have Python installed, run:\n" +
+        "    python -m http.server 8000\n" +
+        "  and open http://localhost:8000 in your browser.\n\n" +
+        "- Or deploy it directly to a static hosting service like Vercel, Netlify, or GitHub Pages.\n";
+      zip.file('README.txt', readmeContent);
+
+      var fetchPromises = filesToBundle.map(function(path) {
+        return fetch(path)
+          .then(function(res) {
+            if (!res.ok) throw new Error('Failed to fetch ' + path);
+            return res.text();
+          })
+          .then(function(content) {
+            zip.file(path, content);
+          });
+      });
+
+      var imagePromises = imagesToBundle.map(function(path) {
+        return fetch(path)
+          .then(function(res) {
+            if (!res.ok) throw new Error('Failed to fetch ' + path);
+            return res.blob();
+          })
+          .then(function(blob) {
+            zip.file(path, blob);
+          });
+      });
+
+      var previewHtmlPromise = fetch('preview.html')
+        .then(function(res) {
+          if (!res.ok) throw new Error('Failed to fetch preview.html');
+          return res.text();
+        })
+        .then(function(html) {
+          // Inside ZIP, preview.html serves as index.html
+          var injectedHtml = html.replace('<head>', '<head>\n  <script>window.isExported = true;</script>');
+          zip.file('index.html', injectedHtml);
+        });
+
+      var allPromises = fetchPromises.concat(imagePromises).concat(mediaPromises);
+      allPromises.push(previewHtmlPromise);
+
+      Promise.all(allPromises)
+        .then(function() {
+          // Write compiled data.js after all scene rewrites have finished!
+          zip.file('data.js', makeDataJsContent());
+          return zip.generateAsync({ type: 'blob' });
+        })
+        .then(function(blob) {
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = (projectSlug || 'xeno-tour') + '.zip';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          
+          exportBtn.innerHTML = originalText;
+          exportBtn.disabled = false;
+        })
+        .catch(function(err) {
+          alert('ZIP export failed: ' + err.message);
+          exportBtn.innerHTML = originalText;
+          exportBtn.disabled = false;
+        });
+    });
+  }
+
+  // ─── Dashboard Helper Functions ─────────────────────────────
+  function initDashboard() {
+    // Proactively clean up the legacy empty default sample tour from local storage
+    if (window.XenoSupabase) {
+      window.XenoSupabase.deleteTour('sample-tour');
+    }
+
+    var searchInput = document.getElementById('project-search');
+    var btnNewProject = document.getElementById('btn-new-project');
+    
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        loadDashboard(this.value);
+      });
+    }
+    
+    if (btnNewProject) {
+      btnNewProject.addEventListener('click', function() {
+        var name = prompt('Enter project name:');
+        if (name && name.trim() !== '') {
+          var slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          if (!slug) slug = 'project-' + Date.now();
+          
+          var blankData = {
+            settings: {
+              title: name.trim(),
+              name: name.trim(),
+              mouseViewMode: "drag",
+              autorotateEnabled: false,
+              autorotateSpeed: 0.03,
+              autorotateInactivityDelay: 3000,
+              fullscreenButton: true,
+              sceneListStyle: "sidebar",
+              showMinimap: false,
+              minimapPosition: "bottom-left",
+              showControls: true,
+              gyroscopeEnabled: false,
+              vrEnabled: false,
+              anaglyphEnabled: false,
+              defaultTransition: "opacity",
+              defaultTransitionDuration: 1000,
+              defaultTransitionEasing: "easeInOut",
+              branding: { logoUrl: null, accentColor: "#e62e5a", logoPosition: "top-left" },
+              intro: { enabled: false, title: "", subtitle: "", buttonText: "Enter Tour" }
+            },
+            scenes: [],
+            floorplan: { enabled: false, imageUrl: "media/floorplan.jpg", width: 800, height: 600 }
+          };
+          window.XenoSupabase.saveTour(slug, blankData);
+          window.location.search = '?project=' + encodeURIComponent(slug);
+        }
+      });
+    }
+    
+    loadDashboard();
+  }
+  
+  function loadDashboard(filterQuery) {
+    if (!window.XenoSupabase) return;
+    window.XenoSupabase.fetchTours().then(function(tours) {
+      var filtered = tours;
+      if (filterQuery) {
+        var query = filterQuery.trim().toLowerCase();
+        filtered = tours.filter(function(t) {
+          var title = (t.data.settings.name || t.data.settings.title || t.slug).toLowerCase();
+          return title.indexOf(query) !== -1;
+        });
+      }
+      
+      var grid = document.getElementById('project-grid');
+      var countEl = document.getElementById('project-count');
+      if (countEl) countEl.textContent = filtered.length;
+      
+      if (!grid) return;
+      grid.innerHTML = '';
+      
+      filtered.forEach(function(tour) {
+        var card = document.createElement('div');
+        card.className = 'project-card';
+        
+        var firstScene = (tour.data && tour.data.scenes && tour.data.scenes[0]) || null;
+        var thumb = (firstScene && (firstScene.thumbnailUrl || firstScene.mediaUrl)) || 'img/photo.png';
+        var sceneCount = (tour.data && tour.data.scenes && tour.data.scenes.length) || 0;
+        var title = tour.data.settings.name || tour.data.settings.title || tour.slug;
+        
+        card.innerHTML = 
+          '<div class="project-card-thumb-wrapper">' +
+            '<img class="project-card-thumb" src="' + thumb + '" alt="Tour Thumbnail">' +
+            '<div class="project-card-scenes-badge">' + sceneCount + ' Scene' + (sceneCount !== 1 ? 's' : '') + '</div>' +
+          '</div>' +
+          '<div class="project-card-info">' +
+            '<h4 class="project-card-title">' + title + '</h4>' +
+            '<div class="project-card-meta">' +
+              '<span class="project-card-status">Published</span>' +
+              '<span class="project-card-date">' + new Date(tour.updated_at).toLocaleDateString() + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="project-card-actions">' +
+            '<button class="btn-delete-project" title="Delete Project"><i class="ti ti-trash"></i></button>' +
+          '</div>';
+          
+        card.addEventListener('click', function() {
+          window.location.search = '?project=' + encodeURIComponent(tour.slug);
+        });
+        
+        var delBtn = card.querySelector('.btn-delete-project');
+        delBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (confirm('Are you sure you want to delete project "' + title + '"?')) {
+            window.XenoSupabase.deleteTour(tour.slug);
+            loadDashboard(filterQuery);
+          }
+        });
+        
+        grid.appendChild(card);
+      });
+    });
+  }
+
+  // ─── Start ────────────────────────────────────────────────
+  renderSceneGrid();
+  if (scenes.length > 0) {
+    switchSceneById(scenes[0].data.id);
+  }
+
+})();

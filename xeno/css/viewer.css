@@ -1,0 +1,490 @@
+/*
+ * Xeno — Viewer Core Styles
+ * Glassmorphic dark design system with HSL-tailored accent colors.
+ * --accent is set dynamically from data.settings.branding.accentColor at init.
+ */
+
+/* ─── CSS Custom Properties ──────────────────────────────── */
+:root {
+  --accent: #00d4ff;
+  --accent-glow: rgba(0, 212, 255, 0.35);
+  --bg-panel: rgba(10, 10, 18, 0.65);
+  --bg-panel-solid: #0a0a12;
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --border-glass: rgba(255, 255, 255, 0.1);
+  --text-primary: #f0f0f5;
+  --text-secondary: rgba(240, 240, 245, 0.6);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* ─── Reset & Base ───────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: #000;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Panorama Container ─────────────────────────────────── */
+#pano {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* ─── Title Bar ──────────────────────────────────────────── */
+#titleBar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+  z-index: 20;
+  pointer-events: none;
+}
+
+#titleBar .sceneName {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Scene List (Sidebar Mode) ──────────────────────────── */
+#sceneList {
+  position: absolute;
+  top: 0; left: 0;
+  width: 260px;
+  height: 100%;
+  padding: 64px 0 80px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-lg);
+  z-index: 15;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transform: translateX(-100%);
+  transition: transform var(--transition);
+}
+
+#sceneList.enabled {
+  transform: translateX(0);
+}
+
+#sceneList::-webkit-scrollbar {
+  width: 4px;
+}
+
+#sceneList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#sceneList::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+}
+
+#sceneList .scene {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background var(--transition);
+  border-left: 3px solid transparent;
+}
+
+#sceneList .scene:hover {
+  background: var(--bg-hover);
+}
+
+#sceneList .scene.current {
+  background: rgba(0, 212, 255, 0.08);
+  border-left-color: var(--accent);
+}
+
+#sceneList .scene .scene-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-glass);
+}
+
+#sceneList .scene .scene-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* ─── Scene List (Bottom Strip Mode) ─────────────────────── */
+#sceneList.bottom-strip {
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100px;
+  padding: 10px 16px;
+  transform: translateY(100%);
+  border-right: none;
+  border-top: 1px solid var(--border-glass);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+#sceneList.bottom-strip.enabled {
+  transform: translateY(0);
+}
+
+#sceneList.bottom-strip .scene {
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  min-width: 80px;
+  border-left: none;
+  border-bottom: 3px solid transparent;
+}
+
+#sceneList.bottom-strip .scene.current {
+  border-bottom-color: var(--accent);
+  border-left-color: transparent;
+}
+
+#sceneList.bottom-strip .scene .scene-thumb {
+  width: 60px;
+  height: 40px;
+  border-radius: 6px;
+}
+
+#sceneList.bottom-strip .scene .scene-name {
+  font-size: 11px;
+  text-align: center;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Controls Bar ───────────────────────────────────────── */
+#controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 20;
+}
+
+#controls .ctrl-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-panel);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text-primary);
+}
+
+#controls .ctrl-btn:hover {
+  background: var(--bg-hover);
+  border-color: rgba(255,255,255,0.2);
+  transform: scale(1.05);
+}
+
+#controls .ctrl-btn.active,
+#controls .ctrl-btn.enabled {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.ctrl-btn .icon.on {
+  display: block;
+}
+.ctrl-btn .icon.off {
+  display: none;
+}
+.ctrl-btn.active .icon.on,
+.ctrl-btn.enabled .icon.on {
+  display: none;
+}
+.ctrl-btn.active .icon.off,
+.ctrl-btn.enabled .icon.off {
+  display: block;
+}
+
+#controls .ctrl-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* ─── View Control Buttons (directional) ─────────────────── */
+#viewControls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  grid-template-columns: 44px 44px 44px;
+  grid-template-rows: 44px 44px;
+  gap: 4px;
+  z-index: 20;
+}
+
+#viewControls.visible {
+  display: grid;
+}
+
+#viewControls .ctrl-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-panel);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text-primary);
+}
+
+#viewControls .ctrl-btn:hover {
+  background: var(--bg-hover);
+}
+
+#viewControls .ctrl-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* ─── Branding Logo ──────────────────────────────────────── */
+#branding-logo {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 25;
+  pointer-events: none;
+}
+
+#branding-logo img {
+  max-height: 40px;
+  opacity: 0.9;
+}
+
+/* ─── Intro Screen ───────────────────────────────────────── */
+#intro-screen {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+
+#intro-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#intro-screen .intro-title {
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#intro-screen .intro-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+#intro-screen .intro-btn {
+  padding: 14px 40px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #000;
+  background: var(--accent);
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all var(--transition);
+  letter-spacing: 0.03em;
+}
+
+#intro-screen .intro-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+
+/* ─── Transition Overlay ─────────────────────────────────── */
+#transition-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  background: #000;
+  transition: opacity 0.5s ease;
+}
+
+/* ─── Mobile Adjustments ─────────────────────────────────── */
+body.mobile #sceneList {
+  width: 100%;
+}
+
+body.mobile #titleBar .sceneName {
+  font-size: 15px;
+}
+
+body.mobile #controls {
+  bottom: 12px;
+  right: 12px;
+}
+
+body.mobile #controls .ctrl-btn {
+  width: 40px;
+  height: 40px;
+}
+
+/* ─── Fullscreen helpers ─────────────────────────────────── */
+body.fullscreen-disabled #fullscreenToggle {
+  display: none;
+}
+
+/* ─── Logo Branding ────────────────────────────────────────── */
+#branding-logo {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 100px;
+  height: 40px;
+  background: url('../img/logo.png') no-repeat center right;
+  background-size: contain;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+/* ─── Intro Screen ─────────────────────────────────────────── */
+#intro-screen {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: opacity 0.5s ease;
+}
+#intro-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.intro-content {
+  background: var(--bg-panel);
+  padding: 40px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-lg);
+  max-width: 400px;
+}
+.intro-content h1 {
+  margin-top: 0;
+  font-size: 24px;
+}
+.intro-content p {
+  color: #ccc;
+  margin-bottom: 30px;
+}
+#btn-start-tour {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+#btn-start-tour:hover {
+  background: var(--accent-glow);
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Animations ─────────────────────────────────────────── */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50%      { box-shadow: 0 0 16px 4px var(--accent-glow); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
