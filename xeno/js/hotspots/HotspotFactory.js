@@ -30,6 +30,9 @@
       var wrapper = document.createElement('div');
       wrapper.classList.add('xeno-hotspot-link');
 
+      var iconWrapper = document.createElement('div');
+      iconWrapper.classList.add('link-icon-wrapper');
+
       var icon = document.createElement('img');
       icon.src = hotspot.customIconUrl || 'img/link.png';
       icon.classList.add('link-icon');
@@ -45,7 +48,8 @@
       tooltip.classList.add('link-tooltip');
       tooltip.innerHTML = sanitize(hotspot.title || hotspot.label || 'Link');
 
-      wrapper.appendChild(icon);
+      iconWrapper.appendChild(icon);
+      wrapper.appendChild(iconWrapper);
       wrapper.appendChild(tooltip);
 
       // Pass hotspot-level transition overrides to switchScene
@@ -264,7 +268,7 @@
       // so the arrow itself animates, not the outer wrapper (which causes a blur square)
       if (hotspotData.animation && hotspotData.animation !== 'none') {
         var animClass = 'hs-anim-' + hotspotData.animation;
-        var animTarget = element.querySelector('.link-icon') || element.querySelector('.icon_wrapper') || element.querySelector('.out') || element;
+        var animTarget = element.querySelector('.link-icon-wrapper') || element.querySelector('.link-icon') || element.querySelector('.icon_wrapper') || element.querySelector('.out') || element;
         animTarget.classList.add(animClass);
       }
 
