@@ -4,125 +4,164 @@
   <meta charset="UTF-8">
   <title>Xeno Editor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-  
+  <!-- Font: DM Sans — distinctive, clean, warm -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- NO external icon CDN — all icons are inline SVG via JS helpers -->
+
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/editor.css">
   <link rel="stylesheet" href="css/viewer.css">
   <link rel="stylesheet" href="css/hotspots.css">
+
+  <!-- Inline SVG icon system — zero CDN dependency -->
+  <script>
+  // xIcon(name) returns an SVG string for a Tabler-style icon
+  // All icons are 24x24 viewBox, stroke-based
+  const XICONS = {
+    // navigation / UI
+    'chevron-left':  '<polyline points="15 18 9 12 15 6"/>',
+    'plus':          '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+    'x':             '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+    'search':        '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>',
+    'folder':        '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+    'camera':        '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+    'eye':           '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+    'eye-off':       '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
+    'map':           '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>',
+    'settings':      '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+    'rotate-cw':     '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>',
+    'cursor':        '<path d="m4 4 7.07 17 2.51-7.39L21 11.07z"/>',
+    // hotspot types
+    'arrow-right':   '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+    'info':          '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    'link':          '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+    'photo':         '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+    'video':         '<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>',
+    'volume':        '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>',
+    'trash':         '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+    'edit':          '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+    'copy':          '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+    'star':          '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    'download':      '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+    'move':          '<polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>',
+  };
+  function xIcon(name, size) {
+    const s = size || 16;
+    const paths = XICONS[name] || '';
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+  }
+  </script>
 </head>
 <body>
 
-  <!-- Dashboard View -->
+  <!-- ══ Dashboard ══════════════════════════════════════════ -->
   <div id="dashboard-view">
     <div class="dashboard-header">
       <div class="logo">✦ <span>Xeno</span> Tour Studio</div>
-      <button class="btn btn-new-project" id="btn-new-project">
-        <i class="ti ti-plus"></i> New Project
+      <button class="btn-new-project" id="btn-new-project">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Project
       </button>
     </div>
-    
+
     <div class="dashboard-toolbar">
       <div class="search-box">
-        <i class="ti ti-search search-icon"></i>
-        <input type="text" id="project-search" placeholder="Search tours...">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="project-search" placeholder="Search tours…">
       </div>
       <div class="toolbar-stats">
-        Total Projects: <span id="project-count">0</span>
+        Projects: <span id="project-count">0</span>
       </div>
     </div>
 
-    <div id="project-grid" class="project-grid">
-      <!-- Project cards populated by JS -->
-    </div>
+    <div id="project-grid" class="project-grid"></div>
   </div>
 
-  <!-- Workspace View -->
-  <div id="workspace-view" style="display: none;">
-    <!-- Top Navigation Bar -->
+  <!-- ══ Workspace ══════════════════════════════════════════ -->
+  <div id="workspace-view" style="display:none;">
+
+    <!-- Top Bar -->
     <div id="editor-topbar">
-      <div class="logo" id="logo-back" style="cursor: pointer;">
-        <i class="ti ti-chevron-left" style="font-size: 16px; vertical-align: middle;"></i> Dashboard
+      <div class="logo" id="logo-back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Dashboard
       </div>
       <div class="topbar-actions">
-        <button class="btn btn-primary" id="btn-media-manager">Media</button>
-        <button class="btn btn-primary" id="btn-preview-tour">Preview</button>
+        <button class="btn" id="btn-media-manager">Media</button>
+        <button class="btn" id="btn-preview-tour">Preview</button>
         <button class="btn btn-publish" id="btn-export">Export Zip</button>
       </div>
     </div>
 
     <div id="editor-main">
-      
-      <!-- Left Sidebar (Scenes) -->
+
+      <!-- Left Sidebar -->
       <div id="editor-sidebar">
         <div class="sidebar-header">
-          <button class="add-item-btn" id="btn-add-scene">+ Add item</button>
+          <button class="add-item-btn" id="btn-add-scene">+ Add Scene</button>
         </div>
-        <div id="scene-grid">
-          <!-- Scene cards rendered via JS -->
-        </div>
+        <div id="scene-grid"></div>
       </div>
 
       <!-- Pano Workspace -->
       <div id="pano-wrapper">
         <div id="pano"></div>
 
-        <!-- Mode indicator badge -->
         <div id="mode-badge">Select</div>
 
-        <!-- Save Default View Floating Button -->
-        <button id="btn-save-view" title="Save current camera direction as the starting view">
-          <i class="ti ti-camera" style="font-size: 14px; vertical-align: middle;"></i> Save Default View
+        <button id="btn-save-view">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Save Default View
         </button>
 
-        <!-- Tools Pill -->
+        <!-- Tools Pill — inline SVG icons, no CDN -->
         <div id="tools-pill">
-          <!-- Group 1: mode -->
           <div class="pill-tool active" data-tool="select" title="Select">
-            <i class="ti ti-pointer"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 4 7.07 17 2.51-7.39L21 11.07z"/></svg>
           </div>
           <div class="pill-sep"></div>
-          <!-- Group 2: hotspot types -->
           <div class="pill-tool" data-tool="navigate" title="Navigate">
-            <i class="ti ti-arrow-right-circle"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </div>
           <div class="pill-tool" data-tool="info" title="Info card">
-            <i class="ti ti-info-circle"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           </div>
           <div class="pill-tool" data-tool="url" title="URL link">
-            <i class="ti ti-link"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           </div>
           <div class="pill-tool" data-tool="image" title="Image">
-            <i class="ti ti-photo"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
           </div>
           <div class="pill-tool" data-tool="video" title="Video">
-            <i class="ti ti-video"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
           </div>
           <div class="pill-tool" data-tool="audio" title="Audio">
-            <i class="ti ti-volume"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
           </div>
           <div class="pill-sep"></div>
-          <!-- Group 3: view tools -->
           <div class="pill-tool" data-tool="autorotate" title="Autorotate">
-            <i class="ti ti-rotate-clockwise-2"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           </div>
           <div class="pill-tool" data-tool="minimap" title="Minimap">
-            <i class="ti ti-map-2"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
           </div>
           <div class="pill-tool" data-tool="scene-settings" title="Scene settings">
-            <i class="ti ti-adjustments-horizontal"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </div>
         </div>
 
-        <!-- Right Properties Panel (slides in from right) -->
+        <!-- Properties Panel -->
         <div id="properties-panel">
           <div class="panel-header">
             <h3 id="panel-title">Hotspot Properties</h3>
-            <button class="close-panel" id="btn-close-properties">&times;</button>
+            <button class="close-panel" id="btn-close-properties">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
           <div class="panel-body">
-            <!-- Common fields -->
+
             <div class="form-group">
               <label>Type</label>
               <select id="prop-type">
@@ -158,21 +197,23 @@
               </select>
             </div>
             <div class="form-group" id="group-custom-icon" style="display:none;">
-              <label>Custom Icon Image</label>
-              <div style="display:flex; gap:8px;">
-                <input type="text" id="prop-custom-icon-url" placeholder="Paste URL or pick icon" style="flex:1;">
-                <button class="btn btn-secondary" id="btn-pick-custom-icon" title="Pick from Media Manager" style="padding:0 10px;"><i class="ti ti-folder"></i></button>
+              <label>Custom Icon</label>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="prop-custom-icon-url" placeholder="Paste URL or pick…" style="flex:1;">
+                <button class="btn btn-secondary" id="btn-pick-custom-icon" style="padding:0 10px;border-radius:var(--r-sm);">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </button>
               </div>
             </div>
 
-            <!-- Type-specific: navigate -->
+            <!-- Navigate fields -->
             <div class="type-fields" id="fields-navigate">
               <div class="form-group">
                 <label>Target Scene</label>
                 <select id="prop-target-scene"></select>
               </div>
               <div class="form-group">
-                <label>Transition Effect</label>
+                <label>Transition</label>
                 <select id="prop-transition">
                   <option value="opacity">Opacity</option>
                   <option value="fromRight">From Right</option>
@@ -182,26 +223,26 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>Transition Duration <span id="prop-trans-dur-label">800ms</span></label>
+                <label>Duration <span id="prop-trans-dur-label">800ms</span></label>
                 <input type="range" id="prop-trans-duration" min="300" max="2000" value="800" step="100">
               </div>
             </div>
 
-            <!-- Type-specific: info -->
+            <!-- Info fields -->
             <div class="type-fields" id="fields-info" style="display:none;">
               <div class="form-group">
                 <label>Body Text</label>
-                <textarea id="prop-body-text" rows="3" placeholder="Description..."></textarea>
+                <textarea id="prop-body-text" rows="3" placeholder="Description…"></textarea>
               </div>
               <div class="form-group">
                 <label>Link URL (optional)</label>
-                <input type="text" id="prop-link-url" placeholder="https://...">
+                <input type="text" id="prop-link-url" placeholder="https://…">
               </div>
               <div class="form-group">
                 <label>Link opens in</label>
                 <div class="radio-group">
                   <label class="radio-label"><input type="radio" name="prop-link-type" value="external" checked> External tab</label>
-                  <label class="radio-label"><input type="radio" name="prop-link-type" value="scene"> Scene in tour</label>
+                  <label class="radio-label"><input type="radio" name="prop-link-type" value="scene"> Scene</label>
                 </div>
               </div>
               <div class="form-group" id="info-scene-target-group" style="display:none;">
@@ -209,16 +250,16 @@
                 <select id="prop-info-target-scene"></select>
               </div>
               <div class="form-group">
-                <label>Link Button Label</label>
+                <label>Button Label</label>
                 <input type="text" id="prop-link-label" placeholder="Open link">
               </div>
             </div>
 
-            <!-- Type-specific: url -->
+            <!-- URL fields -->
             <div class="type-fields" id="fields-url" style="display:none;">
               <div class="form-group">
                 <label>URL</label>
-                <input type="text" id="prop-url-href" placeholder="https://...">
+                <input type="text" id="prop-url-href" placeholder="https://…">
               </div>
               <div class="form-group">
                 <label>Button Label</label>
@@ -233,13 +274,15 @@
               </div>
             </div>
 
-            <!-- Type-specific: image -->
+            <!-- Image fields -->
             <div class="type-fields" id="fields-image" style="display:none;">
               <div class="form-group">
                 <label>Image File / URL</label>
-                <div style="display:flex; gap:8px;">
-                  <input type="text" id="prop-image-url" placeholder="Paste URL or pick image" style="flex:1;">
-                  <button class="btn btn-secondary" id="btn-pick-image" title="Pick from Media Manager" style="padding:0 10px;"><i class="ti ti-folder"></i></button>
+                <div style="display:flex;gap:8px;">
+                  <input type="text" id="prop-image-url" placeholder="Paste URL or pick…" style="flex:1;">
+                  <button class="btn btn-secondary" id="btn-pick-image" style="padding:0 10px;border-radius:var(--r-sm);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  </button>
                 </div>
               </div>
               <div class="form-group">
@@ -248,17 +291,19 @@
               </div>
               <div class="form-group">
                 <label>Link URL (optional)</label>
-                <input type="text" id="prop-image-link" placeholder="https://...">
+                <input type="text" id="prop-image-link" placeholder="https://…">
               </div>
             </div>
 
-            <!-- Type-specific: video -->
+            <!-- Video fields -->
             <div class="type-fields" id="fields-video" style="display:none;">
               <div class="form-group">
                 <label>Video File / URL</label>
-                <div style="display:flex; gap:8px;">
-                  <input type="text" id="prop-video-url" placeholder="Paste URL or pick video" style="flex:1;">
-                  <button class="btn btn-secondary" id="btn-pick-video" title="Pick from Media Manager" style="padding:0 10px;"><i class="ti ti-folder"></i></button>
+                <div style="display:flex;gap:8px;">
+                  <input type="text" id="prop-video-url" placeholder="Paste URL or pick…" style="flex:1;">
+                  <button class="btn btn-secondary" id="btn-pick-video" style="padding:0 10px;border-radius:var(--r-sm);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  </button>
                 </div>
               </div>
               <div class="form-group toggle-group">
@@ -275,13 +320,15 @@
               </div>
             </div>
 
-            <!-- Type-specific: audio -->
+            <!-- Audio fields -->
             <div class="type-fields" id="fields-audio" style="display:none;">
               <div class="form-group">
                 <label>Audio File / URL</label>
-                <div style="display:flex; gap:8px;">
-                  <input type="text" id="prop-audio-url" placeholder="Paste URL or pick audio" style="flex:1;">
-                  <button class="btn btn-secondary" id="btn-pick-audio" title="Pick from Media Manager" style="padding:0 10px;"><i class="ti ti-folder"></i></button>
+                <div style="display:flex;gap:8px;">
+                  <input type="text" id="prop-audio-url" placeholder="Paste URL or pick…" style="flex:1;">
+                  <button class="btn btn-secondary" id="btn-pick-audio" style="padding:0 10px;border-radius:var(--r-sm);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  </button>
                 </div>
               </div>
               <div class="form-group toggle-group">
@@ -294,7 +341,7 @@
               </div>
             </div>
 
-            <!-- Scene Settings (shown when scene-settings tool is clicked) -->
+            <!-- Scene settings -->
             <div class="type-fields" id="fields-scene-settings" style="display:none;">
               <div class="form-group">
                 <label>Scene Name</label>
@@ -302,13 +349,12 @@
               </div>
             </div>
 
-            <!-- Action buttons -->
+            <!-- Actions -->
             <div class="panel-actions" id="panel-actions-hotspot">
               <button class="btn btn-primary" id="btn-save-properties">Save</button>
               <button class="btn btn-danger" id="btn-delete-hotspot">Delete</button>
             </div>
 
-            <!-- Position readout -->
             <div class="panel-position" id="panel-position">
               <span>yaw: <span id="pos-yaw">0.00</span></span>
               <span>pitch: <span id="pos-pitch">0.00</span></span>
@@ -316,30 +362,28 @@
           </div>
         </div>
 
-      </div>
-    </div>
-  </div>
+      </div><!-- /pano-wrapper -->
+    </div><!-- /editor-main -->
+  </div><!-- /workspace-view -->
 
-  <!-- Context Menu -->
+  <!-- Context Menus -->
   <div id="context-menu">
     <div class="ctx-item" data-action="rename">✏ Rename</div>
-    <div class="ctx-item" data-action="set-default">⭐ Set as default scene</div>
+    <div class="ctx-item" data-action="set-default">★ Set as default</div>
     <div class="ctx-item" data-action="duplicate">⧉ Duplicate</div>
-    <div class="ctx-item ctx-danger" data-action="delete">🗑 Delete</div>
+    <div class="ctx-item ctx-danger" data-action="delete">✕ Delete</div>
   </div>
 
-  <!-- Media Folder Context Menu -->
   <div id="media-folder-ctx" class="xeno-ctx-menu">
     <div class="ctx-item" data-action="rename-folder">✏ Rename Album</div>
-    <div class="ctx-item ctx-danger" data-action="delete-folder">🗑 Delete Album</div>
+    <div class="ctx-item ctx-danger" data-action="delete-folder">✕ Delete Album</div>
   </div>
 
-  <!-- Media Item Context Menu -->
   <div id="media-item-ctx" class="xeno-ctx-menu">
     <div class="ctx-item" data-action="rename-media">✏ Rename</div>
-    <div class="ctx-item" data-action="move-media">⟴ Move</div>
-    <div class="ctx-item" data-action="download-media">⬇ Download</div>
-    <div class="ctx-item ctx-danger" data-action="delete-media">🗑 Delete</div>
+    <div class="ctx-item" data-action="move-media">→ Move</div>
+    <div class="ctx-item" data-action="download-media">↓ Download</div>
+    <div class="ctx-item ctx-danger" data-action="delete-media">✕ Delete</div>
   </div>
 
   <!-- Move Media Modal -->
@@ -347,25 +391,20 @@
     <div class="move-modal-content">
       <div class="move-modal-header">
         <h3>Move Media</h3>
-        <button class="close-move-modal" id="btn-close-move-modal">&times;</button>
+        <button class="close-move-modal" id="btn-close-move-modal">×</button>
       </div>
       <div class="move-modal-body">
         <div class="form-group">
-          <label>Select Target Album</label>
-          <select id="move-target-album">
-            <!-- Dynamically populated -->
-          </select>
+          <label>Target Album</label>
+          <select id="move-target-album"></select>
         </div>
       </div>
       <div class="move-modal-actions">
         <button class="btn" id="btn-cancel-move">Cancel</button>
-        <button class="btn btn-primary" id="btn-confirm-move">Confirm Move</button>
+        <button class="btn btn-primary" id="btn-confirm-move">Move</button>
       </div>
     </div>
   </div>
-
-
-
 
   <!-- Media Manager Modal -->
   <div id="media-modal">
@@ -375,13 +414,13 @@
     </div>
     <div class="media-body">
       <div class="media-sidebar">
-        <button class="btn btn-primary" style="width:100%; margin-bottom: 15px; justify-content:center;">+ Add Album</button>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;border-radius:var(--r-sm);">+ Add Album</button>
         <div class="album-list"></div>
       </div>
       <div class="media-content">
         <div class="media-upload-area" id="media-upload-area">
           <h3>Upload Media</h3>
-          <p>Drag & drop images, video or audio here or click to browse</p>
+          <p>Drag & drop or click to browse — images, video, audio</p>
           <input type="file" id="media-file-input" style="display:none" accept="image/*,video/*,audio/*" multiple>
         </div>
         <div class="media-grid" id="media-grid"></div>

@@ -568,7 +568,7 @@
   display: inline-block;
   margin-top: 8px;
   padding: 5px 12px;
-  background: #006fff;
+  background: #e62e5a;
   color: #fff;
   border-radius: 5px;
   font-size: 11px;
@@ -646,7 +646,7 @@
 /* Type Specific Accent Variables */
 .xeno-hotspot-dot.hs-navigate {
   --hotspot-accent: var(--accent-blue);
-  --hotspot-accent-glow: rgba(0, 111, 255, 0.45);
+  --hotspot-accent-glow: rgba(230,46,90, 0.45);
 }
 .xeno-hotspot-dot.hs-info {
   --hotspot-accent: var(--accent-yellow);

@@ -1173,7 +1173,7 @@
 
   if (uploadArea) {
     uploadArea.addEventListener('click', function() { fileInput.click(); });
-    uploadArea.addEventListener('dragover', function(e) { e.preventDefault(); uploadArea.style.borderColor = '#006fff'; });
+    uploadArea.addEventListener('dragover', function(e) { e.preventDefault(); uploadArea.style.borderColor = '#e62e5a'; });
     uploadArea.addEventListener('dragleave', function(e) { e.preventDefault(); uploadArea.style.borderColor = ''; });
     uploadArea.addEventListener('drop', function(e) {
       e.preventDefault(); uploadArea.style.borderColor = '';

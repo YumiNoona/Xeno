@@ -6,8 +6,8 @@
 
 /* ─── CSS Custom Properties ──────────────────────────────── */
 :root {
-  --accent: var(--accent, #00d4ff);
-  --accent-glow: var(--accent-glow, rgba(0, 212, 255, 0.35));
+  --accent: var(--accent, #e62e5a);
+  --accent-glow: var(--accent-glow, rgba(230,46,90,0.3));
   --bg-panel: var(--bg-glass);
   --bg-panel-solid: var(--bg-panel-solid);
   --bg-hover: var(--bg-hover);
@@ -126,7 +126,7 @@ html, body {
 }
 
 #sceneList .scene.current {
-  background: rgba(0, 212, 255, 0.08);
+  background: rgba(230,46,90, 0.08);
   border-left-color: var(--accent);
 }
 
@@ -233,7 +233,7 @@ html, body {
 
 #controls .ctrl-btn.active,
 #controls .ctrl-btn.enabled {
-  background: rgba(0, 212, 255, 0.15);
+  background: rgba(230,46,90, 0.15);
   border-color: var(--accent);
   color: var(--accent);
   box-shadow: 0 0 12px var(--accent-glow);

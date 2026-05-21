@@ -1,63 +1,128 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Xeno — 360° Tour Platform</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <style>
-    /* dark, clean, minimal */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0d0d12; color: #c0c0d4; font-family: 'Inter', sans-serif;
-           min-height: 100vh; display: flex; flex-direction: column;
-           align-items: center; justify-content: center; gap: 40px; padding: 40px; }
-    .logo { font-size: 32px; font-weight: 600; color: #fff; }
-    .logo span { color: #006fff; }
-    .subtitle { font-size: 15px; color: #606075; text-align: center; max-width: 400px; }
-    .cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
-    .card { background: #12121a; border: 0.5px solid #222230; border-radius: 12px;
-            padding: 24px 28px; width: 220px; cursor: pointer;
-            transition: border-color 0.15s, transform 0.15s; text-decoration: none; color: inherit; }
-    .card:hover { border-color: #006fff44; transform: translateY(-2px); }
-    .card i { font-size: 28px; color: #006fff; margin-bottom: 12px; display: block; font-style: normal; font-weight: bold; }
-    .card h3 { font-size: 14px; font-weight: 500; color: #e0e0f0; margin-bottom: 4px; }
-    .card p { font-size: 12px; color: #505065; }
-    
-    /* Glowing background accents */
-    .accent {
-      position: absolute;
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, rgba(0, 111, 255, 0.08) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: -1;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0e0c0c;
+      color: #a09898;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      padding: 40px;
+      -webkit-font-smoothing: antialiased;
     }
-    .accent-1 { top: 10%; left: 10%; }
-    .accent-2 { bottom: 10%; right: 10%; }
+
+    /* Subtle warm grain texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.4;
+      z-index: 0;
+    }
+
+    .hero { text-align: center; position: relative; z-index: 1; }
+    .logo {
+      font-size: 36px;
+      font-weight: 700;
+      color: #f0eded;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+    .logo span { color: #e62e5a; }
+    .tagline {
+      font-size: 14px;
+      color: #5a5050;
+      letter-spacing: 0.04em;
+    }
+
+    .cards {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+    .card {
+      background: #161313;
+      border: 1px solid #2c2626;
+      border-radius: 16px;
+      padding: 24px;
+      width: 210px;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .card:hover {
+      border-color: rgba(230,46,90,0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(230,46,90,0.1);
+    }
+    .card-icon {
+      width: 40px; height: 40px;
+      background: rgba(230,46,90,0.1);
+      border: 1px solid rgba(230,46,90,0.2);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+      font-size: 20px;
+      color: #e62e5a;
+    }
+    .card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f0eded;
+      margin-bottom: 5px;
+    }
+    .card p { font-size: 12px; color: #5a5050; line-height: 1.5; }
+
+    .footer {
+      position: relative; z-index: 1;
+      font-size: 11px;
+      color: #3a3030;
+      letter-spacing: 0.04em;
+    }
   </style>
 </head>
 <body>
-  <div class="accent accent-1"></div>
-  <div class="accent accent-2"></div>
+  <div class="hero">
+    <div class="logo">✦ <span>Xeno</span></div>
+    <p class="tagline">Build and share immersive 360° virtual tours</p>
+  </div>
 
-  <div class="logo">✦ <span>Xeno</span></div>
-  <p class="subtitle">Build and share immersive 360° virtual tours</p>
   <div class="cards">
     <a href="editor.html" class="card">
-      <i>✎</i>
+      <div class="card-icon">✎</div>
       <h3>Open Editor</h3>
       <p>Create and manage your 360° tours</p>
     </a>
-
-    <a href="https://www.marzipano.net/demos/sample-tour/" target="_blank" class="card">
-      <i>★</i>
-      <h3>Marzipano Tour</h3>
-      <p>External demo of a sample Marzipano tour</p>
+    <a href="preview.html" class="card">
+      <div class="card-icon">▶</div>
+      <h3>Preview Tour</h3>
+      <p>View your current tour in fullscreen</p>
     </a>
-    <a href="https://www.marzipano.net/demos/hotspot-styles/" target="_blank" class="card">
-      <i>✦</i>
-      <h3>Hotspot Styles</h3>
-      <p>External demo showing various hotspot styles</p>
+    <a href="https://www.marzipano.net/demos/sample-tour/" target="_blank" class="card">
+      <div class="card-icon">✦</div>
+      <h3>Demo Tour</h3>
+      <p>Sample Marzipano tour</p>
     </a>
   </div>
+
+  <div class="footer">Powered by Marzipano · Xeno Tour Studio</div>
 </body>
 </html>
