@@ -13,17 +13,18 @@
     return (s || '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;');
   }
 
-  function getIconSrc(hotspot, defaultIcon) {
-    if (hotspot.iconStyle === 'custom') {
-      return hotspot.customIconUrl || defaultIcon;
-    }
-    if (hotspot.iconStyle === 'dot') {
-      return 'img/hotspot.png';
-    }
-    if (hotspot.iconStyle === 'arrow') {
-      return 'img/up.png';
-    }
-    return defaultIcon;
+  function getIconSvg(style) {
+    var icons = {
+      dot:      '<circle cx="12" cy="12" r="5" fill="currentColor"/>',
+      arrow:    '<path d="M12 5l7 7-7 7M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>',
+      eye:      '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>',
+      pin:      '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/>',
+      star:     '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" stroke="currentColor" stroke-width="1.5" fill="none"/>',
+      play:     '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><polygon points="10,8 16,12 10,16" fill="currentColor"/>',
+      question: '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+      default:  '<line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>'
+    };
+    return icons[style] || icons.default;
   }
 
   function stopTouchAndScrollEventPropagation(element) {
@@ -47,15 +48,32 @@
 
       var iconWrapper = document.createElement('div');
       iconWrapper.classList.add('link-icon-wrapper');
+      if (hotspot.ringEnabled !== false) {
+        iconWrapper.classList.add('has-ring');
+        if (hotspot.ringColor) {
+          iconWrapper.style.borderColor = hotspot.ringColor;
+        }
+      }
 
-      var icon = document.createElement('img');
-      icon.src = getIconSrc(hotspot, 'img/link.png');
-      icon.classList.add('link-icon');
+      if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
+        var icon = document.createElement('img');
+        icon.src = hotspot.customIconUrl;
+        icon.classList.add('link-icon');
+        iconWrapper.appendChild(icon);
+      } else {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('width', '26');
+        svg.setAttribute('height', '26');
+        svg.style.color = hotspot.iconColor || '#ffffff';
+        svg.innerHTML = getIconSvg(hotspot.iconStyle || 'default');
+        iconWrapper.appendChild(svg);
+      }
 
       if (hotspot.rotation) {
         var transformProperties = [ '-ms-transform', '-webkit-transform', 'transform' ];
         for (var i = 0; i < transformProperties.length; i++) {
-          icon.style[transformProperties[i]] = 'rotate(' + hotspot.rotation + 'rad)';
+          iconWrapper.style[transformProperties[i]] = 'rotate(' + hotspot.rotation + 'rad)';
         }
       }
 
@@ -63,7 +81,6 @@
       tooltip.classList.add('link-tooltip');
       tooltip.innerHTML = sanitize(hotspot.title || hotspot.label || 'Link');
 
-      iconWrapper.appendChild(icon);
       wrapper.appendChild(iconWrapper);
       wrapper.appendChild(tooltip);
 
@@ -98,22 +115,29 @@
       var useDefaultIcon = !hotspot.iconStyle || hotspot.iconStyle === 'default';
       if (useDefaultIcon) {
         iconWrapper.innerHTML = '<div class="icon"><div class="inner_icon"><div class="icon1"></div><div class="icon2"></div></div></div>';
-      } else {
-        var iconSrc = getIconSrc(hotspot, 'img/info.png');
+      } else if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
         iconWrapper.style.cssText = 'display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,0.6); border:2px solid rgba(255,255,255,0.4); cursor:pointer; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,0.5); transition:transform 0.2s, background-color 0.2s;';
-        iconWrapper.addEventListener('mouseenter', function() {
-          iconWrapper.style.transform = 'scale(1.1)';
-          iconWrapper.style.backgroundColor = 'rgba(0,111,255,0.3)';
-        });
-        iconWrapper.addEventListener('mouseleave', function() {
-          iconWrapper.style.transform = 'scale(1)';
-          iconWrapper.style.backgroundColor = 'rgba(0,0,0,0.6)';
-        });
         var img = document.createElement('img');
-        img.src = iconSrc;
+        img.src = hotspot.customIconUrl;
         img.style.cssText = 'width:24px; height:24px; object-fit:contain; pointer-events:none;';
         iconWrapper.appendChild(img);
+      } else {
+        iconWrapper.style.cssText = 'display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,0.6); border:2px solid rgba(255,255,255,0.4); cursor:pointer; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,0.5); transition:transform 0.2s, background-color 0.2s;';
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('width', '24');
+        svg.setAttribute('height', '24');
+        svg.style.color = hotspot.iconColor || '#ffffff';
+        svg.innerHTML = getIconSvg(hotspot.iconStyle);
+        iconWrapper.appendChild(svg);
       }
+      
+      if (hotspot.ringEnabled !== false) {
+         iconWrapper.classList.add('has-ring');
+         if (hotspot.ringColor) {
+           iconWrapper.style.borderColor = hotspot.ringColor;
+         }
+       }
 
       var tip = document.createElement('div');
       tip.classList.add('tip');
@@ -178,8 +202,33 @@
       var wrapper = document.createElement('div');
       wrapper.classList.add('xeno-hotspot-link');
       var label = hotspot.title || hotspot.urlLabel || 'Open link';
-      var iconSrc = getIconSrc(hotspot, 'img/link.png');
-      wrapper.innerHTML = '<img class="link-icon" src="' + iconSrc + '"><div class="link-tooltip">' + sanitize(label) + '</div>';
+      
+      var iconWrapper = document.createElement('div');
+       iconWrapper.classList.add('link-icon-wrapper');
+       if (hotspot.ringEnabled !== false) {
+         iconWrapper.classList.add('has-ring');
+         if (hotspot.ringColor) {
+           iconWrapper.style.borderColor = hotspot.ringColor;
+         }
+       }
+
+      if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
+        var icon = document.createElement('img');
+        icon.src = hotspot.customIconUrl;
+        icon.classList.add('link-icon');
+        iconWrapper.appendChild(icon);
+      } else {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('width', '26');
+        svg.setAttribute('height', '26');
+        svg.style.color = hotspot.iconColor || '#ffffff';
+        svg.innerHTML = getIconSvg(hotspot.iconStyle || 'default');
+        iconWrapper.appendChild(svg);
+      }
+
+      wrapper.appendChild(iconWrapper);
+      wrapper.innerHTML += '<div class="link-tooltip">' + sanitize(label) + '</div>';
 
       wrapper.addEventListener('click', function() {
         if (isEditor) return;
@@ -205,7 +254,29 @@
     tooltip: function(hotspot) {
       var wrapper = document.createElement('div');
       wrapper.classList.add('xeno-hotspot-tooltip');
-      wrapper.innerHTML = '<div class="out"><div class="in"><div class="image"></div></div></div><div class="tip"><p>' + sanitize(hotspot.title) + '</p></div>';
+      
+      var out = document.createElement('div');
+       out.classList.add('out');
+       if (hotspot.ringEnabled !== false) {
+         out.classList.add('has-ring');
+         if (hotspot.ringColor) {
+           out.style.borderColor = hotspot.ringColor;
+         }
+       }
+
+      var inner = document.createElement('div');
+      inner.classList.add('in');
+      inner.style.backgroundColor = hotspot.iconColor || '';
+
+      var img = document.createElement('div');
+      img.classList.add('image');
+      if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
+        img.style.backgroundImage = 'url(' + hotspot.customIconUrl + ')';
+      }
+      inner.appendChild(img);
+      out.appendChild(inner);
+      wrapper.appendChild(out);
+      wrapper.innerHTML += '<div class="tip"><p>' + sanitize(hotspot.title) + '</p></div>';
       return wrapper;
     },
 
@@ -213,6 +284,9 @@
     expand: function(hotspot) {
       var wrapper = document.createElement('div');
       wrapper.classList.add('xeno-hotspot-expand');
+      if (hotspot.iconColor) {
+        wrapper.style.backgroundColor = hotspot.iconColor;
+      }
       wrapper.innerHTML = '<h1 class="title">' + sanitize(hotspot.title) + '</h1><img class="icon" src="img/info.png"><p>' + sanitize(hotspot.text) + '</p>';
       return wrapper;
     },
@@ -223,7 +297,27 @@
       wrapper.classList.add('xeno-hotspot-hintspot');
       wrapper.classList.add('hint--right', 'hint--info', 'hint--bounce');
       wrapper.setAttribute('data-hint', sanitize(hotspot.title));
-      wrapper.innerHTML = '<img src="img/hotspot.png">';
+      
+      if (hotspot.ringEnabled !== false) {
+         wrapper.classList.add('has-ring');
+         if (hotspot.ringColor) {
+           wrapper.style.borderColor = hotspot.ringColor;
+         }
+       }
+
+      if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
+        var img = document.createElement('img');
+        img.src = hotspot.customIconUrl;
+        wrapper.appendChild(img);
+      } else {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('width', '44');
+        svg.setAttribute('height', '44');
+        svg.style.color = hotspot.iconColor || '#ffffff';
+        svg.innerHTML = getIconSvg(hotspot.iconStyle || 'default');
+        wrapper.appendChild(svg);
+      }
       return wrapper;
     },
 
@@ -231,7 +325,18 @@
     reveal: function(hotspot) {
       var wrapper = document.createElement('div');
       wrapper.classList.add('xeno-hotspot-reveal');
-      wrapper.innerHTML = '<img src="img/photo.png"><div class="reveal-content"><p>' + sanitize(hotspot.title) + '</p></div>';
+      if (hotspot.iconColor) {
+        wrapper.style.backgroundColor = hotspot.iconColor;
+      }
+      
+      var iconHtml = '';
+      if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
+        iconHtml = '<img src="' + hotspot.customIconUrl + '" style="width:40px;margin:20px 0;">';
+      } else {
+        iconHtml = '<div style="margin:20px 0;color:#fff;">' + getIconSvg(hotspot.iconStyle || 'default') + '</div>';
+      }
+      
+      wrapper.innerHTML = iconHtml + '<div class="reveal-content"><p>' + sanitize(hotspot.title) + '</p></div>';
       return wrapper;
     },
 
@@ -239,7 +344,27 @@
     rotate: function(hotspot) {
       var wrapper = document.createElement('div');
       wrapper.classList.add('xeno-hotspot-rotate');
-      wrapper.innerHTML = '<div class="rotate-img"><img src="img/logo.png"></div><div class="rotate-content"><h1>' + sanitize(hotspot.title) + '</h1><p>' + sanitize(hotspot.text) + '</p></div>';
+      
+      var rotateImg = document.createElement('div');
+      rotateImg.classList.add('rotate-img');
+      if (hotspot.iconColor) {
+        rotateImg.style.backgroundColor = hotspot.iconColor;
+      }
+
+      if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
+        var img = document.createElement('img');
+        img.src = hotspot.customIconUrl;
+        rotateImg.appendChild(img);
+      } else {
+        rotateImg.innerHTML = getIconSvg(hotspot.iconStyle || 'default');
+      }
+
+      var rotateContent = document.createElement('div');
+      rotateContent.classList.add('rotate-content');
+      rotateContent.innerHTML = '<h1>' + sanitize(hotspot.title) + '</h1><p>' + sanitize(hotspot.text) + '</p>';
+      
+      wrapper.appendChild(rotateImg);
+      wrapper.appendChild(rotateContent);
       return wrapper;
     },
 
@@ -247,7 +372,32 @@
     textinfo: function(hotspot) {
       var wrapper = document.createElement('div');
       wrapper.classList.add('xeno-hotspot-textinfo');
-      wrapper.innerHTML = '<div class="hotspot"><div class="out"></div><div class="in"></div></div><div class="tooltip-content"><p>' + sanitize(hotspot.text) + '</p></div>';
+      
+      var hs = document.createElement('div');
+      hs.classList.add('hotspot');
+      
+      var out = document.createElement('div');
+       out.classList.add('out');
+       if (hotspot.ringEnabled !== false) {
+         out.classList.add('has-ring');
+         if (hotspot.ringColor) {
+           out.style.borderColor = hotspot.ringColor;
+         }
+       }
+      if (hotspot.iconColor) {
+        out.style.borderColor = hotspot.iconColor;
+      }
+
+      var inner = document.createElement('div');
+      inner.classList.add('in');
+      if (hotspot.iconColor) {
+        inner.style.backgroundColor = hotspot.iconColor;
+      }
+
+      hs.appendChild(out);
+      hs.appendChild(inner);
+      wrapper.appendChild(hs);
+      wrapper.innerHTML += '<div class="tooltip-content"><p>' + sanitize(hotspot.text) + '</p></div>';
       return wrapper;
     },
 
@@ -256,8 +406,33 @@
     image: function(hotspot) {
       var wrapper = document.createElement('div');
       wrapper.classList.add('xeno-hotspot-link');
-      var iconSrc = getIconSrc(hotspot, 'img/photo.png');
-      wrapper.innerHTML = '<img class="link-icon" src="' + iconSrc + '"><div class="link-tooltip">' + sanitize(hotspot.title || hotspot.label || 'Image') + '</div>';
+      
+      var iconWrapper = document.createElement('div');
+       iconWrapper.classList.add('link-icon-wrapper');
+       if (hotspot.ringEnabled !== false) {
+         iconWrapper.classList.add('has-ring');
+         if (hotspot.ringColor) {
+           iconWrapper.style.borderColor = hotspot.ringColor;
+         }
+       }
+
+      if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
+        var icon = document.createElement('img');
+        icon.src = hotspot.customIconUrl;
+        icon.classList.add('link-icon');
+        iconWrapper.appendChild(icon);
+      } else {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('width', '26');
+        svg.setAttribute('height', '26');
+        svg.style.color = hotspot.iconColor || '#ffffff';
+        svg.innerHTML = getIconSvg(hotspot.iconStyle || 'default');
+        iconWrapper.appendChild(svg);
+      }
+
+      wrapper.appendChild(iconWrapper);
+      wrapper.innerHTML += '<div class="link-tooltip">' + sanitize(hotspot.title || hotspot.label || 'Image') + '</div>';
 
       wrapper.addEventListener('click', function() {
         if (isEditor) return;
@@ -322,8 +497,33 @@
     video: function(hotspot) {
       var wrapper = document.createElement('div');
       wrapper.classList.add('xeno-hotspot-link');
-      var iconSrc = getIconSrc(hotspot, 'img/photo.png');
-      wrapper.innerHTML = '<img class="link-icon" src="' + iconSrc + '"><div class="link-tooltip">' + sanitize(hotspot.title || 'Video') + '</div>';
+      
+      var iconWrapper = document.createElement('div');
+       iconWrapper.classList.add('link-icon-wrapper');
+       if (hotspot.ringEnabled !== false) {
+         iconWrapper.classList.add('has-ring');
+         if (hotspot.ringColor) {
+           iconWrapper.style.borderColor = hotspot.ringColor;
+         }
+       }
+
+      if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
+        var icon = document.createElement('img');
+        icon.src = hotspot.customIconUrl;
+        icon.classList.add('link-icon');
+        iconWrapper.appendChild(icon);
+      } else {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('width', '26');
+        svg.setAttribute('height', '26');
+        svg.style.color = hotspot.iconColor || '#ffffff';
+        svg.innerHTML = getIconSvg(hotspot.iconStyle || 'default');
+        iconWrapper.appendChild(svg);
+      }
+
+      wrapper.appendChild(iconWrapper);
+      wrapper.innerHTML += '<div class="link-tooltip">' + sanitize(hotspot.title || 'Video') + '</div>';
 
       wrapper.addEventListener('click', function() {
         if (isEditor) return;
@@ -380,8 +580,36 @@
       wrapper.classList.add('xeno-hotspot-tooltip');
       wrapper.style.cursor = 'pointer';
       
-      var iconSrc = getIconSrc(hotspot, 'img/info.png');
-      wrapper.innerHTML = '<div class="out"><div class="in"><div class="image" style="background-image:url(' + iconSrc + ')"></div></div></div><div class="tip"><p>' + sanitize(hotspot.title || 'Audio') + '</p></div>';
+      var out = document.createElement('div');
+       out.classList.add('out');
+       if (hotspot.ringEnabled !== false) {
+         out.classList.add('has-ring');
+         if (hotspot.ringColor) {
+           out.style.borderColor = hotspot.ringColor;
+         }
+       }
+
+      var inner = document.createElement('div');
+      inner.classList.add('in');
+
+      if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
+        var img = document.createElement('div');
+        img.classList.add('image');
+        img.style.backgroundImage = 'url(' + hotspot.customIconUrl + ')';
+        inner.appendChild(img);
+      } else {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('width', '24');
+        svg.setAttribute('height', '24');
+        svg.style.color = hotspot.iconColor || '#ffffff';
+        svg.innerHTML = getIconSvg(hotspot.iconStyle || 'default');
+        inner.appendChild(svg);
+      }
+
+      out.appendChild(inner);
+      wrapper.appendChild(out);
+      wrapper.innerHTML += '<div class="tip"><p>' + sanitize(hotspot.title || 'Audio') + '</p></div>';
 
       var audio = null;
       var isPlaying = false;
@@ -433,6 +661,22 @@
       var element = builder(hotspotData, switchSceneFn, findSceneByIdFn);
       stopTouchAndScrollEventPropagation(element);
 
+      // Apply saved icon size
+      if (hotspotData.iconSize && hotspotData.iconSize !== 44) {
+        var size = hotspotData.iconSize;
+        var half = size / 2;
+        element.style.width  = size + 'px';
+        element.style.height = size + 'px';
+        element.style.marginLeft = '-' + half + 'px';
+        element.style.marginTop  = '-' + half + 'px';
+        var inner = element.querySelector('svg') || element.querySelector('img.link-icon');
+        if (inner) {
+          var iconSize = Math.round(size * 0.55);
+          inner.style.width  = iconSize + 'px';
+          inner.style.height = iconSize + 'px';
+        }
+      }
+
       // Apply animation class to the inner icon element for navigate/link hotspots
       // so the arrow itself animates, not the outer wrapper (which causes a blur square)
       if (hotspotData.animation && hotspotData.animation !== 'none') {
@@ -441,10 +685,11 @@
         animTarget.classList.add(animClass);
       }
 
-      scene.hotspotContainer().createHotspot(element, { 
+      var hotspot = scene.hotspotContainer().createHotspot(element, { 
         yaw: hotspotData.yaw, 
         pitch: hotspotData.pitch 
       });
+      element.__marzipanoHotspot = hotspot;
 
       return element;
     }

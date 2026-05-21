@@ -104,10 +104,10 @@
     var geometry = buildGeometry(sceneData);
 
     var faceSize = sceneData.faceSize || 2048;
-    var fovLimit = sceneData.type === 'video' ? (90*Math.PI/180) : (120*Math.PI/180);
+    var fovLimit = sceneData.type === 'video' ? (90*Math.PI/180) : (140*Math.PI/180);
     var limiter = sceneData.type === 'video' 
         ? Xeno.RectilinearView.limit.vfov(fovLimit, fovLimit)
-        : Xeno.RectilinearView.limit.traditional(faceSize, 100*Math.PI/180, fovLimit);
+        : Xeno.RectilinearView.limit.traditional(faceSize, 140*Math.PI/180, fovLimit);
 
     var view = new Xeno.RectilinearView(sceneData.initialViewParameters, limiter);
 
@@ -259,6 +259,11 @@
     stopAutorotate();
     sceneCtx.view.setParameters(sceneCtx.data.initialViewParameters);
     
+    // When switching to a scene, if it has a saved defaultFov, apply it
+    if (sceneCtx.data.defaultFov) {
+      sceneCtx.view.setParameters({ fov: sceneCtx.data.defaultFov });
+    }
+    
     // Hotspot-level overrides (transOpts) take priority over scene-level, then global defaults
     transOpts = transOpts || {};
     var transType = transOpts.transition || sceneCtx.data.transition || data.settings.defaultTransition || 'opacity';
@@ -283,7 +288,11 @@
   window.xenoSwitchScene = switchScene;
 
   function updateSceneName(sceneCtx) {
-    if (sceneNameElement) sceneNameElement.innerHTML = sanitize(sceneCtx.data.name);
+    if (sceneNameElement) {
+      var name = sceneCtx.data.name || '';
+      var cleanName = name.replace(/\.[^/.]+$/, "");
+      sceneNameElement.innerHTML = sanitize(cleanName);
+    }
   }
 
   function showSceneList() {

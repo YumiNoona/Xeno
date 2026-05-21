@@ -91,6 +91,107 @@
   };
 
   var functions = {
+    // Slide from left (mirror of fromRight)
+    fromLeft: function(ease) {
+      ease = ease || linear;
+      return function(val, newScene) {
+        newScene.layer().setEffects({ rect: { relativeX: -(1 - ease(val)) }});
+      };
+    },
+
+    // Iris wipe — expands from center like old film projector
+    iris: function(ease) {
+      ease = ease || linear;
+      return function(val, newScene) {
+        var v = ease(val);
+        newScene.layer().setEffects({ rect: {
+          relativeWidth: v,
+          relativeHeight: v,
+          relativeX: (1 - v) / 2,
+          relativeY: (1 - v) / 2
+        }});
+      };
+    },
+
+    // Through white — flash to white then reveal (opposite of throughBlack)
+    throughWhite: function(ease) {
+      ease = ease || linear;
+      return function(val, newScene, oldScene) {
+        var eased = ease(val);
+        if (eased < 0.5) {
+          var o = eased * 2;
+          newScene.layer().setEffects({ opacity: 0 });
+          oldScene.layer().setEffects({ colorOffset: [o, o, o, 0] });
+        } else {
+          var o2 = 1 - ((eased - 0.5) * 2);
+          newScene.layer().setEffects({ opacity: 1, colorOffset: [o2, o2, o2, 0] });
+        }
+      };
+    },
+
+    // Horizontal split — top half slides up, bottom half slides down simultaneously
+    splitHorizontal: function(ease) {
+      ease = ease || linear;
+      return function(val, newScene, oldScene) {
+        var v = ease(val);
+        // Old scene splits apart
+        if (oldScene) {
+          oldScene.layer().setEffects({ rect: {
+            relativeWidth: 1, relativeHeight: 0.5,
+            relativeX: 0, relativeY: -(v * 0.5)
+          }});
+        }
+        // New scene fades in underneath
+        newScene.layer().setEffects({ opacity: v });
+      };
+    },
+
+    // Diagonal wipe from top-left corner
+    fromCorner: function(ease) {
+      ease = ease || linear;
+      return function(val, newScene) {
+        var v = ease(val);
+        newScene.layer().setEffects({ rect: {
+          relativeWidth: v,
+          relativeHeight: v,
+          relativeX: 0,
+          relativeY: 0
+        }});
+      };
+    },
+
+    // Horizontal strip — width expands from center
+    curtain: function(ease) {
+      ease = ease || linear;
+      return function(val, newScene) {
+        var v = ease(val);
+        newScene.layer().setEffects({ rect: {
+          relativeWidth: v,
+          relativeHeight: 1,
+          relativeX: (1 - v) / 2,
+          relativeY: 0
+        }});
+      };
+    },
+
+    // Zoom out — new scene starts zoomed in and settles
+    zoomOut: function(ease) {
+      ease = ease || linear;
+      return function(val, newScene) {
+        var v = ease(val);
+        var scale = 1.5 - (v * 0.5); // starts at 1.5x, settles to 1x
+        var offset = (scale - 1) / 2;
+        newScene.layer().setEffects({
+          opacity: v,
+          rect: {
+            relativeWidth: scale,
+            relativeHeight: scale,
+            relativeX: -offset,
+            relativeY: -offset
+          }
+        });
+      };
+    },
     opacity: function(ease) {
       ease = ease || linear;
       return function(val, newScene) {

@@ -55,7 +55,7 @@
         intro: { enabled: false, title: "", subtitle: "", buttonText: "Enter Tour" }
       },
       scenes: [],
-      floorplan: { enabled: false, imageUrl: "media/floorplan.jpg", width: 800, height: 600 }
+      floorplan: { enabled: false, imageUrl: "", width: 800, height: 600 }
     };
     if (window.XenoSupabase) window.XenoSupabase.saveTour(projectSlug, savedData);
   }
@@ -67,9 +67,19 @@
   var viewerOpts = { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } };
   var viewer = new Xeno.Viewer(document.getElementById('pano'), viewerOpts);
 
-  var scenes = [];
+  // Expose for minimap
+  window.xenoViewer = viewer;
+  window.xenoScenes = [];
+  var scenes = window.xenoScenes;
+  
   var currentSceneCtx = null;
   var selectedHotspotData = null;
+  var selectedHotspotElement = null;
+
+  // Dragging state
+  var isDragging = false;
+  var dragHsData = null;
+  var dragHsElement = null;
 
   // Debounced Save
   var saveTimeout = null;
@@ -82,6 +92,7 @@
       }
     }, 500);
   }
+  window.debouncedSave = debouncedSave;
 
   // Autorotate movement definition and tracking state
   var autorotate = Xeno.autorotate({
@@ -95,7 +106,7 @@
   data.scenes.forEach(function(sData) {
     var source = Xeno.ImageUrlSource.fromString(sData.mediaUrl);
     var geometry = new Xeno.EquirectGeometry([{ width: 4000 }]);
-    var limiter = Xeno.RectilinearView.limit.traditional(1024, 100 * Math.PI / 180);
+    var limiter = Xeno.RectilinearView.limit.traditional(1024, 140 * Math.PI / 180);
     var view = new Xeno.RectilinearView(sData.initialViewParameters, limiter);
     var scene = viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
     scenes.push({ data: sData, scene: scene, view: view });
@@ -110,7 +121,7 @@
   var mediaPickerCallback = null;
 
   var HOTSPOT_TOOLS = ['navigate', 'info', 'url', 'image', 'video', 'audio'];
-  var TOGGLE_TOOLS = ['select', 'autorotate', 'minimap', 'scene-settings'];
+  var TOGGLE_TOOLS = ['select', 'autorotate', 'minimap', 'scene-settings', 'move'];
 
   // ─── DOM Refs ─────────────────────────────────────────────
   var panoWrapper = document.getElementById('pano-wrapper');
@@ -168,8 +179,24 @@
   var posYaw = document.getElementById('pos-yaw');
   var posPitch = document.getElementById('pos-pitch');
   var propSceneName = document.getElementById('prop-scene-name');
+  var propFloorplanEnabled = document.getElementById('prop-floorplan-enabled');
+  var propFloorplanUrl = document.getElementById('prop-floorplan-url');
+  var btnPickFloorplan = document.getElementById('btn-pick-floorplan');
 
-  // Custom Icon group container
+  var propSceneFov = document.getElementById('prop-scene-fov');
+  var sceneFovLabel = document.getElementById('scene-fov-label');
+  var btnApplyFov = document.getElementById('btn-apply-fov');
+
+  // New Hotspot Properties
+  var propRingEnabled = document.getElementById('prop-ring-enabled');
+   var propIconColor = document.getElementById('prop-icon-color');
+    var btnResetIconColor = document.getElementById('btn-reset-icon-color');
+    var propRingColor = document.getElementById('prop-ring-color');
+    var btnResetRingColor = document.getElementById('btn-reset-ring-color');
+    var propIconSize = document.getElementById('prop-icon-size');
+   var propSizeLabel = document.getElementById('prop-size-label');
+
+   // Custom Icon group container
   var groupCustomIcon = document.getElementById('group-custom-icon');
 
   // Media inputs (text boxes)
@@ -233,6 +260,15 @@
       panoWrapper.classList.remove('crosshair-mode');
       hideModeBadge();
       closePropertiesPanel();
+    } else if (tool === 'move') {
+      btnEl.classList.toggle('active');
+      if (btnEl.classList.contains('active')) {
+        showModeBadge('Move Mode: Drag icons');
+        panoWrapper.classList.add('move-mode');
+      } else {
+        hideModeBadge();
+        panoWrapper.classList.remove('move-mode');
+      }
     } else if (tool === 'autorotate') {
       btnEl.classList.toggle('active');
       autorotateEnabled = !autorotateEnabled;
@@ -256,6 +292,14 @@
       btnEl.classList.toggle('active');
       if (!data.settings) data.settings = {};
       data.settings.showMinimap = btnEl.classList.contains('active');
+      
+      var minimapEl = document.getElementById('xeno-minimap');
+      if (data.settings.showMinimap) {
+        if (window.initMinimap) window.initMinimap();
+        if (minimapEl) minimapEl.style.display = 'block';
+      } else {
+        if (minimapEl) minimapEl.style.display = 'none';
+      }
       debouncedSave();
     }
   }
@@ -278,6 +322,21 @@
 
   function hideModeBadge() {
     modeBadge.classList.remove('visible');
+  }
+
+  function applyIconSize(element, size) {
+    var half = size / 2;
+    element.style.width  = size + 'px';
+    element.style.height = size + 'px';
+    element.style.marginLeft = '-' + half + 'px';
+    element.style.marginTop  = '-' + half + 'px';
+    // Scale inner SVG/img proportionally
+    var inner = element.querySelector('svg') || element.querySelector('img.link-icon');
+    if (inner) {
+      var iconSize = Math.round(size * 0.55); // icon = 55% of container
+      inner.style.width  = iconSize + 'px';
+      inner.style.height = iconSize + 'px';
+    }
   }
 
   // ─── Pano Click → Place Hotspot ───────────────────────────
@@ -333,6 +392,67 @@
     debouncedSave();
   });
 
+  // ─── Drag to Reposition ───────────────────────────────────
+  panoWrapper.addEventListener('mousedown', function(e) {
+    var moveBtn = Array.prototype.find.call(pillTools, function(btn) {
+      return btn.getAttribute('data-tool') === 'move' && btn.classList.contains('active');
+    });
+    if (!moveBtn) return;
+
+    // Check if we clicked a hotspot
+    var target = e.target;
+    while (target && target !== panoWrapper) {
+      if (target.__marzipanoHotspot) {
+        isDragging = true;
+        dragHsElement = target;
+        // Find the data object for this hotspot
+        dragHsData = currentSceneCtx.data.hotspots.find(function(h) {
+          return h.__tempElement === target || h.id === target.__hsId; // We need a way to link them
+        });
+        
+        // Let's improve the link by storing data on the element in createVisualHotspot
+        dragHsData = target.__hsData;
+
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      target = target.parentElement;
+    }
+  }, true);
+
+  window.addEventListener('mousemove', function(e) {
+    if (!isDragging || !dragHsElement || !dragHsElement.__marzipanoHotspot) return;
+
+    var rect = panoEl.getBoundingClientRect();
+    var coords = currentSceneCtx.view.screenToCoordinates({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+
+    dragHsElement.__marzipanoHotspot.setPosition(coords);
+    
+    if (dragHsData) {
+      dragHsData.yaw = coords.yaw;
+      dragHsData.pitch = coords.pitch;
+      
+      // Update properties panel if this is the selected hotspot
+      if (selectedHotspotData === dragHsData) {
+        posYaw.textContent = coords.yaw.toFixed(2);
+        posPitch.textContent = coords.pitch.toFixed(2);
+      }
+    }
+  });
+
+  window.addEventListener('mouseup', function() {
+    if (isDragging) {
+      isDragging = false;
+      dragHsElement = null;
+      dragHsData = null;
+      debouncedSave();
+    }
+  });
+
   // ─── Scene Grid ───────────────────────────────────────────
   var contextTarget = null; // scene being right-clicked
   var dragSourceIndex = null; // scene being dragged index
@@ -360,11 +480,13 @@
       }
       var eyeIconClass = s.data.hidden ? 'ti-eye-off' : 'ti-eye';
 
+      var cleanName = (s.data.name || 'Untitled').replace(/\.[^/.]+$/, "");
+
       card.innerHTML =
         imgHtml +
         '<div class="scene-card-eye"><i class="ti ' + eyeIconClass + '"></i></div>' +
         '<div class="scene-card-overlay">' +
-          '<div class="scene-card-label">' + (s.data.name || 'Untitled') + '</div>' +
+          '<div class="scene-card-label">' + cleanName + '</div>' +
         '</div>';
 
       // Drag and Drop implementation
@@ -492,7 +614,7 @@
 
         var source = Xeno.ImageUrlSource.fromString(clone.mediaUrl);
         var geometry = new Xeno.EquirectGeometry([{ width: 4000 }]);
-        var limiter = Xeno.RectilinearView.limit.traditional(1024, 100 * Math.PI / 180);
+        var limiter = Xeno.RectilinearView.limit.traditional(1024, 140 * Math.PI / 180);
         var view = new Xeno.RectilinearView(clone.initialViewParameters, limiter);
         var scene = viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
         scenes.push({ data: clone, scene: scene, view: view });
@@ -529,7 +651,80 @@
     renderSceneGrid();
     renderSceneHotspots();
     closePropertiesPanel();
+    if (window.updateMinimap) window.updateMinimap(sceneCtx);
   }
+
+  // ─── Resizing & Collapsing ────────────────────────────────
+  (function initResizers() {
+    var sidebar = document.getElementById('editor-sidebar');
+    var leftResizer = document.getElementById('left-resizer');
+    var props = document.getElementById('properties-panel');
+    var rightResizer = document.getElementById('right-resizer');
+    
+    var sidebarCollapseBtn = document.getElementById('sidebar-collapse-btn');
+    var propsCollapseBtn = document.getElementById('props-collapse-btn');
+    
+    // Sidebar Collapse
+    sidebarCollapseBtn.addEventListener('click', function() {
+      document.body.classList.toggle('sidebar-collapsed');
+      setTimeout(function() { viewer.updateSize(); }, 250);
+    });
+
+    // Props Collapse
+    propsCollapseBtn.addEventListener('click', function() {
+      props.classList.remove('visible');
+      setTimeout(function() { viewer.updateSize(); }, 250);
+    });
+
+    // Left Resizer
+    leftResizer.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      leftResizer.classList.add('dragging');
+      document.addEventListener('mousemove', onMouseMoveLeft);
+      document.addEventListener('mouseup', onMouseUpLeft);
+    });
+
+    function onMouseMoveLeft(e) {
+      var newWidth = e.clientX;
+      if (newWidth > 150 && newWidth < 500) {
+        sidebar.style.transition = 'none';
+        sidebar.style.width = newWidth + 'px';
+        sidebar.style.minWidth = newWidth + 'px';
+        viewer.updateSize();
+      }
+    }
+
+    function onMouseUpLeft() {
+      sidebar.style.transition = '';
+      leftResizer.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMouseMoveLeft);
+      document.removeEventListener('mouseup', onMouseUpLeft);
+    }
+
+    // Right Resizer
+    rightResizer.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      rightResizer.classList.add('dragging');
+      document.addEventListener('mousemove', onMouseMoveRight);
+      document.addEventListener('mouseup', onMouseUpRight);
+    });
+
+    function onMouseMoveRight(e) {
+      var newWidth = window.innerWidth - e.clientX;
+      if (newWidth > 200 && newWidth < 600) {
+        props.style.transition = 'none';
+        props.style.width = newWidth + 'px';
+        viewer.updateSize();
+      }
+    }
+
+    function onMouseUpRight() {
+      props.style.transition = '';
+      rightResizer.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMouseMoveRight);
+      document.removeEventListener('mouseup', onMouseUpRight);
+    }
+  })();
 
   // ─── Hotspots Rendering ───────────────────────────────────
   function renderSceneHotspots() {
@@ -577,10 +772,14 @@
       function(id) { return scenes.find(function(s) { return s.data.id === id; }); }
     );
 
+    // Attach data reference for dragging
+    el.__hsData = hsData;
+
     // In editor, clicking a hotspot opens its properties
     el.addEventListener('click', function(e) {
       if (editorState.placeMode) return; // don't intercept during place mode
       e.stopPropagation();
+      selectedHotspotElement = el;
       openPropertiesPanel(hsData);
     });
   }
@@ -601,6 +800,14 @@
     propAnimation.value = hsData.animation || 'none';
     propIconStyle.value = hsData.iconStyle || 'default';
     propCustomIconUrl.value = hsData.customIconUrl || '';
+    propRingEnabled.checked = hsData.ringEnabled !== false; // default true
+    propIconColor.value = hsData.iconColor || '#ffffff';
+    propRingColor.value = hsData.ringColor || '#ffffff';
+    
+    var size = hsData.iconSize || 44;
+    propIconSize.value = size;
+    propSizeLabel.textContent = size + 'px';
+
     toggleCustomIconGroup();
 
     // Position readout
@@ -614,6 +821,7 @@
     showTypeFields(hsData.type);
 
     propsPanel.classList.add('visible');
+    setTimeout(function() { viewer.updateSize(); }, 250);
   }
 
   function openSceneSettingsPanel() {
@@ -629,14 +837,29 @@
 
     if (currentSceneCtx) {
       propSceneName.value = currentSceneCtx.data.name || '';
+      // Load saved FOV into slider
+      var savedFov = currentSceneCtx.data.defaultFov
+        || (currentSceneCtx.data.initialViewParameters && currentSceneCtx.data.initialViewParameters.fov)
+        || (Math.PI / 2);
+      var savedFovDeg = Math.round(savedFov * 180 / Math.PI);
+      propSceneFov.value = savedFovDeg;
+      sceneFovLabel.textContent = savedFovDeg + '°';
+    }
+
+    // Load project-wide floorplan settings
+    if (data.floorplan) {
+      propFloorplanEnabled.checked = data.floorplan.enabled !== false;
+      propFloorplanUrl.value = data.floorplan.imageUrl || '';
     }
 
     propsPanel.classList.add('visible');
+    setTimeout(function() { viewer.updateSize(); }, 250);
   }
 
   function closePropertiesPanel() {
     selectedHotspotData = null;
     propsPanel.classList.remove('visible');
+    setTimeout(function() { viewer.updateSize(); }, 250);
   }
 
   function hideAllTypeFields() {
@@ -697,9 +920,70 @@
     showTypeFields(this.value);
   });
 
+  propTargetScene.addEventListener('change', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.target = this.value;
+
+    // Auto-fill title if user hasn't typed one yet
+    var currentTitle = propTitle.value.trim();
+    var isDefaultTitle = !currentTitle
+      || currentTitle === 'New navigate'
+      || currentTitle === 'New link'
+      || currentTitle === '';
+
+    if (isDefaultTitle && this.value) {
+      // Find the scene name matching this ID
+      var targetScene = scenes.find(function(s) { return s.data.id === propTargetScene.value; });
+      if (targetScene) {
+        var sceneName = targetScene.data.name || '';
+        propTitle.value = sceneName;
+        selectedHotspotData.title = sceneName;
+        selectedHotspotData.label = sceneName;
+        renderSceneHotspots();
+      }
+    }
+
+    debouncedSave();
+  });
+
+  propInfoTargetScene.addEventListener('change', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.linkTarget = this.value;
+
+    // Auto-fill title if user hasn't typed one yet
+    var currentTitle = propTitle.value.trim();
+    var isDefaultTitle = !currentTitle
+      || currentTitle === 'New navigate'
+      || currentTitle === 'New link'
+      || currentTitle === '';
+
+    if (isDefaultTitle && this.value) {
+      // Find the scene name matching this ID
+      var targetScene = scenes.find(function(s) { return s.data.id === propInfoTargetScene.value; });
+      if (targetScene) {
+        var sceneName = targetScene.data.name || '';
+        propTitle.value = sceneName;
+        selectedHotspotData.title = sceneName;
+        selectedHotspotData.label = sceneName;
+        renderSceneHotspots();
+      }
+    }
+
+    debouncedSave();
+  });
+
   // Transition duration slider
   propTransDuration.addEventListener('input', function() {
     propTransDurLabel.textContent = this.value + 'ms';
+  });
+
+  propIconSize.addEventListener('input', function() {
+    propSizeLabel.textContent = propIconSize.value + 'px';
+    // Live preview: find the currently selected hotspot element and resize it
+    if (selectedHotspotElement) {
+      applyIconSize(selectedHotspotElement, parseInt(propIconSize.value));
+    }
+    debouncedSave();
   });
 
   // Icon style change
@@ -731,6 +1015,33 @@
   bindMediaField(propImageUrl, btnPickImage);
   bindMediaField(propVideoUrl, btnPickVideo);
   bindMediaField(propAudioUrl, btnPickAudio);
+  bindMediaField(propFloorplanUrl, btnPickFloorplan);
+
+  btnResetIconColor.addEventListener('click', function() {
+      propIconColor.value = '#ffffff';
+      if (selectedHotspotData) {
+        selectedHotspotData.iconColor = '#ffffff';
+        renderSceneHotspots();
+        debouncedSave();
+      }
+    });
+
+    propRingColor.addEventListener('input', function() {
+      if (selectedHotspotData) {
+        selectedHotspotData.ringColor = this.value;
+        renderSceneHotspots();
+        debouncedSave();
+      }
+    });
+
+    btnResetRingColor.addEventListener('click', function() {
+      propRingColor.value = '#ffffff';
+      if (selectedHotspotData) {
+        selectedHotspotData.ringColor = '#ffffff';
+        renderSceneHotspots();
+        debouncedSave();
+      }
+    });
 
   // Info link type toggle
   var linkTypeRadios = document.querySelectorAll('input[name="prop-link-type"]');
@@ -756,6 +1067,10 @@
     selectedHotspotData.animation = propAnimation.value;
     selectedHotspotData.iconStyle = propIconStyle.value;
     selectedHotspotData.customIconUrl = propIconStyle.value === 'custom' ? propCustomIconUrl.value : null;
+    selectedHotspotData.ringEnabled = propRingEnabled.checked;
+    selectedHotspotData.iconColor = propIconColor.value;
+    selectedHotspotData.ringColor = propRingColor.value;
+    selectedHotspotData.iconSize = parseInt(propIconSize.value);
 
     // Type-specific
     if (selectedHotspotData.type === 'navigate') {
@@ -813,6 +1128,32 @@
   // ─── Close Panel ──────────────────────────────────────────
   document.getElementById('btn-close-properties').addEventListener('click', closePropertiesPanel);
 
+  // Live label update as slider moves
+  propSceneFov.addEventListener('input', function() {
+    sceneFovLabel.textContent = this.value + '°';
+  });
+
+  // Apply FOV to current scene view immediately + save it
+  btnApplyFov.addEventListener('click', function() {
+    if (!currentSceneCtx) return;
+    var fovDeg = parseInt(propSceneFov.value);
+    var fovRad = fovDeg * Math.PI / 180;
+
+    // Apply to the live Marzipano view right now
+    currentSceneCtx.view.setParameters({ fov: fovRad });
+
+    // Save into the scene data so it persists
+    currentSceneCtx.data.defaultFov = fovRad;
+
+    // Also update the initial view parameters so "Save Default View" picks it up
+    if (!currentSceneCtx.data.initialViewParameters) {
+      currentSceneCtx.data.initialViewParameters = { yaw: 0, pitch: 0 };
+    }
+    currentSceneCtx.data.initialViewParameters.fov = fovRad;
+
+    debouncedSave();
+  });
+
   // ─── Scene Settings Save ──────────────────────────────────
   document.getElementById('btn-save-view').addEventListener('click', function() {
     if (!currentSceneCtx) return;
@@ -831,6 +1172,40 @@
       renderSceneGrid();
       debouncedSave();
     }
+  });
+
+  propFloorplanEnabled.addEventListener('change', function() {
+    if (!data.floorplan) data.floorplan = {};
+    data.floorplan.enabled = this.checked;
+    
+    if (!data.settings) data.settings = {};
+    data.settings.showMinimap = this.checked;
+
+    // Sync the bottom toolbar button state
+    var minimapBtn = Array.prototype.find.call(pillTools, function(btn) {
+      return btn.getAttribute('data-tool') === 'minimap';
+    });
+    if (minimapBtn) {
+      if (this.checked) minimapBtn.classList.add('active');
+      else minimapBtn.classList.remove('active');
+    }
+    
+    var minimapEl = document.getElementById('xeno-minimap');
+    if (this.checked) {
+      if (window.initMinimap) window.initMinimap();
+      if (minimapEl) minimapEl.style.display = 'block';
+    } else {
+      if (minimapEl) minimapEl.style.display = 'none';
+    }
+    
+    debouncedSave();
+  });
+
+  propFloorplanUrl.addEventListener('change', function() {
+    if (!data.floorplan) data.floorplan = {};
+    data.floorplan.imageUrl = this.value;
+    if (window.initMinimap) window.initMinimap();
+    debouncedSave();
   });
 
   // ─── Populate Target Dropdowns ────────────────────────────
@@ -869,7 +1244,7 @@
 
     var source = Xeno.ImageUrlSource.fromString(sData.mediaUrl);
     var geometry = new Xeno.EquirectGeometry([{ width: 4000 }]);
-    var limiter = Xeno.RectilinearView.limit.traditional(1024, 100 * Math.PI / 180);
+    var limiter = Xeno.RectilinearView.limit.traditional(1024, 140 * Math.PI / 180);
     var view = new Xeno.RectilinearView(sData.initialViewParameters, limiter);
     var scene = viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
     scenes.push({ data: sData, scene: scene, view: view });

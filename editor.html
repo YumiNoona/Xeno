@@ -103,11 +103,18 @@
           <button class="add-item-btn" id="btn-add-scene">+ Add Scene</button>
         </div>
         <div id="scene-grid"></div>
+        <div class="collapse-btn" id="sidebar-collapse-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
       </div>
+
+      <div class="resizer left-resizer" id="left-resizer"></div>
 
       <!-- Pano Workspace -->
       <div id="pano-wrapper">
         <div id="pano"></div>
+
+        <div id="xeno-minimap" class="xeno-minimap"></div>
 
         <div id="mode-badge">Select</div>
 
@@ -140,6 +147,9 @@
           <div class="pill-tool" data-tool="audio" title="Audio">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
           </div>
+          <div class="pill-tool" data-tool="move" title="Move Hotspot">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
+          </div>
           <div class="pill-sep"></div>
           <div class="pill-tool" data-tool="autorotate" title="Autorotate">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -152,8 +162,13 @@
           </div>
         </div>
 
+        <div class="resizer right-resizer" id="right-resizer"></div>
+
         <!-- Properties Panel -->
         <div id="properties-panel">
+          <div class="collapse-btn" id="props-collapse-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
           <div class="panel-header">
             <h3 id="panel-title">Hotspot Properties</h3>
             <button class="close-panel" id="btn-close-properties">
@@ -185,16 +200,51 @@
                 <option value="bounce">Bounce</option>
                 <option value="spin">Spin</option>
                 <option value="float">Float</option>
+                <option value="heartbeat">Heartbeat</option>
+                <option value="wiggle">Wiggle</option>
+                <option value="breathe">Breathe</option>
+                <option value="flicker">Flicker</option>
+                <option value="orbit">Orbit Ring</option>
               </select>
             </div>
             <div class="form-group">
               <label>Icon Style</label>
               <select id="prop-icon-style">
-                <option value="default">Default</option>
+                <option value="default">Default (+)</option>
                 <option value="dot">Dot</option>
                 <option value="arrow">Arrow</option>
+                <option value="eye">Eye (View)</option>
+                <option value="pin">Map Pin</option>
+                <option value="star">Star</option>
+                <option value="play">Play Button</option>
+                <option value="question">Question Mark</option>
                 <option value="custom">Custom Image</option>
               </select>
+            </div>
+            <div class="form-group">
+              <label>Outer Ring</label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="checkbox" id="prop-ring-enabled" checked>
+                <span>Show outer ring</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label>Icon Color</label>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input type="color" id="prop-icon-color" value="#ffffff" style="width:40px;height:32px;border-radius:6px;border:1px solid var(--border);cursor:pointer;padding:2px;">
+                <button class="btn btn-secondary" id="btn-reset-icon-color" style="font-size:11px;padding:4px 8px;">Reset</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Ring Color</label>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input type="color" id="prop-ring-color" value="#ffffff" style="width:40px;height:32px;border-radius:6px;border:1px solid var(--border);cursor:pointer;padding:2px;">
+                <button class="btn btn-secondary" id="btn-reset-ring-color" style="font-size:11px;padding:4px 8px;">Reset</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Icon Size <span id="prop-size-label">44px</span></label>
+              <input type="range" id="prop-icon-size" min="24" max="96" value="44" step="2">
             </div>
             <div class="form-group" id="group-custom-icon" style="display:none;">
               <label>Custom Icon</label>
@@ -220,6 +270,13 @@
                   <option value="throughBlack">Through Black</option>
                   <option value="fromCenter">From Center</option>
                   <option value="fromWhite">From White</option>
+                  <option value="fromLeft">From Left</option>
+                  <option value="iris">Iris</option>
+                  <option value="throughWhite">Through White</option>
+                  <option value="curtain">Curtain</option>
+                  <option value="fromCorner">From Corner</option>
+                  <option value="splitHorizontal">Split</option>
+                  <option value="zoomOut">Zoom Out</option>
                 </select>
               </div>
               <div class="form-group">
@@ -346,6 +403,37 @@
               <div class="form-group">
                 <label>Scene Name</label>
                 <input type="text" id="prop-scene-name" placeholder="Scene name">
+              </div>
+              <div class="form-group">
+                <label>
+                  Field of View
+                  <span id="scene-fov-label" style="color:var(--accent);font-weight:600;">90°</span>
+                </label>
+                <input type="range" id="prop-scene-fov" min="40" max="130" value="90" step="1">
+                <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                  <span style="font-size:10px;color:var(--text-muted);">Zoomed in</span>
+                  <span style="font-size:10px;color:var(--text-muted);">Wide angle</span>
+                </div>
+              </div>
+              <button class="btn btn-secondary" id="btn-apply-fov" style="width:100%;margin-top:4px;">
+                Apply FOV to This Scene
+              </button>
+
+              <div style="margin-top:20px; padding-top:15px; border-top:1px solid var(--border);">
+                <label style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin-bottom:8px; display:block;">Floorplan Settings</label>
+                <div class="form-group toggle-group">
+                  <label>Enable Minimap</label>
+                  <input type="checkbox" id="prop-floorplan-enabled">
+                </div>
+                <div class="form-group">
+                  <label>Floorplan Image</label>
+                  <div style="display:flex;gap:8px;">
+                    <input type="text" id="prop-floorplan-url" placeholder="Paste URL or pick…" style="flex:1;">
+                    <button class="btn btn-secondary" id="btn-pick-floorplan" style="padding:0 10px;border-radius:var(--r-sm);">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 

@@ -38,7 +38,7 @@ var data = {
 
   floorplan: {
     enabled: false,
-    imageUrl: "media/floorplan.jpg",
+    imageUrl: "",
     width: 800,
     height: 600
   }

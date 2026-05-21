@@ -49,7 +49,8 @@
       
       var name = document.createElement('div');
       name.classList.add('scene-name');
-      name.textContent = sData.name || 'Untitled Scene';
+      var cleanName = (sData.name || 'Untitled Scene').replace(/\.[^/.]+$/, "");
+      name.textContent = cleanName;
       
       el.appendChild(img);
       el.appendChild(name);
