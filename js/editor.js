@@ -135,7 +135,7 @@
   var panelTitle = document.getElementById('panel-title');
   var sceneGridEl = document.getElementById('scene-grid');
   var contextMenu = document.getElementById('context-menu');
-  var sceneFileInput = document.getElementById('scene-file-input');
+  var mediaModal = document.getElementById('media-modal');
 
   // Media Manager DOM Elements
   var mediaFolderCtx = document.getElementById('media-folder-ctx');
@@ -184,17 +184,7 @@
   var btnPickVideo = document.getElementById('btn-pick-video');
   var btnPickAudio = document.getElementById('btn-pick-audio');
 
-  // Direct upload buttons
-  var btnUploadCustomIcon = document.getElementById('btn-upload-custom-icon');
-  var btnUploadImage = document.getElementById('btn-upload-image');
-  var btnUploadVideo = document.getElementById('btn-upload-video');
-  var btnUploadAudio = document.getElementById('btn-upload-audio');
 
-  // File inputs
-  var inputUploadCustomIcon = document.getElementById('input-upload-custom-icon');
-  var inputUploadImage = document.getElementById('input-upload-image');
-  var inputUploadVideo = document.getElementById('input-upload-video');
-  var inputUploadAudio = document.getElementById('input-upload-audio');
 
   // Other media inputs
   var propImageCaption = document.getElementById('prop-image-caption');
@@ -361,11 +351,17 @@
         card.classList.add('active');
       }
 
-      var thumb = s.data.thumbnailUrl || s.data.mediaUrl || 'img/photo.png';
+      var thumb = s.data.thumbnailUrl || s.data.mediaUrl || '';
+      var imgHtml = '';
+      if (thumb) {
+        imgHtml = '<img class="scene-card-thumb" src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;scene-thumb-placeholder&quot;><i class=&quot;ti ti-photo&quot;></i>Scene</div>\'">';
+      } else {
+        imgHtml = '<div class="scene-thumb-placeholder"><i class="ti ti-photo"></i>Scene</div>';
+      }
       var eyeIconClass = s.data.hidden ? 'ti-eye-off' : 'ti-eye';
 
       card.innerHTML =
-        '<img class="scene-card-thumb" src="' + thumb + '">' +
+        imgHtml +
         '<div class="scene-card-eye"><i class="ti ' + eyeIconClass + '"></i></div>' +
         '<div class="scene-card-overlay">' +
           '<div class="scene-card-label">' + (s.data.name || 'Untitled') + '</div>' +
@@ -518,17 +514,7 @@
     });
   });
 
-  // Scene file input (add from local disk directly)
-  sceneFileInput.addEventListener('change', function() {
-    var files = this.files;
-    for (var i = 0; i < files.length; i++) {
-      (function(file) {
-        var url = URL.createObjectURL(file);
-        addSceneFromUrl(url, file.name);
-      })(files[i]);
-    }
-    this.value = '';
-  });
+
 
   // ─── Scene Switching ──────────────────────────────────────
   function switchSceneById(id) {
@@ -555,22 +541,25 @@
       container.destroyHotspot(existing[i]);
     }
 
-    var hotspots = currentSceneCtx.data.hotspots || [];
+    var hotspots = (currentSceneCtx.data.hotspots || []).slice();
     // Also add legacy linkHotspots/infoHotspots/mediaHotspots
     (currentSceneCtx.data.linkHotspots || []).forEach(function(h) {
-      h.type = h.type || 'navigate';
-      h.style = h.style || 'link';
-      hotspots.push(h);
+      var cloneH = Object.assign({}, h);
+      cloneH.type = cloneH.type || 'navigate';
+      cloneH.style = cloneH.style || 'link';
+      hotspots.push(cloneH);
     });
     (currentSceneCtx.data.infoHotspots || []).forEach(function(h) {
-      h.type = h.type || 'info';
-      h.style = h.style || 'info';
-      hotspots.push(h);
+      var cloneH = Object.assign({}, h);
+      cloneH.type = cloneH.type || 'info';
+      cloneH.style = cloneH.style || 'info';
+      hotspots.push(cloneH);
     });
     (currentSceneCtx.data.mediaHotspots || []).forEach(function(h) {
-      h.type = h.type || 'image';
-      h.style = h.style || 'media';
-      hotspots.push(h);
+      var cloneH = Object.assign({}, h);
+      cloneH.type = cloneH.type || 'image';
+      cloneH.style = cloneH.style || 'media';
+      hotspots.push(cloneH);
     });
 
     hotspots.forEach(function(hsData) {
@@ -723,83 +712,25 @@
   }
   propIconStyle.addEventListener('change', toggleCustomIconGroup);
 
-  // Direct upload handler
-  function handleDirectUpload(file, callback, buttonEl) {
-    var originalHTML = buttonEl.innerHTML;
-    buttonEl.innerHTML = '<i class="ti ti-loader animate-spin"></i>';
-    buttonEl.disabled = true;
-
-    if (window.XenoSupabase.isConfigured()) {
-      window.XenoSupabase.uploadAndRecordMedia(file, currentAlbumId)
-        .then(function(mediaRecord) {
-          buttonEl.innerHTML = originalHTML;
-          buttonEl.disabled = false;
-          if (mediaRecord && mediaRecord.url) {
-            callback(mediaRecord.url);
-          } else {
-            console.warn('Supabase record has no URL, falling back to local file reader.');
-            fallbackToLocal(file, callback, buttonEl, originalHTML);
-          }
-        })
-        .catch(function(err) {
-          console.warn('Supabase upload failed, falling back to local file reader:', err);
-          fallbackToLocal(file, callback, buttonEl, originalHTML);
-        });
-    } else {
-      fallbackToLocal(file, callback, buttonEl, originalHTML);
-    }
-  }
-
-  function fallbackToLocal(file, callback, buttonEl, originalHTML) {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      buttonEl.innerHTML = originalHTML;
-      buttonEl.disabled = false;
-      callback(e.target.result);
-    };
-    reader.onerror = function() {
-      buttonEl.innerHTML = originalHTML;
-      buttonEl.disabled = false;
-      alert('File reading failed.');
-    };
-    reader.readAsDataURL(file);
-  }
-
-  // Unified picker and upload setup
-  function bindMediaField(inputEl, pickBtn, uploadBtn, fileInput) {
+  // Unified picker setup
+  function bindMediaField(inputEl, pickBtn) {
     if (pickBtn) {
       pickBtn.addEventListener('click', function() {
         mediaPickerCallback = function(url, filename) {
           inputEl.value = url;
         };
-        var mediaModal = document.getElementById('media-modal');
         if (mediaModal) mediaModal.classList.add('visible');
         currentAlbumId = null;
         loadAlbums();
         loadMedia(null);
       });
     }
-
-    if (uploadBtn && fileInput) {
-      uploadBtn.addEventListener('click', function() {
-        fileInput.click();
-      });
-      fileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-          var self = this;
-          handleDirectUpload(this.files[0], function(url) {
-            inputEl.value = url;
-            self.value = ''; // clear value so same file can be selected again
-          }, uploadBtn);
-        }
-      });
-    }
   }
 
-  bindMediaField(propCustomIconUrl, btnPickCustomIcon, btnUploadCustomIcon, inputUploadCustomIcon);
-  bindMediaField(propImageUrl, btnPickImage, btnUploadImage, inputUploadImage);
-  bindMediaField(propVideoUrl, btnPickVideo, btnUploadVideo, inputUploadVideo);
-  bindMediaField(propAudioUrl, btnPickAudio, btnUploadAudio, inputUploadAudio);
+  bindMediaField(propCustomIconUrl, btnPickCustomIcon);
+  bindMediaField(propImageUrl, btnPickImage);
+  bindMediaField(propVideoUrl, btnPickVideo);
+  bindMediaField(propAudioUrl, btnPickAudio);
 
   // Info link type toggle
   var linkTypeRadios = document.querySelectorAll('input[name="prop-link-type"]');
@@ -903,8 +834,14 @@
   });
 
   // ─── Populate Target Dropdowns ────────────────────────────
+  var lastDropdownSceneState = "";
   function populateTargetDropdowns() {
+    var currentState = scenes.map(function(s) { return s.data.id + ":" + s.data.name; }).sort().join("|");
+    if (currentState === lastDropdownSceneState) return;
+    lastDropdownSceneState = currentState;
+
     [propTargetScene, propInfoTargetScene].forEach(function(sel) {
+      if (!sel) return;
       sel.innerHTML = '<option value="">-- select --</option>';
       scenes.forEach(function(s) {
         var opt = document.createElement('option');
@@ -943,7 +880,6 @@
   }
 
   // ─── Media Manager ────────────────────────────────────────
-  var mediaModal = document.getElementById('media-modal');
   var currentAlbumId = null;
 
   document.getElementById('btn-media-manager').addEventListener('click', function() {
@@ -975,17 +911,15 @@
       albumListEl.innerHTML = '';
 
       var rootEl = document.createElement('div');
-      rootEl.innerHTML = '📁 Root';
-      rootEl.style.cssText = 'padding:8px 10px;cursor:pointer;border-radius:4px;font-size:12px;' +
-        (currentAlbumId === null ? 'background:#1e1e2e;color:#fff;' : 'color:#8080a0;');
+      rootEl.className = 'album-item' + (currentAlbumId === null ? ' active' : '');
+      rootEl.innerHTML = '<i class="ti ti-folder"></i> Root';
       rootEl.addEventListener('click', function() { currentAlbumId = null; loadAlbums(); loadMedia(null); });
       albumListEl.appendChild(rootEl);
 
       albums.forEach(function(album) {
         var el = document.createElement('div');
-        el.innerHTML = '📁 ' + album.name;
-        el.style.cssText = 'padding:8px 10px;cursor:pointer;border-radius:4px;font-size:12px;' +
-          (currentAlbumId === album.id ? 'background:#1e1e2e;color:#fff;' : 'color:#8080a0;');
+        el.className = 'album-item' + (currentAlbumId === album.id ? ' active' : '');
+        el.innerHTML = '<i class="ti ti-folder"></i> ' + album.name;
         el.addEventListener('click', function() { currentAlbumId = album.id; loadAlbums(); loadMedia(album.id); });
         
         // Right click album context menu
@@ -1009,20 +943,44 @@
   }
 
   function loadMedia(albumId) {
-    mediaGridEl.innerHTML = '<div style="color:#60607a;font-size:12px;">Loading...</div>';
+    mediaGridEl.innerHTML = '<div class="media-loading"><i class="ti ti-loader animate-spin"></i> Loading...</div>';
     window.XenoSupabase.fetchMedia(albumId).then(function(mediaList) {
       mediaGridEl.innerHTML = '';
       mediaList.forEach(function(media) {
         var item = document.createElement('div');
         item.className = 'media-item';
-        var thumb = media.type.startsWith('video') ? 'img/photo.png' : media.url;
-        item.innerHTML = '<img src="' + thumb + '"><div class="title">' + media.filename + '</div>';
+        item.style.position = 'relative';
+        
+        var thumb = (media.type && media.type.startsWith('video')) ? '' : media.url;
+        var imgHtml = '';
+        if (thumb) {
+          imgHtml = '<img src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;media-thumb-placeholder&quot;><i class=&quot;ti ti-photo&quot;></i>Broken</div>\'">';
+        } else {
+          var isVideo = media.type && media.type.startsWith('video');
+          var isAudio = media.type && media.type.startsWith('audio');
+          var iconClass = isVideo ? 'ti-video' : (isAudio ? 'ti-volume' : 'ti-file');
+          var fileLabel = isVideo ? 'Video' : (isAudio ? 'Audio' : 'File');
+          imgHtml = '<div class="media-thumb-placeholder"><i class="ti ' + iconClass + '"></i>' + fileLabel + '</div>';
+        }
+        
+        var badgeHtml = '';
+        if (media.is_ephemeral) {
+          badgeHtml = '<div class="media-ephemeral-badge"><i class="ti ti-bolt"></i> Ephemeral</div>';
+        }
+        
+        item.innerHTML = badgeHtml + imgHtml + '<div class="title">' + media.filename + '</div>';
+        
         item.addEventListener('click', function() {
           if (mediaPickerCallback) {
             mediaPickerCallback(media.url, media.filename);
             mediaPickerCallback = null;
             mediaModal.classList.remove('visible');
           } else {
+            var isImage = media.type && media.type.startsWith('image/');
+            if (!isImage) {
+              showToast("Use this in a hotspot from the properties panel");
+              return;
+            }
             if (confirm('Add "' + media.filename + '" as a new scene?')) {
               addSceneFromUrl(media.url, media.filename);
               mediaModal.classList.remove('visible');
@@ -1048,7 +1006,7 @@
         mediaGridEl.appendChild(item);
       });
     }).catch(function(err) {
-      mediaGridEl.innerHTML = '<div style="color:#ef4444;font-size:12px;">Error: ' + err.message + '</div>';
+      mediaGridEl.innerHTML = '<div class="media-error"><i class="ti ti-alert-triangle"></i> Error: ' + err.message + '</div>';
     });
   }
 
@@ -1227,21 +1185,17 @@
   }
 
   function handleFiles(files) {
-    if (!window.XenoSupabase.isConfigured()) {
-      alert('Please configure Supabase in config.js to enable cloud uploads.');
-      return;
-    }
     uploadArea.innerHTML = '<h3>Uploading...</h3><p>Please wait.</p>';
     var promises = [];
     for (var i = 0; i < files.length; i++) {
       promises.push(window.XenoSupabase.uploadAndRecordMedia(files[i], currentAlbumId));
     }
     Promise.all(promises).then(function() {
-      uploadArea.innerHTML = '<h3>Cloud Upload Media</h3><p>Drag & drop 360 images here or click to browse</p>';
+      uploadArea.innerHTML = '<h3>Upload Media</h3><p>Drag & drop images, video or audio here or click to browse</p>';
       loadMedia(currentAlbumId);
     }).catch(function(err) {
       alert('Error uploading: ' + err.message);
-      uploadArea.innerHTML = '<h3>Cloud Upload Media</h3><p>Drag & drop 360 images here or click to browse</p>';
+      uploadArea.innerHTML = '<h3>Upload Media</h3><p>Drag & drop images, video or audio here or click to browse</p>';
     });
   }
 
@@ -1431,11 +1385,6 @@
 
   // ─── Dashboard Helper Functions ─────────────────────────────
   function initDashboard() {
-    // Proactively clean up the legacy empty default sample tour from local storage
-    if (window.XenoSupabase) {
-      window.XenoSupabase.deleteTour('sample-tour');
-    }
-
     var searchInput = document.getElementById('project-search');
     var btnNewProject = document.getElementById('btn-new-project');
     
@@ -1552,6 +1501,22 @@
   renderSceneGrid();
   if (scenes.length > 0) {
     switchSceneById(scenes[0].data.id);
+  }
+
+  function showToast(msg) {
+    var toast = document.querySelector('.xeno-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'xeno-toast';
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = '<i class="ti ti-info-circle"></i> ' + msg;
+    toast.classList.add('visible');
+    
+    if (toast.timeoutId) clearTimeout(toast.timeoutId);
+    toast.timeoutId = setTimeout(function() {
+      toast.classList.remove('visible');
+    }, 3000);
   }
 
 })();

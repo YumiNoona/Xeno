@@ -6,20 +6,20 @@
 
 /* ─── CSS Custom Properties ──────────────────────────────── */
 :root {
-  --accent: #00d4ff;
-  --accent-glow: rgba(0, 212, 255, 0.35);
-  --bg-panel: rgba(10, 10, 18, 0.65);
-  --bg-panel-solid: #0a0a12;
-  --bg-hover: rgba(255, 255, 255, 0.08);
-  --border-glass: rgba(255, 255, 255, 0.1);
-  --text-primary: #f0f0f5;
-  --text-secondary: rgba(240, 240, 245, 0.6);
-  --radius: 12px;
-  --radius-sm: 8px;
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.45);
-  --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.3);
-  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --accent: var(--accent, #00d4ff);
+  --accent-glow: var(--accent-glow, rgba(0, 212, 255, 0.35));
+  --bg-panel: var(--bg-glass);
+  --bg-panel-solid: var(--bg-panel-solid);
+  --bg-hover: var(--bg-hover);
+  --border-glass: var(--border-glass);
+  --text-primary: var(--text-primary);
+  --text-secondary: var(--text-secondary);
+  --radius: var(--radius-md);
+  --radius-sm: var(--radius-sm);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-sm: var(--shadow-sm);
+  --transition: var(--transition);
+  --font: var(--font);
 }
 
 /* ─── Reset & Base ───────────────────────────────────────── */

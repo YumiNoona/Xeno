@@ -70,13 +70,67 @@
     });
   }
 
+  // ─── Offline LocalStorage Media Helpers ───
+  function getLocalAlbums() {
+    try {
+      var data = localStorage.getItem('xeno_albums');
+      return data ? JSON.parse(data) : [];
+    } catch(e) {
+      return [];
+    }
+  }
+
+  function saveLocalAlbums(albums) {
+    try {
+      localStorage.setItem('xeno_albums', JSON.stringify(albums));
+    } catch(e) {
+      console.error('Failed to save albums to localStorage', e);
+    }
+  }
+
+  function getLocalMedia() {
+    try {
+      var data = localStorage.getItem('xeno_media');
+      return data ? JSON.parse(data) : [];
+    } catch(e) {
+      return [];
+    }
+  }
+
+  function saveLocalMedia(mediaList) {
+    try {
+      localStorage.setItem('xeno_media', JSON.stringify(mediaList));
+    } catch(e) {
+      console.error('Failed to save media to localStorage', e);
+    }
+  }
+
   function renameAlbum(albumId, newName) {
-    if (!isConfigured()) return Promise.resolve();
+    if (!isConfigured()) {
+      var albums = getLocalAlbums();
+      var album = albums.find(function(a) { return a.id === albumId; });
+      if (album) {
+        album.name = newName;
+        saveLocalAlbums(albums);
+      }
+      return Promise.resolve(album);
+    }
     return restPatch('/rest/v1/albums?id=eq.' + albumId, { name: newName });
   }
 
   function deleteAlbum(albumId) {
-    if (!isConfigured()) return Promise.resolve();
+    if (!isConfigured()) {
+      var albums = getLocalAlbums();
+      albums = albums.filter(function(a) { return a.id !== albumId; });
+      saveLocalAlbums(albums);
+      
+      var mediaList = getLocalMedia();
+      mediaList.forEach(function(m) {
+        if (m.album_id === albumId) m.album_id = null;
+      });
+      saveLocalMedia(mediaList);
+      return Promise.resolve();
+    }
     // Set all media in this album to null (Root) before deleting
     return restPatch('/rest/v1/media?album_id=eq.' + albumId, { album_id: null })
       .then(function() {
@@ -85,12 +139,29 @@
   }
 
   function renameMedia(mediaId, newName) {
-    if (!isConfigured()) return Promise.resolve();
+    if (!isConfigured()) {
+      var mediaList = getLocalMedia();
+      var media = mediaList.find(function(m) { return m.id === mediaId; });
+      if (media) {
+        media.filename = newName;
+        saveLocalMedia(mediaList);
+      }
+      return Promise.resolve(media);
+    }
     return restPatch('/rest/v1/media?id=eq.' + mediaId, { filename: newName });
   }
 
   function deleteMedia(mediaId, url) {
-    if (!isConfigured()) return Promise.resolve();
+    if (!isConfigured()) {
+      var mediaList = getLocalMedia();
+      var media = mediaList.find(function(m) { return m.id === mediaId; });
+      if (media && media.is_ephemeral && media.url.startsWith('blob:')) {
+        URL.revokeObjectURL(media.url);
+      }
+      mediaList = mediaList.filter(function(m) { return m.id !== mediaId; });
+      saveLocalMedia(mediaList);
+      return Promise.resolve();
+    }
     return restDelete('/rest/v1/media?id=eq.' + mediaId).then(function() {
       // Try to clean up file in storage bucket
       var bucket = (window.ENV_CONFIG && window.ENV_CONFIG.SUPABASE_STORAGE_BUCKET) || 'xeno-media';
@@ -112,7 +183,15 @@
   }
 
   function moveMedia(mediaId, newAlbumId) {
-    if (!isConfigured()) return Promise.resolve();
+    if (!isConfigured()) {
+      var mediaList = getLocalMedia();
+      var media = mediaList.find(function(m) { return m.id === mediaId; });
+      if (media) {
+        media.album_id = newAlbumId || null;
+        saveLocalMedia(mediaList);
+      }
+      return Promise.resolve(media);
+    }
     return restPatch('/rest/v1/media?id=eq.' + mediaId, { album_id: newAlbumId || null });
   }
 
@@ -270,12 +349,22 @@
   // ─── Media Manager ────────────────────────────────────────
 
   function fetchAlbums() {
-    if (!isConfigured()) return Promise.resolve([]);
+    if (!isConfigured()) return Promise.resolve(getLocalAlbums());
     return restGet('/rest/v1/albums?select=*&order=created_at.asc');
   }
 
   function createAlbum(name) {
-    if (!isConfigured()) return Promise.resolve(null);
+    if (!isConfigured()) {
+      var albums = getLocalAlbums();
+      var newAlbum = {
+        id: 'album_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        name: name,
+        created_at: new Date().toISOString()
+      };
+      albums.push(newAlbum);
+      saveLocalAlbums(albums);
+      return Promise.resolve(newAlbum);
+    }
     return restPost('/rest/v1/albums', {
       name: name
     }).then(function(res) {
@@ -285,7 +374,18 @@
   }
 
   function fetchMedia(albumId) {
-    if (!isConfigured()) return Promise.resolve([]);
+    if (!isConfigured()) {
+      var mediaList = getLocalMedia();
+      var filtered = mediaList.filter(function(m) {
+        if (albumId) {
+          return m.album_id === albumId;
+        } else {
+          return m.album_id === null;
+        }
+      });
+      filtered.sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+      return Promise.resolve(filtered);
+    }
     var query = '/rest/v1/media?select=*&order=created_at.desc';
     if (albumId) {
       query += '&album_id=eq.' + albumId;
@@ -296,7 +396,58 @@
   }
 
   function uploadAndRecordMedia(file, albumId) {
-    if (!isConfigured()) return Promise.reject(new Error("Supabase not configured"));
+    if (!isConfigured()) {
+      return new Promise(function(resolve, reject) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var base64Url = e.target.result;
+          var mediaId = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+          var record = {
+            id: mediaId,
+            filename: file.name,
+            url: base64Url,
+            type: file.type,
+            size: file.size,
+            album_id: albumId || null,
+            created_at: new Date().toISOString(),
+            is_ephemeral: false
+          };
+          
+          var mediaList = getLocalMedia();
+          mediaList.push(record);
+          
+          try {
+            localStorage.setItem('xeno_media', JSON.stringify(mediaList));
+            console.log('[Xeno] Saved media offline (Base64) to localStorage');
+            resolve(record);
+          } catch(err) {
+            if (err.name === 'QuotaExceededError' || err.code === 22) {
+              console.warn('[Xeno] localStorage full, falling back to ephemeral URL.createObjectURL');
+              // Create Object URL fallback
+              var objectUrl = URL.createObjectURL(file);
+              record.url = objectUrl;
+              record.is_ephemeral = true;
+              
+              // Try saving again with the smaller objectUrl record instead of large Base64 URL
+              mediaList[mediaList.length - 1] = record;
+              try {
+                localStorage.setItem('xeno_media', JSON.stringify(mediaList));
+                console.log('[Xeno] Saved ephemeral media reference to localStorage');
+              } catch(e2) {
+                console.error('[Xeno] Failed to save media reference to localStorage', e2);
+              }
+              resolve(record);
+            } else {
+              reject(err);
+            }
+          }
+        };
+        reader.onerror = function(err) {
+          reject(err);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
     
     var bucket = (window.ENV_CONFIG && window.ENV_CONFIG.SUPABASE_STORAGE_BUCKET) || 'xeno-media';
     
