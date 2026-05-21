@@ -107,6 +107,8 @@
     placeMode: false          // waiting for click to place hotspot
   };
 
+  var mediaPickerCallback = null;
+
   var HOTSPOT_TOOLS = ['navigate', 'info', 'url', 'image', 'video', 'audio'];
   var TOGGLE_TOOLS = ['select', 'autorotate', 'minimap', 'scene-settings'];
 
@@ -116,6 +118,20 @@
   var modeBadge = document.getElementById('mode-badge');
   var pillTools = document.querySelectorAll('.pill-tool');
   var propsPanel = document.getElementById('properties-panel');
+  // Prevent Marzipano / pano wrapper from capturing touch/pointer/mouse/scroll events on the properties panel
+  if (propsPanel) {
+    var stopEvents = [
+      'click', 'dblclick', 'mousedown', 'mouseup', 'mousemove',
+      'touchstart', 'touchmove', 'touchend', 'touchcancel',
+      'pointerdown', 'pointermove', 'pointerup', 'pointercancel',
+      'wheel', 'contextmenu'
+    ];
+    stopEvents.forEach(function(evt) {
+      propsPanel.addEventListener(evt, function(e) {
+        e.stopPropagation();
+      });
+    });
+  }
   var panelTitle = document.getElementById('panel-title');
   var sceneGridEl = document.getElementById('scene-grid');
   var contextMenu = document.getElementById('context-menu');
@@ -152,6 +168,42 @@
   var posYaw = document.getElementById('pos-yaw');
   var posPitch = document.getElementById('pos-pitch');
   var propSceneName = document.getElementById('prop-scene-name');
+
+  // Custom Icon group container
+  var groupCustomIcon = document.getElementById('group-custom-icon');
+
+  // Media inputs (text boxes)
+  var propCustomIconUrl = document.getElementById('prop-custom-icon-url');
+  var propImageUrl = document.getElementById('prop-image-url');
+  var propVideoUrl = document.getElementById('prop-video-url');
+  var propAudioUrl = document.getElementById('prop-audio-url');
+
+  // Media picking buttons
+  var btnPickCustomIcon = document.getElementById('btn-pick-custom-icon');
+  var btnPickImage = document.getElementById('btn-pick-image');
+  var btnPickVideo = document.getElementById('btn-pick-video');
+  var btnPickAudio = document.getElementById('btn-pick-audio');
+
+  // Direct upload buttons
+  var btnUploadCustomIcon = document.getElementById('btn-upload-custom-icon');
+  var btnUploadImage = document.getElementById('btn-upload-image');
+  var btnUploadVideo = document.getElementById('btn-upload-video');
+  var btnUploadAudio = document.getElementById('btn-upload-audio');
+
+  // File inputs
+  var inputUploadCustomIcon = document.getElementById('input-upload-custom-icon');
+  var inputUploadImage = document.getElementById('input-upload-image');
+  var inputUploadVideo = document.getElementById('input-upload-video');
+  var inputUploadAudio = document.getElementById('input-upload-audio');
+
+  // Other media inputs
+  var propImageCaption = document.getElementById('prop-image-caption');
+  var propImageLink = document.getElementById('prop-image-link');
+  var propVideoAutoplay = document.getElementById('prop-video-autoplay');
+  var propVideoLoop = document.getElementById('prop-video-loop');
+  var propVideoMuted = document.getElementById('prop-video-muted');
+  var propAudioAutoplay = document.getElementById('prop-audio-autoplay');
+  var propAudioLabel = document.getElementById('prop-audio-label');
 
   // ─── Tools Pill Logic ─────────────────────────────────────
   pillTools.forEach(function(btn) {
@@ -559,6 +611,8 @@
     propTitle.value = hsData.title || hsData.label || '';
     propAnimation.value = hsData.animation || 'none';
     propIconStyle.value = hsData.iconStyle || 'default';
+    propCustomIconUrl.value = hsData.customIconUrl || '';
+    toggleCustomIconGroup();
 
     // Position readout
     posYaw.textContent = (hsData.yaw || 0).toFixed(2);
@@ -627,6 +681,22 @@
     propUrlHref.value = hsData.urlHref || '';
     propUrlLabel.value = hsData.urlLabel || 'Open link';
     propUrlOpenIn.value = hsData.urlOpenIn || 'newtab';
+
+    // Image
+    propImageUrl.value = (hsData.content && hsData.content.src) || '';
+    propImageCaption.value = (hsData.content && hsData.content.caption) || '';
+    propImageLink.value = (hsData.content && hsData.content.linkUrl) || '';
+
+    // Video
+    propVideoUrl.value = (hsData.content && hsData.content.src) || '';
+    propVideoAutoplay.checked = hsData.autoplay === true;
+    propVideoLoop.checked = hsData.loop !== false;
+    propVideoMuted.checked = hsData.muted !== false;
+
+    // Audio
+    propAudioUrl.value = (hsData.content && hsData.content.src) || '';
+    propAudioAutoplay.checked = hsData.autoplay === true;
+    propAudioLabel.checked = hsData.showPlayerLabel !== false;
   }
 
   // Type change
@@ -642,6 +712,94 @@
   propTransDuration.addEventListener('input', function() {
     propTransDurLabel.textContent = this.value + 'ms';
   });
+
+  // Icon style change
+  function toggleCustomIconGroup() {
+    if (propIconStyle.value === 'custom') {
+      groupCustomIcon.style.display = 'block';
+    } else {
+      groupCustomIcon.style.display = 'none';
+    }
+  }
+  propIconStyle.addEventListener('change', toggleCustomIconGroup);
+
+  // Direct upload handler
+  function handleDirectUpload(file, callback, buttonEl) {
+    var originalHTML = buttonEl.innerHTML;
+    buttonEl.innerHTML = '<i class="ti ti-loader animate-spin"></i>';
+    buttonEl.disabled = true;
+
+    if (window.XenoSupabase.isConfigured()) {
+      window.XenoSupabase.uploadAndRecordMedia(file, currentAlbumId)
+        .then(function(mediaRecord) {
+          buttonEl.innerHTML = originalHTML;
+          buttonEl.disabled = false;
+          if (mediaRecord && mediaRecord.url) {
+            callback(mediaRecord.url);
+          } else {
+            console.warn('Supabase record has no URL, falling back to local file reader.');
+            fallbackToLocal(file, callback, buttonEl, originalHTML);
+          }
+        })
+        .catch(function(err) {
+          console.warn('Supabase upload failed, falling back to local file reader:', err);
+          fallbackToLocal(file, callback, buttonEl, originalHTML);
+        });
+    } else {
+      fallbackToLocal(file, callback, buttonEl, originalHTML);
+    }
+  }
+
+  function fallbackToLocal(file, callback, buttonEl, originalHTML) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      buttonEl.innerHTML = originalHTML;
+      buttonEl.disabled = false;
+      callback(e.target.result);
+    };
+    reader.onerror = function() {
+      buttonEl.innerHTML = originalHTML;
+      buttonEl.disabled = false;
+      alert('File reading failed.');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Unified picker and upload setup
+  function bindMediaField(inputEl, pickBtn, uploadBtn, fileInput) {
+    if (pickBtn) {
+      pickBtn.addEventListener('click', function() {
+        mediaPickerCallback = function(url, filename) {
+          inputEl.value = url;
+        };
+        var mediaModal = document.getElementById('media-modal');
+        if (mediaModal) mediaModal.classList.add('visible');
+        currentAlbumId = null;
+        loadAlbums();
+        loadMedia(null);
+      });
+    }
+
+    if (uploadBtn && fileInput) {
+      uploadBtn.addEventListener('click', function() {
+        fileInput.click();
+      });
+      fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          var self = this;
+          handleDirectUpload(this.files[0], function(url) {
+            inputEl.value = url;
+            self.value = ''; // clear value so same file can be selected again
+          }, uploadBtn);
+        }
+      });
+    }
+  }
+
+  bindMediaField(propCustomIconUrl, btnPickCustomIcon, btnUploadCustomIcon, inputUploadCustomIcon);
+  bindMediaField(propImageUrl, btnPickImage, btnUploadImage, inputUploadImage);
+  bindMediaField(propVideoUrl, btnPickVideo, btnUploadVideo, inputUploadVideo);
+  bindMediaField(propAudioUrl, btnPickAudio, btnUploadAudio, inputUploadAudio);
 
   // Info link type toggle
   var linkTypeRadios = document.querySelectorAll('input[name="prop-link-type"]');
@@ -666,6 +824,7 @@
     selectedHotspotData.label = propTitle.value;
     selectedHotspotData.animation = propAnimation.value;
     selectedHotspotData.iconStyle = propIconStyle.value;
+    selectedHotspotData.customIconUrl = propIconStyle.value === 'custom' ? propCustomIconUrl.value : null;
 
     // Type-specific
     if (selectedHotspotData.type === 'navigate') {
@@ -683,6 +842,22 @@
       selectedHotspotData.urlHref = propUrlHref.value;
       selectedHotspotData.urlLabel = propUrlLabel.value;
       selectedHotspotData.urlOpenIn = propUrlOpenIn.value;
+    } else if (selectedHotspotData.type === 'image') {
+      selectedHotspotData.content = selectedHotspotData.content || {};
+      selectedHotspotData.content.src = propImageUrl.value;
+      selectedHotspotData.content.caption = propImageCaption.value;
+      selectedHotspotData.content.linkUrl = propImageLink.value;
+    } else if (selectedHotspotData.type === 'video') {
+      selectedHotspotData.content = selectedHotspotData.content || {};
+      selectedHotspotData.content.src = propVideoUrl.value;
+      selectedHotspotData.autoplay = propVideoAutoplay.checked;
+      selectedHotspotData.loop = propVideoLoop.checked;
+      selectedHotspotData.muted = propVideoMuted.checked;
+    } else if (selectedHotspotData.type === 'audio') {
+      selectedHotspotData.content = selectedHotspotData.content || {};
+      selectedHotspotData.content.src = propAudioUrl.value;
+      selectedHotspotData.autoplay = propAudioAutoplay.checked;
+      selectedHotspotData.showPlayerLabel = propAudioLabel.checked;
     }
 
     renderSceneHotspots();
@@ -843,9 +1018,15 @@
         var thumb = media.type.startsWith('video') ? 'img/photo.png' : media.url;
         item.innerHTML = '<img src="' + thumb + '"><div class="title">' + media.filename + '</div>';
         item.addEventListener('click', function() {
-          if (confirm('Add "' + media.filename + '" as a new scene?')) {
-            addSceneFromUrl(media.url, media.filename);
+          if (mediaPickerCallback) {
+            mediaPickerCallback(media.url, media.filename);
+            mediaPickerCallback = null;
             mediaModal.classList.remove('visible');
+          } else {
+            if (confirm('Add "' + media.filename + '" as a new scene?')) {
+              addSceneFromUrl(media.url, media.filename);
+              mediaModal.classList.remove('visible');
+            }
           }
         });
 

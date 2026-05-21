@@ -310,7 +310,18 @@
       };
       
       return restPost('/rest/v1/media', record).then(function(res) {
-        return Array.isArray(res) ? res[0] : res;
+        if (res && (res.error || res.code || res.message)) {
+          console.warn("Database record insertion failed, but storage upload succeeded:", res);
+          return { url: publicUrl, filename: file.name };
+        }
+        var recordObj = Array.isArray(res) ? res[0] : res;
+        if (!recordObj || !recordObj.url) {
+          return { url: publicUrl, filename: file.name };
+        }
+        return recordObj;
+      }).catch(function(err) {
+        console.warn("Database record insertion failed with error, returning uploaded public URL:", err);
+        return { url: publicUrl, filename: file.name };
       });
     });
   }

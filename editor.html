@@ -156,6 +156,15 @@
                 <option value="custom">Custom Image</option>
               </select>
             </div>
+            <div class="form-group" id="group-custom-icon" style="display:none;">
+              <label>Custom Icon Image</label>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="prop-custom-icon-url" placeholder="Paste URL or upload file" style="flex:1;">
+                <button class="btn btn-secondary" id="btn-pick-custom-icon" title="Pick from Media Manager" style="padding:0 10px;"><i class="ti ti-folder"></i></button>
+                <button class="btn btn-primary" id="btn-upload-custom-icon" title="Upload local file" style="padding:0 10px;"><i class="ti ti-upload"></i></button>
+              </div>
+              <input type="file" id="input-upload-custom-icon" accept="image/*" style="display:none;">
+            </div>
 
             <!-- Type-specific: navigate -->
             <div class="type-fields" id="fields-navigate">
@@ -228,8 +237,13 @@
             <!-- Type-specific: image -->
             <div class="type-fields" id="fields-image" style="display:none;">
               <div class="form-group">
-                <label>Image</label>
-                <button class="btn btn-primary" id="btn-pick-image" style="width:100%; justify-content:center;">Pick from Media</button>
+                <label>Image File / URL</label>
+                <div style="display:flex; gap:8px;">
+                  <input type="text" id="prop-image-url" placeholder="Paste URL or upload image" style="flex:1;">
+                  <button class="btn btn-secondary" id="btn-pick-image" title="Pick from Media Manager" style="padding:0 10px;"><i class="ti ti-folder"></i></button>
+                  <button class="btn btn-primary" id="btn-upload-image" title="Upload local file" style="padding:0 10px;"><i class="ti ti-upload"></i></button>
+                </div>
+                <input type="file" id="input-upload-image" accept="image/*" style="display:none;">
               </div>
               <div class="form-group">
                 <label>Caption</label>
@@ -244,8 +258,13 @@
             <!-- Type-specific: video -->
             <div class="type-fields" id="fields-video" style="display:none;">
               <div class="form-group">
-                <label>Video</label>
-                <button class="btn btn-primary" id="btn-pick-video" style="width:100%; justify-content:center;">Pick from Media</button>
+                <label>Video File / URL</label>
+                <div style="display:flex; gap:8px;">
+                  <input type="text" id="prop-video-url" placeholder="Paste URL or upload video" style="flex:1;">
+                  <button class="btn btn-secondary" id="btn-pick-video" title="Pick from Media Manager" style="padding:0 10px;"><i class="ti ti-folder"></i></button>
+                  <button class="btn btn-primary" id="btn-upload-video" title="Upload local file" style="padding:0 10px;"><i class="ti ti-upload"></i></button>
+                </div>
+                <input type="file" id="input-upload-video" accept="video/*" style="display:none;">
               </div>
               <div class="form-group toggle-group">
                 <label>Autoplay</label>
@@ -264,8 +283,13 @@
             <!-- Type-specific: audio -->
             <div class="type-fields" id="fields-audio" style="display:none;">
               <div class="form-group">
-                <label>Audio File</label>
-                <button class="btn btn-primary" id="btn-pick-audio" style="width:100%; justify-content:center;">Pick from Media</button>
+                <label>Audio File / URL</label>
+                <div style="display:flex; gap:8px;">
+                  <input type="text" id="prop-audio-url" placeholder="Paste URL or upload audio" style="flex:1;">
+                  <button class="btn btn-secondary" id="btn-pick-audio" title="Pick from Media Manager" style="padding:0 10px;"><i class="ti ti-folder"></i></button>
+                  <button class="btn btn-primary" id="btn-upload-audio" title="Upload local file" style="padding:0 10px;"><i class="ti ti-upload"></i></button>
+                </div>
+                <input type="file" id="input-upload-audio" accept="audio/*" style="display:none;">
               </div>
               <div class="form-group toggle-group">
                 <label>Autoplay</label>
@@ -379,6 +403,8 @@
   <script src="data.js"></script>
   <script src="js/transitions.js"></script>
   <script src="js/VideoAsset.js"></script>
+  <script src="js/DeviceOrientation.js"></script>
+  <script src="js/colorEffects.js"></script>
   <script src="js/hotspots/HotspotFactory.js"></script>
   <script src="js/ui/Supabase.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>

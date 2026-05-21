@@ -29,8 +29,8 @@
       this._handlers[event].push(handler);
     };
     XenoVideoAsset.prototype.emit = function(event) {
-      this._handlers = this._handlers || {};
-      var handlers = this._handlers[event] || [];
+      if (!this._handlers || !this._handlers[event]) return;
+      var handlers = this._handlers[event];
       for (var i = 0; i < handlers.length; i++) {
         handlers[i].apply(this, Array.prototype.slice.call(arguments, 1));
       }

@@ -71,7 +71,8 @@
 
   // Initialize viewer.
   var viewer = new Xeno.Viewer(panoElement, viewerOpts);
-  window.xenoViewer = viewer; // export for editor
+  window.xenoViewer = viewer;
+
 
   // Source builder
   function buildSource(sceneData) {
@@ -149,7 +150,9 @@
     return sceneContext;
   });
 
-  window.xenoScenes = scenes; // export for editor
+  window.xenoScenes = scenes;
+
+
 
   // Initialize UI modules after scenes are loaded to avoid race condition
   if (window.initSceneList) {
