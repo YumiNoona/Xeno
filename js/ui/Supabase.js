@@ -33,11 +33,38 @@
 
   // ─── REST Wrappers ────────────────────────────────────────
 
+  function parseJsonOrText(r) {
+    return r.text().then(function(text) {
+      if (!text) return null;
+      try { return JSON.parse(text); } catch(e) { return text; }
+    });
+  }
+
+  function requestError(r, payload) {
+    var msg = 'HTTP ' + r.status + ' ' + (r.statusText || '');
+    if (payload && typeof payload === 'object') {
+      if (payload.message) msg += ' — ' + payload.message;
+      else if (payload.error) msg += ' — ' + payload.error;
+    } else if (typeof payload === 'string' && payload) {
+      msg += ' — ' + payload;
+    }
+    var err = new Error(msg);
+    err.status = r.status;
+    err.payload = payload;
+    return err;
+  }
+
   function restGet(path) {
     return fetch(SUPABASE_URL + path, {
       method: 'GET',
       headers: supabaseHeaders()
-    }).then(function (r) { return r.json(); });
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP error! status: ' + r.status);
+      return parseJsonOrText(r).then(function(payload) {
+        if (!r.ok) throw requestError(r, payload);
+        return payload;
+      });
+    });
   }
 
   function restPost(path, body) {
@@ -45,7 +72,13 @@
       method: 'POST',
       headers: supabaseHeaders(),
       body: JSON.stringify(body)
-    }).then(function (r) { return r.json(); });
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP error! status: ' + r.status);
+      return parseJsonOrText(r).then(function(payload) {
+        if (!r.ok) throw requestError(r, payload);
+        return payload;
+      });
+    });
   }
 
   function restPatch(path, body) {
@@ -55,7 +88,13 @@
       method: 'PATCH',
       headers: h,
       body: JSON.stringify(body)
-    }).then(function (r) { return r.json(); });
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP error! status: ' + r.status);
+      return parseJsonOrText(r).then(function(payload) {
+        if (!r.ok) throw requestError(r, payload);
+        return payload;
+      });
+    });
   }
 
   function restDelete(path) {

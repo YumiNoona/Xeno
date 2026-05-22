@@ -48,7 +48,6 @@
             showControls: true,
             gyroscopeEnabled: false,
             vrEnabled: false,
-            anaglyphEnabled: false,
             defaultTransition: "opacity",
             defaultTransitionDuration: 1000,
             defaultTransitionEasing: "easeInOut",
@@ -1843,7 +1842,6 @@
         'css/minimap.css',
         'css/hint.css',
         'js/vendor/screenfull.js',
-        'js/vendor/bowser.js',
         'js/vendor/webvr-polyfill.js',
         'js/xeno.js',
         'js/transitions.js',
@@ -1855,7 +1853,7 @@
         'js/ui/SceneList.js',
         'js/ui/Supabase.js',
         'js/viewer.js',
-        'config.js'
+        'config.example.js'
       ];
 
       var imagesToBundle = [
@@ -2030,7 +2028,6 @@
               showControls: true,
               gyroscopeEnabled: false,
               vrEnabled: false,
-              anaglyphEnabled: false,
               defaultTransition: "opacity",
               defaultTransitionDuration: 1000,
               defaultTransitionEasing: "easeInOut",

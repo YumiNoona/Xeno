@@ -9,10 +9,6 @@
 
   var isEditor = window.location.pathname.indexOf('editor.html') !== -1;
 
-  function sanitize(s) {
-    return (s || '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;');
-  }
-
   function getIconSvg(style) {
     var icons = {
       dot:      '<circle cx="12" cy="12" r="5" fill="currentColor"/>',
@@ -79,7 +75,7 @@
 
       var tooltip = document.createElement('div');
       tooltip.classList.add('link-tooltip');
-      tooltip.innerHTML = sanitize(hotspot.title || hotspot.label || 'Link');
+      tooltip.textContent = hotspot.title || hotspot.label || 'Link';
 
       wrapper.appendChild(iconWrapper);
       wrapper.appendChild(tooltip);
@@ -141,15 +137,21 @@
 
       var tip = document.createElement('div');
       tip.classList.add('tip');
-      tip.innerHTML = '<p>' + sanitize(hotspot.title || 'Info') + '</p>';
+      var tipP = document.createElement('p');
+      tipP.textContent = hotspot.title || 'Info';
+      tip.appendChild(tipP);
 
       var content = document.createElement('div');
       content.classList.add('content');
       
-      var contentHtml = '<h2>' + sanitize(hotspot.title || 'Info') + '</h2>';
-      contentHtml += '<div class="content-text">' + sanitize(hotspot.text) + '</div>';
-      
-      content.innerHTML = contentHtml;
+      var contentTitle = document.createElement('h2');
+      contentTitle.textContent = hotspot.title || 'Info';
+      content.appendChild(contentTitle);
+
+      var textDiv = document.createElement('div');
+      textDiv.className = 'content-text';
+      textDiv.textContent = hotspot.text || '';
+      content.appendChild(textDiv);
 
       // Link support
       if (hotspot.linkUrl || (hotspot.linkType === 'scene' && hotspot.linkTarget)) {
@@ -171,8 +173,7 @@
           linkBtn.textContent = hotspot.linkLabel || 'Open link';
         }
         
-        var textDiv = content.querySelector('.content-text');
-        if (textDiv) textDiv.appendChild(linkBtn);
+        textDiv.appendChild(linkBtn);
       }
 
       // Close button
@@ -228,7 +229,11 @@
       }
 
       wrapper.appendChild(iconWrapper);
-      wrapper.innerHTML += '<div class="link-tooltip">' + sanitize(label) + '</div>';
+      var tooltip = document.createElement('div');
+      tooltip.classList.add('link-tooltip');
+      var tooltipText = document.createTextNode(label);
+      tooltip.appendChild(tooltipText);
+      wrapper.appendChild(tooltip);
 
       wrapper.addEventListener('click', function() {
         if (isEditor) return;
@@ -276,7 +281,12 @@
       inner.appendChild(img);
       out.appendChild(inner);
       wrapper.appendChild(out);
-      wrapper.innerHTML += '<div class="tip"><p>' + sanitize(hotspot.title) + '</p></div>';
+      var tip = document.createElement('div');
+      tip.classList.add('tip');
+      var tipP = document.createElement('p');
+      tipP.textContent = hotspot.title || '';
+      tip.appendChild(tipP);
+      wrapper.appendChild(tip);
       return wrapper;
     },
 
@@ -287,7 +297,20 @@
       if (hotspot.iconColor) {
         wrapper.style.backgroundColor = hotspot.iconColor;
       }
-      wrapper.innerHTML = '<h1 class="title">' + sanitize(hotspot.title) + '</h1><img class="icon" src="img/info.png"><p>' + sanitize(hotspot.text) + '</p>';
+      var title = document.createElement('h1');
+      title.className = 'title';
+      title.textContent = hotspot.title || '';
+
+      var icon = document.createElement('img');
+      icon.className = 'icon';
+      icon.src = new URL('img/info.png', document.baseURI).href;
+
+      var p = document.createElement('p');
+      p.textContent = hotspot.text || '';
+
+      wrapper.appendChild(title);
+      wrapper.appendChild(icon);
+      wrapper.appendChild(p);
       return wrapper;
     },
 
@@ -296,7 +319,7 @@
       var wrapper = document.createElement('div');
       wrapper.classList.add('xeno-hotspot-hintspot');
       wrapper.classList.add('hint--right', 'hint--info', 'hint--bounce');
-      wrapper.setAttribute('data-hint', sanitize(hotspot.title));
+      wrapper.setAttribute('data-hint', hotspot.title || '');
       
       if (hotspot.ringEnabled !== false) {
          wrapper.classList.add('has-ring');
@@ -329,14 +352,29 @@
         wrapper.style.backgroundColor = hotspot.iconColor;
       }
       
-      var iconHtml = '';
       if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
-        iconHtml = '<img src="' + hotspot.customIconUrl + '" style="width:40px;margin:20px 0;">';
+        var img = document.createElement('img');
+        img.src = hotspot.customIconUrl;
+        img.style.cssText = 'width:40px;margin:20px 0;';
+        wrapper.appendChild(img);
       } else {
-        iconHtml = '<div style="margin:20px 0;color:#fff;">' + getIconSvg(hotspot.iconStyle || 'default') + '</div>';
+        var iconWrap = document.createElement('div');
+        iconWrap.style.cssText = 'margin:20px 0;color:#fff;';
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('width', '40');
+        svg.setAttribute('height', '40');
+        svg.innerHTML = getIconSvg(hotspot.iconStyle || 'default');
+        iconWrap.appendChild(svg);
+        wrapper.appendChild(iconWrap);
       }
       
-      wrapper.innerHTML = iconHtml + '<div class="reveal-content"><p>' + sanitize(hotspot.title) + '</p></div>';
+      var content = document.createElement('div');
+      content.className = 'reveal-content';
+      var p = document.createElement('p');
+      p.textContent = hotspot.title || '';
+      content.appendChild(p);
+      wrapper.appendChild(content);
       return wrapper;
     },
 
@@ -361,7 +399,12 @@
 
       var rotateContent = document.createElement('div');
       rotateContent.classList.add('rotate-content');
-      rotateContent.innerHTML = '<h1>' + sanitize(hotspot.title) + '</h1><p>' + sanitize(hotspot.text) + '</p>';
+      var title = document.createElement('h1');
+      title.textContent = hotspot.title || '';
+      var p = document.createElement('p');
+      p.textContent = hotspot.text || '';
+      rotateContent.appendChild(title);
+      rotateContent.appendChild(p);
       
       wrapper.appendChild(rotateImg);
       wrapper.appendChild(rotateContent);
@@ -397,7 +440,12 @@
       hs.appendChild(out);
       hs.appendChild(inner);
       wrapper.appendChild(hs);
-      wrapper.innerHTML += '<div class="tooltip-content"><p>' + sanitize(hotspot.text) + '</p></div>';
+      var tooltip = document.createElement('div');
+      tooltip.className = 'tooltip-content';
+      var tooltipP = document.createElement('p');
+      tooltipP.textContent = hotspot.text || '';
+      tooltip.appendChild(tooltipP);
+      wrapper.appendChild(tooltip);
       return wrapper;
     },
 
@@ -432,7 +480,11 @@
       }
 
       wrapper.appendChild(iconWrapper);
-      wrapper.innerHTML += '<div class="link-tooltip">' + sanitize(hotspot.title || hotspot.label || 'Image') + '</div>';
+      var tooltip = document.createElement('div');
+      tooltip.classList.add('link-tooltip');
+      var tooltipText = document.createTextNode(hotspot.title || hotspot.label || 'Image');
+      tooltip.appendChild(tooltipText);
+      wrapper.appendChild(tooltip);
 
       wrapper.addEventListener('click', function() {
         if (isEditor) return;
@@ -442,22 +494,11 @@
           return;
         }
 
-        // Inject keyframes if not exists
-        if (!document.getElementById('xeno-modal-animation-styles')) {
-          var style = document.createElement('style');
-          style.id = 'xeno-modal-animation-styles';
-          style.innerHTML = '\
-            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }\
-            @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }\
-          ';
-          document.head.appendChild(style);
-        }
-
         var overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,10,18,0.9); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(8px); animation:fadeIn 0.3s ease;';
 
         var closeBtn = document.createElement('div');
-        closeBtn.innerHTML = '&times;';
+        closeBtn.textContent = '×';
         closeBtn.style.cssText = 'position:absolute; top:20px; right:30px; font-size:40px; color:#fff; cursor:pointer; opacity:0.7; transition:opacity 0.2s;';
         closeBtn.addEventListener('mouseenter', function() { closeBtn.style.opacity = '1'; });
         closeBtn.addEventListener('mouseleave', function() { closeBtn.style.opacity = '0.7'; });
@@ -523,7 +564,10 @@
       }
 
       wrapper.appendChild(iconWrapper);
-      wrapper.innerHTML += '<div class="link-tooltip">' + sanitize(hotspot.title || 'Video') + '</div>';
+      var tooltip = document.createElement('div');
+      tooltip.classList.add('link-tooltip');
+      tooltip.textContent = hotspot.title || 'Video';
+      wrapper.appendChild(tooltip);
 
       wrapper.addEventListener('click', function() {
         if (isEditor) return;
@@ -533,21 +577,11 @@
           return;
         }
 
-        if (!document.getElementById('xeno-modal-animation-styles')) {
-          var style = document.createElement('style');
-          style.id = 'xeno-modal-animation-styles';
-          style.innerHTML = '\
-            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }\
-            @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }\
-          ';
-          document.head.appendChild(style);
-        }
-
         var overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,10,18,0.9); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(8px); animation:fadeIn 0.3s ease;';
 
         var closeBtn = document.createElement('div');
-        closeBtn.innerHTML = '&times;';
+        closeBtn.textContent = '×';
         closeBtn.style.cssText = 'position:absolute; top:20px; right:30px; font-size:40px; color:#fff; cursor:pointer; opacity:0.7; transition:opacity 0.2s;';
         closeBtn.addEventListener('mouseenter', function() { closeBtn.style.opacity = '1'; });
         closeBtn.addEventListener('mouseleave', function() { closeBtn.style.opacity = '0.7'; });
@@ -609,7 +643,12 @@
 
       out.appendChild(inner);
       wrapper.appendChild(out);
-      wrapper.innerHTML += '<div class="tip"><p>' + sanitize(hotspot.title || 'Audio') + '</p></div>';
+      var tip = document.createElement('div');
+      tip.classList.add('tip');
+      var tipP = document.createElement('p');
+      tipP.textContent = hotspot.title || 'Audio';
+      tip.appendChild(tipP);
+      wrapper.appendChild(tip);
 
       var audio = null;
       var isPlaying = false;

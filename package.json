@@ -1,25 +1,15 @@
 {
-  "name": "marzipano",
-  "version": "0.10.2",
-  "description": "A 360° media viewer for the modern web",
-  "author": "Google Inc.",
+  "name": "xeno",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Xeno — 360° virtual tour editor and viewer (static web app) powered by a WebGL panorama engine",
+  "author": "Xeno",
   "license": "Apache-2.0",
-  "main": "engine/src/index.js",
   "homepage": "https://xeno-tour.com",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/google/marzipano.git"
-  },
-  "bugs": {
-    "url": "https://github.com/google/marzipano/issues"
-  },
   "scripts": {
-    "test": "testem ci",
-    "livetest": "testem",
-    "dev": "engine/scripts/dev",
-    "release": "engine/scripts/release",
-    "deploy": "engine/scripts/deploy",
-    "prepublishOnly": "engine/scripts/prepublish"
+    "dev": "lr-http-server -p 8080 -d .",
+    "engine:watch": "watchify -v -d --noparse=node_modules/**/*.js -s Marzipano -o build/marzipano.js engine/src/index.js",
+    "engine:build": "browserify --noparse=node_modules/**/*.js -s Marzipano engine/src/index.js | uglifyjs -c -m > build/marzipano.js"
   },
   "dependencies": {
     "bowser": "1.9.4",

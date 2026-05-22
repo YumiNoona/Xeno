@@ -36,7 +36,7 @@ Xeno is a high-performance, feature-rich web platform for creating, managing, an
    Run the provided `Schema.sql` in your Supabase SQL Editor. It will set up all tables and storage buckets (`xeno-media`).
 
 2. **Configure Environment**:
-   Update `config.js` with your Supabase URL and Anon Key.
+   Copy `config.example.js` to `config.js`, then set your Supabase URL and Anon Key.
 
 3. **Install & Run**:
    ```bash

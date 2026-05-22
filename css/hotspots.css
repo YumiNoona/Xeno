@@ -31,7 +31,7 @@
   left: 100%;
   top: 14px;
   margin-left: 3px;
-  font-size: 16px;
+  font-size: var(--type-lg);
   max-width: 300px;
   padding: 8px 10px;
   border-radius: 5px;
@@ -177,7 +177,7 @@
   margin: 0;
   background: var(--accent);
   color: #000;
-  font-size: 16px;
+  font-size: var(--type-lg);
   border-radius: 5px 5px 0 0;
 }
 .xeno-hotspot-info .content-text {
@@ -226,7 +226,7 @@
   transform: none;
 }
 .xeno-hotspot-tooltip .tip p {
-  font-size: 14px;
+  font-size: var(--type-md);
   padding: .5em;
   text-align: center;
   background-color: var(--accent);
@@ -283,8 +283,8 @@
 }
 .xeno-hotspot-expand .title {
   line-height: 70px;
-  font-size: 14px;
-  font-weight: bold;
+  font-size: var(--type-md);
+  font-weight: var(--weight-bold);
   margin: 0;
 }
 .xeno-hotspot-expand .icon,
@@ -301,7 +301,7 @@
 .xeno-hotspot-expand p {
   width: 90%;
   margin: 10px auto 0;
-  font-size: 12px;
+  font-size: var(--type-sm);
 }
 .xeno-hotspot-expand:hover {
   width: 200px;
@@ -376,7 +376,7 @@
 .xeno-hotspot-reveal .reveal-content p {
   margin: 10px 0 0;
   color: #2d2d2d;
-  font-size: 13px;
+  font-size: var(--type-base);
 }
 .xeno-hotspot-reveal:hover {
   width: 180px;
@@ -433,13 +433,13 @@
   box-sizing: border-box;
 }
 .xeno-hotspot-rotate .rotate-content h1 {
-  font-size: 14px;
+  font-size: var(--type-md);
   margin: 0 0 5px;
   border-bottom: 1px solid #ccc;
   padding-bottom: 5px;
 }
 .xeno-hotspot-rotate .rotate-content p {
-  font-size: 11px;
+  font-size: var(--type-xs);
   margin: 0;
 }
 .xeno-hotspot-rotate:hover .rotate-img {
@@ -632,7 +632,7 @@
   background: #e62e5a;
   color: #fff;
   border-radius: 5px;
-  font-size: 11px;
+  font-size: var(--type-xs);
   text-decoration: none;
   cursor: pointer;
   transition: background 0.12s;
@@ -654,7 +654,7 @@
   backdrop-filter: blur(8px);
   border: 2px solid #fff;
   color: #fff;
-  font-size: 20px;
+  font-size: var(--type-xl);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
               border-color 0.25s ease, 
@@ -691,7 +691,7 @@
   color: var(--text-primary);
   padding: 6px 12px;
   border-radius: var(--radius-xs);
-  font-size: var(--font-size-xs);
+  font-size: var(--type-xs);
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;

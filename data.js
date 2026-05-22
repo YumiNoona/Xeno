@@ -17,7 +17,6 @@ var data = {
     showControls: true,
     gyroscopeEnabled: false,
     vrEnabled: false,
-    anaglyphEnabled: false,
     defaultTransition: "opacity",
     defaultTransitionDuration: 1000,
     defaultTransitionEasing: "easeInOut",

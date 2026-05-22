@@ -34,7 +34,7 @@ html, body {
   height: 100%;
   overflow: hidden;
   font-family: var(--font);
-  font-size: 14px;
+  font-size: var(--type-md);
   line-height: 1.5;
   color: var(--text-primary);
   background: #000;
@@ -65,8 +65,8 @@ html, body {
 }
 
 #titleBar .sceneName {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--type-xl);
+  font-weight: var(--weight-semibold);
   letter-spacing: 0.02em;
   color: var(--text-primary);
   text-shadow: 0 1px 4px rgba(0,0,0,0.6);
@@ -140,8 +140,8 @@ html, body {
 }
 
 #sceneList .scene .scene-name {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--type-base);
+  font-weight: var(--weight-medium);
   color: var(--text-primary);
 }
 
@@ -191,7 +191,7 @@ html, body {
 }
 
 #sceneList.bottom-strip .scene .scene-name {
-  font-size: 11px;
+  font-size: var(--type-xs);
   text-align: center;
   max-width: 80px;
   overflow: hidden;
@@ -317,8 +317,8 @@ html, body {
 }
 
 .view-mode-item span {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--type-md);
+  font-weight: var(--weight-medium);
 }
 
 /* ─── View Control Buttons (directional) ─────────────────── */
@@ -402,8 +402,8 @@ html, body {
 }
 
 #intro-screen .intro-title {
-  font-size: 42px;
-  font-weight: 700;
+  font-size: var(--type-4xl);
+  font-weight: var(--weight-bold);
   letter-spacing: -0.02em;
   margin-bottom: 8px;
   background: linear-gradient(135deg, var(--accent), #a78bfa);
@@ -413,15 +413,15 @@ html, body {
 }
 
 #intro-screen .intro-subtitle {
-  font-size: 16px;
+  font-size: var(--type-lg);
   color: var(--text-secondary);
   margin-bottom: 32px;
 }
 
 #intro-screen .intro-btn {
   padding: 14px 40px;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: var(--type-md);
+  font-weight: var(--weight-semibold);
   color: #000;
   background: var(--accent);
   border: none;
@@ -455,7 +455,7 @@ body.mobile #sceneList {
 }
 
 body.mobile #titleBar .sceneName {
-  font-size: 15px;
+  font-size: var(--type-md);
 }
 
 body.mobile #controls {
@@ -514,7 +514,7 @@ body.fullscreen-disabled #fullscreenToggle {
 }
 .intro-content h1 {
   margin-top: 0;
-  font-size: 24px;
+  font-size: var(--type-3xl);
 }
 .intro-content p {
   color: #ccc;
@@ -525,10 +525,10 @@ body.fullscreen-disabled #fullscreenToggle {
   color: #fff;
   border: none;
   padding: 12px 24px;
-  font-size: 16px;
+  font-size: var(--type-lg);
   border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
   transition: background 0.2s;
 }
 #btn-start-tour:hover {

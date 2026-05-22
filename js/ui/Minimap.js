@@ -20,8 +20,7 @@
     // Clear existing
     minimapElement.innerHTML = '';
 
-    // Is this editor? (presence of saveTour suggests so)
-    var isEditor = !!window.XenoSupabase;
+    var isEditor = window.location.pathname.indexOf('editor.html') !== -1;
     if (isEditor) minimapElement.classList.add('edit-mode');
 
     var enabled = data.settings.showMinimap === true && data.floorplan.enabled === true;

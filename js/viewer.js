@@ -6,7 +6,6 @@
 
 (function() {
   var Xeno = window.Xeno;
-  var bowser = window.bowser;
   var screenfull = window.screenfull;
   
   if (window.XenoSupabase) {
@@ -55,11 +54,6 @@
     document.body.classList.add('touch');
   });
 
-  // Use tooltip fallback mode on IE < 11.
-  if (bowser.msie && parseFloat(bowser.version) < 11) {
-    document.body.classList.add('tooltip-fallback');
-  }
-
   // Viewer options.
   var viewerOpts = {
     controls: {
@@ -76,7 +70,7 @@
   function buildSource(sceneData) {
     if (sceneData.type === 'video') {
       if (window.XenoVideoAsset) {
-        var asset = new XenoVideoAsset();
+        var asset = new window.XenoVideoAsset();
         asset.setVideo(sceneData.mediaUrl, sceneData.videoOptions);
         return new Xeno.SingleAssetSource(asset);
       }
@@ -161,12 +155,12 @@
   }
 
   function applyColorEffects(sceneCtx) {
-    if (window.colorEffects && sceneCtx.data.colorEffects) {
+    if (Xeno.colorEffects && sceneCtx.data.colorEffects) {
       var ce = sceneCtx.data.colorEffects;
       var effect = Xeno.colorEffects.identity();
-      effect = colorEffects.brightness(ce.brightness - 1, effect);
-      effect = colorEffects.contrast(ce.contrast, effect);
-      effect = colorEffects.saturation(ce.saturation, effect);
+      effect = Xeno.colorEffects.brightness(ce.brightness - 1, effect);
+      effect = Xeno.colorEffects.contrast(ce.contrast, effect);
+      effect = Xeno.colorEffects.saturation(ce.saturation, effect);
       sceneCtx.scene.layer().setEffects({ colorMatrix: effect.colorMatrix, colorOffset: effect.colorOffset });
     }
   }
@@ -238,9 +232,6 @@
   var viewLeftElement = document.querySelector('#viewLeft');
   var viewRightElement = document.querySelector('#viewRight');
 
-  var gyroToggleElement = document.querySelector('#gyroToggle');
-  var vrToggleElement = document.querySelector('#vrToggle');
-
   var velocity = 0.7;
   var friction = 3;
 
@@ -249,44 +240,6 @@
   if (viewDownElement) controls.registerMethod('downElement', new Xeno.ElementPressControlMethod(viewDownElement, 'y', velocity, friction), true);
   if (viewLeftElement) controls.registerMethod('leftElement', new Xeno.ElementPressControlMethod(viewLeftElement, 'x', -velocity, friction), true);
   if (viewRightElement) controls.registerMethod('rightElement', new Xeno.ElementPressControlMethod(viewRightElement, 'x', velocity, friction), true);
-
-  // Gyroscope Control
-  var gyroMethod = null;
-  if (gyroToggleElement && window.DeviceOrientationControlMethod) {
-    gyroToggleElement.addEventListener('click', function() {
-      if (gyroMethod) {
-        controls.unregisterMethod('deviceOrientation');
-        gyroMethod.destroy();
-        gyroMethod = null;
-        gyroToggleElement.classList.remove('enabled');
-        gyroToggleElement.classList.remove('active');
-      } else {
-        gyroMethod = new DeviceOrientationControlMethod();
-        gyroMethod.requestPermission(function(granted) {
-          if (granted) {
-            controls.registerMethod('deviceOrientation', gyroMethod);
-            gyroToggleElement.classList.add('enabled');
-            gyroToggleElement.classList.add('active');
-          } else {
-            gyroMethod.destroy();
-            gyroMethod = null;
-            alert("Gyroscope permission denied.");
-          }
-        });
-      }
-    });
-  }
-
-  // WebVR Support
-  if (vrToggleElement) {
-    vrToggleElement.addEventListener('click', function() {
-      alert("VR Mode: This feature requires a secure HTTPS connection and a supported VR headset/browser.");
-    });
-  }
-
-  function sanitize(s) {
-    return (s || '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;');
-  }
 
   function linear(t) { return t; }
 
@@ -326,7 +279,7 @@
     if (sceneNameElement) {
       var name = sceneCtx.data.name || '';
       var cleanName = name.replace(/\.[^/.]+$/, "");
-      sceneNameElement.innerHTML = sanitize(cleanName);
+      sceneNameElement.textContent = cleanName;
     }
   }
 
@@ -383,7 +336,6 @@
   // Toggles (Gyro, VR, Anaglyph, Minimap, ViewControls)
   var gyroToggle = document.querySelector('#gyroToggle');
   var vrToggle = document.querySelector('#vrToggle');
-  var anaglyphToggle = document.querySelector('#anaglyphToggle');
   var minimapToggle = document.querySelector('#minimapToggle');
   var viewControlsToggle = document.querySelector('#viewControlsToggle');
   var viewModeToggle = document.querySelector('#viewModeToggle');
@@ -459,17 +411,10 @@
     });
   }
   
-  if (anaglyphToggle) {
-    anaglyphToggle.addEventListener('click', function() {
-      this.classList.toggle('active');
-      alert("Anaglyph 3D requires stereoscopic media (left/right eye scenes). Toggle UI active.");
-    });
-  }
-  
   if (vrToggle) {
     vrToggle.addEventListener('click', function() {
       this.classList.toggle('active');
-      alert("WebVR requires stereoscopic media and VR display. Toggle UI active.");
+      alert("VR Mode requires HTTPS and a supported VR headset/browser.");
     });
   }
 

@@ -5,16 +5,12 @@
   <title>Xeno — 360° Tour Platform</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="img/logo.ico">
-  <!-- Font: Roboto Mono — clean, technical, distinctive -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <style>
+  <link rel="stylesheet" href="css/tokens.css">  <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #0e0c0c;
-      color: #a09898;
-      font-family: 'Roboto Mono', monospace;
+      background: var(--bg-base);
+      color: var(--text-secondary);
+      font-family: var(--font-family-base);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -38,16 +34,16 @@
 
     .hero { text-align: center; position: relative; z-index: 1; }
     .logo {
-      font-size: 36px;
-      font-weight: 700;
-      color: #f0eded;
+      font-size: var(--type-4xl);
+      font-weight: var(--weight-bold);
+      color: var(--text-primary);
       letter-spacing: -0.02em;
       margin-bottom: 10px;
     }
-    .logo span { color: #e62e5a; }
+    .logo span { color: var(--accent); }
     .tagline {
-      font-size: 14px;
-      color: #5a5050;
+      font-size: var(--type-md);
+      color: var(--text-muted);
       letter-spacing: 0.04em;
     }
 
@@ -83,21 +79,21 @@
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 14px;
-      font-size: 20px;
-      color: #e62e5a;
+      font-size: var(--type-xl);
+      color: var(--accent);
     }
     .card h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: #f0eded;
+      font-size: var(--type-md);
+      font-weight: var(--weight-semibold);
+      color: var(--text-primary);
       margin-bottom: 5px;
     }
-    .card p { font-size: 12px; color: #5a5050; line-height: 1.5; }
+    .card p { font-size: var(--type-sm); color: var(--text-muted); line-height: 1.5; }
 
     .footer {
       position: relative; z-index: 1;
-      font-size: 11px;
-      color: #3a3030;
+      font-size: var(--type-xs);
+      color: var(--text-disabled);
       letter-spacing: 0.04em;
     }
   </style>
@@ -126,6 +122,6 @@
     </a>
   </div>
 
-  <div class="footer">Powered by Marzipano · Xeno Tour Studio</div>
+  <div class="footer">Made With Love by Veil ❤ Xeno Tour</div>
 </body>
 </html>
