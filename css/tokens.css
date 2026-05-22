@@ -4,30 +4,32 @@
  */
 :root {
   /* Backgrounds — warm charcoal family */
-  --bg-base:       #0e0c0c;
-  --bg-panel:      #161313;
-  --bg-raised:     #1e1a1a;
-  --bg-hover:      rgba(255,255,255,0.05);
-  --bg-glass:      rgba(22,19,19,0.96);
+  --bg-base:       #1A1A1A;
+  --bg-panel:      #242424;
+  --bg-raised:     #333333;
+  --bg-hover:      rgba(255,255,255,0.1);
+  --bg-ash-grey:   #363636;
+  --bg-glass:      rgba(36,36,36,0.9);
 
   /* Borders */
-  --border:        #2c2626;
-  --border-hover:  #403838;
+  --border:        #444444;
+  --border-hover:  #666666;
   --border-focus:  #e62e5a;
 
   /* Text */
   --text-primary:  #f0eded;
-  --text-secondary:#a09898;
-  --text-muted:    #5a5050;
+  --text-secondary:#CCCCCC;
+  --text-muted:    #888888;
 
   /* Accent — Xeno brand red, only */
   --accent:        #e62e5a;
-  --accent-dim:    rgba(230,46,90,0.15);
-  --accent-glow:   rgba(230,46,90,0.3);
+  --accent-dim:    rgba(230,46,90,0.25);
+  --accent-glow:   rgba(230,46,90,0.4);
   --accent-hover:  #ff3d6a;
 
   /* Functional */
   --success:       #3dba78;
+  --success-hover: #4dc88a;
   --danger:        #e62e5a;
   --warning:       #e8a020;
 
@@ -40,15 +42,18 @@
   --hs-audio:      #e8a020;
 
   /* Typography */
-  --font:          'DM Sans', 'Segoe UI', system-ui, sans-serif;
-  --font-mono:     'DM Mono', monospace;
+  --font:          'Roboto Mono', monospace;
+  --font-mono:     'Roboto Mono', monospace;
 
+  --size-xxs: 9px;
   --size-xs:  10px;
   --size-sm:  12px;
+  --size-base: 13px;
   --size-md:  14px;
   --size-lg:  16px;
   --size-xl:  20px;
-  --size-2xl: 26px;
+  --size-2xl: 22px;
+  --size-3xl: 26px;
 
   /* Radius — properly rounded */
   --r-xs:   5px;

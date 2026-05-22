@@ -24,44 +24,48 @@
   document.getElementById('workspace-view').style.display = 'flex';
   document.getElementById('dashboard-view').style.display = 'none';
 
-  // Load data
-  var savedData = window.XenoSupabase ? window.XenoSupabase.loadTour(projectSlug) : null;
-  if (projectSlug === 'sample-tour' && !savedData) {
-    savedData = window.data; // fallback to static data.js
-    if (window.XenoSupabase) window.XenoSupabase.saveTour('sample-tour', savedData);
-  }
-  
-  if (!savedData) {
-    savedData = {
-      settings: {
-        title: "New Tour",
-        name: "New Tour",
-        mouseViewMode: "drag",
-        autorotateEnabled: false,
-        autorotateSpeed: 0.03,
-        autorotateInactivityDelay: 3000,
-        fullscreenButton: true,
-        sceneListStyle: "sidebar",
-        showMinimap: false,
-        minimapPosition: "bottom-left",
-        showControls: true,
-        gyroscopeEnabled: false,
-        vrEnabled: false,
-        anaglyphEnabled: false,
-        defaultTransition: "opacity",
-        defaultTransitionDuration: 1000,
-        defaultTransitionEasing: "easeInOut",
-        branding: { logoUrl: null, accentColor: "#e62e5a", logoPosition: "top-left" },
-        intro: { enabled: false, title: "", subtitle: "", buttonText: "Enter Tour" }
-      },
-      scenes: [],
-      floorplan: { enabled: false, imageUrl: "", width: 800, height: 600 }
-    };
-    if (window.XenoSupabase) window.XenoSupabase.saveTour(projectSlug, savedData);
-  }
+  // Load data asynchronously
+  (window.XenoSupabase ? window.XenoSupabase.loadTour(projectSlug) : Promise.resolve(null))
+    .then(function(savedData) {
+      if (projectSlug === 'sample-tour' && !savedData) {
+        savedData = window.data; // fallback to static data.js
+        if (window.XenoSupabase) window.XenoSupabase.saveTour('sample-tour', savedData);
+      }
+      
+      if (!savedData) {
+        savedData = {
+          settings: {
+            title: "New Tour",
+            name: "New Tour",
+            mouseViewMode: "drag",
+            autorotateEnabled: false,
+            autorotateSpeed: 0.03,
+            autorotateInactivityDelay: 3000,
+            fullscreenButton: true,
+            sceneListStyle: "sidebar",
+            showMinimap: false,
+            minimapPosition: "bottom-left",
+            showControls: true,
+            gyroscopeEnabled: false,
+            vrEnabled: false,
+            anaglyphEnabled: false,
+            defaultTransition: "opacity",
+            defaultTransitionDuration: 1000,
+            defaultTransitionEasing: "easeInOut",
+            branding: { logoUrl: null, accentColor: "#e62e5a", logoPosition: "top-left" },
+            intro: { enabled: false, title: "", subtitle: "", buttonText: "Enter Tour" }
+          },
+          scenes: [],
+          floorplan: { enabled: false, imageUrl: "", width: 800, height: 600 }
+        };
+        if (window.XenoSupabase) window.XenoSupabase.saveTour(projectSlug, savedData);
+      }
 
-  window.data = savedData;
-  var data = window.data;
+      startEditor(savedData);
+    });
+
+  function startEditor(data) {
+    window.data = data;
 
   // ─── Viewer Init ──────────────────────────────────────────
   var viewerOpts = { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } };
@@ -187,6 +191,17 @@
   var sceneFovLabel = document.getElementById('scene-fov-label');
   var btnApplyFov = document.getElementById('btn-apply-fov');
 
+  var propViewYaw = document.getElementById('prop-view-yaw');
+  var propViewPitch = document.getElementById('prop-view-pitch');
+  var propViewFov = document.getElementById('prop-view-fov');
+  var btnReadView = document.getElementById('btn-read-view');
+  var btnApplyView = document.getElementById('btn-apply-view');
+
+  // Bottom view controls
+  var bottomViewYaw = document.getElementById('bottom-view-yaw');
+  var bottomViewPitch = document.getElementById('bottom-view-pitch');
+  var bottomViewFov = document.getElementById('bottom-view-fov');
+
   // New Hotspot Properties
   var propRingEnabled = document.getElementById('prop-ring-enabled');
    var propIconColor = document.getElementById('prop-icon-color');
@@ -295,7 +310,7 @@
       
       var minimapEl = document.getElementById('xeno-minimap');
       if (data.settings.showMinimap) {
-        if (window.initMinimap) window.initMinimap();
+        window.initMinimap();
         if (minimapEl) minimapEl.style.display = 'block';
       } else {
         if (minimapEl) minimapEl.style.display = 'none';
@@ -438,8 +453,8 @@
       
       // Update properties panel if this is the selected hotspot
       if (selectedHotspotData === dragHsData) {
-        posYaw.textContent = coords.yaw.toFixed(2);
-        posPitch.textContent = coords.pitch.toFixed(2);
+        posYaw.textContent = (coords.yaw * 180 / Math.PI).toFixed(0);
+        posPitch.textContent = (coords.pitch * 180 / Math.PI).toFixed(0);
       }
     }
   });
@@ -673,6 +688,15 @@
     // Props Collapse
     propsCollapseBtn.addEventListener('click', function() {
       props.classList.remove('visible');
+      document.getElementById('props-reopen-btn').style.display = 'block';
+      setTimeout(function() { viewer.updateSize(); }, 250);
+    });
+
+    document.getElementById('props-reopen-btn').addEventListener('click', function() {
+      if (selectedHotspotData || document.getElementById('fields-scene-settings').style.display === 'block') {
+        props.classList.add('visible');
+      }
+      this.style.display = 'none';
       setTimeout(function() { viewer.updateSize(); }, 250);
     });
 
@@ -760,6 +784,16 @@
     hotspots.forEach(function(hsData) {
       createVisualHotspot(hsData);
     });
+
+    // Re-attach selectedHotspotElement after rebuild
+    if (selectedHotspotData) {
+      var hotspotsList = container.listHotspots();
+      hotspotsList.forEach(function(h) {
+        if (h.domElement().__hsData === selectedHotspotData) {
+          selectedHotspotElement = h.domElement();
+        }
+      });
+    }
   }
 
   function createVisualHotspot(hsData) {
@@ -811,8 +845,11 @@
     toggleCustomIconGroup();
 
     // Position readout
-    posYaw.textContent = (hsData.yaw || 0).toFixed(2);
-    posPitch.textContent = (hsData.pitch || 0).toFixed(2);
+    posYaw.textContent = ((hsData.yaw || 0) * 180 / Math.PI).toFixed(0);
+    posPitch.textContent = ((hsData.pitch || 0) * 180 / Math.PI).toFixed(0);
+
+    // Refresh dropdowns to exclude current scene
+    populateTargetDropdowns();
 
     // Fill type-specific
     fillTypeFields(hsData);
@@ -822,6 +859,7 @@
 
     propsPanel.classList.add('visible');
     setTimeout(function() { viewer.updateSize(); }, 250);
+    startViewReadLoop();
   }
 
   function openSceneSettingsPanel() {
@@ -926,12 +964,11 @@
 
     // Auto-fill title if user hasn't typed one yet
     var currentTitle = propTitle.value.trim();
-    var isDefaultTitle = !currentTitle
-      || currentTitle === 'New navigate'
-      || currentTitle === 'New link'
+    var isDefaultOrEmpty = !currentTitle
+      || currentTitle.toLowerCase().indexOf('new ') === 0
       || currentTitle === '';
 
-    if (isDefaultTitle && this.value) {
+    if (isDefaultOrEmpty && this.value) {
       // Find the scene name matching this ID
       var targetScene = scenes.find(function(s) { return s.data.id === propTargetScene.value; });
       if (targetScene) {
@@ -952,12 +989,11 @@
 
     // Auto-fill title if user hasn't typed one yet
     var currentTitle = propTitle.value.trim();
-    var isDefaultTitle = !currentTitle
-      || currentTitle === 'New navigate'
-      || currentTitle === 'New link'
+    var isDefaultOrEmpty = !currentTitle
+      || currentTitle.toLowerCase().indexOf('new ') === 0
       || currentTitle === '';
 
-    if (isDefaultTitle && this.value) {
+    if (isDefaultOrEmpty && this.value) {
       // Find the scene name matching this ID
       var targetScene = scenes.find(function(s) { return s.data.id === propInfoTargetScene.value; });
       if (targetScene) {
@@ -986,6 +1022,75 @@
     debouncedSave();
   });
 
+  // TITLE — live label update on the hotspot tooltip
+  propTitle.addEventListener('input', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.title = this.value;
+    selectedHotspotData.label = this.value;
+    // Update just the tooltip text without full rebuild for performance
+    if (selectedHotspotElement) {
+      var tooltip = selectedHotspotElement.querySelector('.link-tooltip, .info-title, .tip p, .scene-card-label, .tip');
+      if (tooltip) {
+        // Different hotspot types have different label structures
+        if (tooltip.tagName === 'P') tooltip.textContent = this.value;
+        else tooltip.textContent = this.value;
+      }
+    }
+    debouncedSave();
+  });
+
+  // ANIMATION — full rebuild needed since class changes on the element
+  propAnimation.addEventListener('change', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.animation = this.value;
+    renderSceneHotspots();
+    debouncedSave();
+  });
+
+  // ICON STYLE — full rebuild needed since SVG content changes
+  propIconStyle.addEventListener('change', function() {
+    toggleCustomIconGroup();
+    if (!selectedHotspotData) return;
+    selectedHotspotData.iconStyle = this.value;
+    renderSceneHotspots();
+    debouncedSave();
+  });
+
+  // CUSTOM ICON URL — rebuild on change
+  propCustomIconUrl.addEventListener('input', function() {
+    if (!selectedHotspotData || propIconStyle.value !== 'custom') return;
+    selectedHotspotData.customIconUrl = this.value;
+    renderSceneHotspots();
+    debouncedSave();
+  });
+
+  // ICON COLOR — direct DOM update, no rebuild needed
+  propIconColor.addEventListener('input', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.iconColor = this.value;
+    if (selectedHotspotElement) {
+      var svg = selectedHotspotElement.querySelector('svg');
+      if (svg) svg.style.color = this.value;
+      var img = selectedHotspotElement.querySelector('img.link-icon');
+      if (img) img.style.filter = 'none'; // can't tint img without rebuild
+      var inner = selectedHotspotElement.querySelector('.in');
+      if (inner) inner.style.backgroundColor = this.value;
+    }
+    debouncedSave();
+  });
+
+  // RING TOGGLE — direct DOM update
+  propRingEnabled.addEventListener('change', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.ringEnabled = this.checked;
+    if (selectedHotspotElement) {
+      var ringTarget = selectedHotspotElement.querySelector('.link-icon-wrapper, .icon_wrapper, .out');
+      if (ringTarget) ringTarget.classList.toggle('has-ring', this.checked);
+      else selectedHotspotElement.classList.toggle('has-ring', this.checked);
+    }
+    debouncedSave();
+  });
+
   // Icon style change
   function toggleCustomIconGroup() {
     if (propIconStyle.value === 'custom') {
@@ -1002,6 +1107,9 @@
       pickBtn.addEventListener('click', function() {
         mediaPickerCallback = function(url, filename) {
           inputEl.value = url;
+          // Trigger change event so data is saved/updated
+          inputEl.dispatchEvent(new Event('change'));
+          inputEl.dispatchEvent(new Event('input'));
         };
         if (mediaModal) mediaModal.classList.add('visible');
         currentAlbumId = null;
@@ -1154,6 +1262,87 @@
     debouncedSave();
   });
 
+  var viewReadLoop = null;
+  function startViewReadLoop() {
+    if (viewReadLoop) return;
+    function tick() {
+      if (!currentSceneCtx) {
+        viewReadLoop = null;
+        return;
+      }
+      var view = currentSceneCtx.view;
+      var y = (view.yaw() * 180 / Math.PI).toFixed(0);
+      var p = (view.pitch() * 180 / Math.PI).toFixed(0);
+      var f = (view.fov() * 180 / Math.PI).toFixed(0);
+
+      // Update bottom bar (always)
+      if (document.activeElement !== bottomViewYaw) bottomViewYaw.value = y;
+      if (document.activeElement !== bottomViewPitch) bottomViewPitch.value = p;
+      if (document.activeElement !== bottomViewFov) bottomViewFov.value = f;
+
+      // Update side panel (if open)
+      if (document.getElementById('fields-scene-settings').style.display !== 'none') {
+        if (document.activeElement !== propViewYaw) propViewYaw.value = y;
+        if (document.activeElement !== propViewPitch) propViewPitch.value = p;
+        if (document.activeElement !== propViewFov) propViewFov.value = f;
+      }
+      viewReadLoop = requestAnimationFrame(tick);
+    }
+    viewReadLoop = requestAnimationFrame(tick);
+  }
+
+  // Handle manual input in bottom bar
+  function updateCameraFromBottom() {
+    if (!currentSceneCtx) return;
+    var yawDeg = parseFloat(bottomViewYaw.value) || 0;
+    var pitchDeg = parseFloat(bottomViewPitch.value) || 0;
+    var fovDeg = parseFloat(bottomViewFov.value) || 90;
+    currentSceneCtx.view.setParameters({
+      yaw: yawDeg * Math.PI / 180,
+      pitch: pitchDeg * Math.PI / 180,
+      fov: fovDeg * Math.PI / 180
+    });
+  }
+
+  [bottomViewYaw, bottomViewPitch, bottomViewFov].forEach(function(el) {
+    el.addEventListener('change', updateCameraFromBottom);
+    el.addEventListener('input', updateCameraFromBottom);
+  });
+
+  btnReadView.addEventListener('click', function() {
+    if (!currentSceneCtx) return;
+    var view = currentSceneCtx.view;
+    propViewYaw.value = (view.yaw() * 180 / Math.PI).toFixed(0);
+    propViewPitch.value = (view.pitch() * 180 / Math.PI).toFixed(0);
+    propViewFov.value = (view.fov() * 180 / Math.PI).toFixed(0);
+    // Also sync the FOV slider
+    propSceneFov.value = propViewFov.value;
+    sceneFovLabel.textContent = propSceneFov.value + '°';
+  });
+
+  btnApplyView.addEventListener('click', function() {
+    if (!currentSceneCtx) return;
+    var yawDeg = parseFloat(propViewYaw.value) || 0;
+    var pitchDeg = parseFloat(propViewPitch.value) || 0;
+    var fovDeg = parseFloat(propViewFov.value) || 90;
+    var params = {
+      yaw: yawDeg * Math.PI / 180,
+      pitch: pitchDeg * Math.PI / 180,
+      fov: fovDeg * Math.PI / 180
+    };
+    currentSceneCtx.view.setParameters(params);
+    currentSceneCtx.data.initialViewParameters = params;
+    currentSceneCtx.data.defaultFov = params.fov;
+    debouncedSave();
+    
+    var originalText = this.innerHTML;
+    this.textContent = '✓ Saved';
+    var self = this;
+    setTimeout(function() {
+      self.innerHTML = originalText;
+    }, 1500);
+  });
+
   // ─── Scene Settings Save ──────────────────────────────────
   document.getElementById('btn-save-view').addEventListener('click', function() {
     if (!currentSceneCtx) return;
@@ -1192,7 +1381,7 @@
     
     var minimapEl = document.getElementById('xeno-minimap');
     if (this.checked) {
-      if (window.initMinimap) window.initMinimap();
+      window.initMinimap();
       if (minimapEl) minimapEl.style.display = 'block';
     } else {
       if (minimapEl) minimapEl.style.display = 'none';
@@ -1204,35 +1393,39 @@
   propFloorplanUrl.addEventListener('change', function() {
     if (!data.floorplan) data.floorplan = {};
     data.floorplan.imageUrl = this.value;
-    if (window.initMinimap) window.initMinimap();
+    window.initMinimap();
     debouncedSave();
   });
 
   // ─── Populate Target Dropdowns ────────────────────────────
-  var lastDropdownSceneState = "";
   function populateTargetDropdowns() {
-    var currentState = scenes.map(function(s) { return s.data.id + ":" + s.data.name; }).sort().join("|");
-    if (currentState === lastDropdownSceneState) return;
-    lastDropdownSceneState = currentState;
-
+    var currentSceneId = currentSceneCtx ? currentSceneCtx.data.id : null;
+    
     [propTargetScene, propInfoTargetScene].forEach(function(sel) {
       if (!sel) return;
+      var lastValue = sel.value;
       sel.innerHTML = '<option value="">-- select --</option>';
       scenes.forEach(function(s) {
+        // Exclude the current scene from the dropdown
+        if (s.data.id === currentSceneId) return;
+
         var opt = document.createElement('option');
         opt.value = s.data.id;
         opt.textContent = s.data.name;
         sel.appendChild(opt);
       });
+      // Restore previous selection if it still exists
+      sel.value = lastValue;
     });
   }
 
   // ─── Add Scene Helper ─────────────────────────────────────
   function addSceneFromUrl(url, name) {
     var newId = 'scene_' + Date.now();
+    var cleanName = (name || 'Untitled').replace(/\.[^/.]+$/, "");
     var sData = {
       id: newId,
-      name: name || 'Untitled',
+      name: cleanName,
       type: 'image',
       mediaUrl: url,
       thumbnailUrl: url,
@@ -1245,6 +1438,37 @@
     var source = Xeno.ImageUrlSource.fromString(sData.mediaUrl);
     var geometry = new Xeno.EquirectGeometry([{ width: 4000 }]);
     var limiter = Xeno.RectilinearView.limit.traditional(1024, 140 * Math.PI / 180);
+    var view = new Xeno.RectilinearView(sData.initialViewParameters, limiter);
+    var scene = viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
+    scenes.push({ data: sData, scene: scene, view: view });
+
+    renderSceneGrid();
+    switchSceneById(newId);
+    debouncedSave();
+  }
+
+  // ─── Video Scene Helper ───────────────────────────────────
+  function addVideoSceneFromUrl(url, name) {
+    var newId = 'scene_' + Date.now();
+    var cleanName = (name || 'Untitled Video').replace(/\.[^/.]+$/, "");
+    var sData = {
+      id: newId,
+      name: cleanName,
+      type: 'video',
+      mediaUrl: url,
+      thumbnailUrl: 'img/photo.png', // Fallback thumbnail
+      initialViewParameters: { yaw: 0, pitch: 0, fov: 1.57 },
+      videoOptions: { autoplay: true, loop: true, muted: true },
+      hotspots: []
+    };
+
+    data.scenes.push(sData);
+
+    var asset = new XenoVideoAsset();
+    asset.setVideo(sData.mediaUrl, sData.videoOptions);
+    var source = new Xeno.SingleAssetSource(asset);
+    var geometry = new Xeno.EquirectGeometry([{ width: 1 }]);
+    var limiter = Xeno.RectilinearView.limit.vfov(90*Math.PI/180, 90*Math.PI/180);
     var view = new Xeno.RectilinearView(sData.initialViewParameters, limiter);
     var scene = viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
     scenes.push({ data: sData, scene: scene, view: view });
@@ -1352,12 +1576,19 @@
             mediaModal.classList.remove('visible');
           } else {
             var isImage = media.type && media.type.startsWith('image/');
-            if (!isImage) {
+            var isVideo = media.type && media.type.startsWith('video/');
+            
+            if (!isImage && !isVideo) {
               showToast("Use this in a hotspot from the properties panel");
               return;
             }
+            
             if (confirm('Add "' + media.filename + '" as a new scene?')) {
-              addSceneFromUrl(media.url, media.filename);
+              if (isVideo) {
+                addVideoSceneFromUrl(media.url, media.filename);
+              } else {
+                addSceneFromUrl(media.url, media.filename);
+              }
               mediaModal.classList.remove('visible');
             }
           }
@@ -1758,6 +1989,14 @@
     });
   }
 
+    // ─── Start Editor logic inside the function ─────────────────
+    renderSceneGrid();
+    if (scenes.length > 0) {
+      switchSceneById(scenes[0].data.id);
+      startViewReadLoop();
+    }
+  }
+
   // ─── Dashboard Helper Functions ─────────────────────────────
   function initDashboard() {
     var searchInput = document.getElementById('project-search');
@@ -1870,12 +2109,6 @@
         grid.appendChild(card);
       });
     });
-  }
-
-  // ─── Start ────────────────────────────────────────────────
-  renderSceneGrid();
-  if (scenes.length > 0) {
-    switchSceneById(scenes[0].data.id);
   }
 
   function showToast(msg) {

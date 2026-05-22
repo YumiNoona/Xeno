@@ -4,8 +4,8 @@
   "description": "A 360° media viewer for the modern web",
   "author": "Google Inc.",
   "license": "Apache-2.0",
-  "main": "src/index.js",
-  "homepage": "http://www.marzipano.net",
+  "main": "engine/src/index.js",
+  "homepage": "https://xeno-tour.com",
   "repository": {
     "type": "git",
     "url": "https://github.com/google/marzipano.git"
@@ -16,10 +16,10 @@
   "scripts": {
     "test": "testem ci",
     "livetest": "testem",
-    "dev": "scripts/dev",
-    "release": "scripts/release",
-    "deploy": "scripts/deploy",
-    "prepublishOnly": "scripts/prepublish"
+    "dev": "engine/scripts/dev",
+    "release": "engine/scripts/release",
+    "deploy": "engine/scripts/deploy",
+    "prepublishOnly": "engine/scripts/prepublish"
   },
   "dependencies": {
     "bowser": "1.9.4",

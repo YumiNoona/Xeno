@@ -1,44 +1,48 @@
-# Xeno — Universal 360° Virtual Tour Platform
+# ✦ Xeno — Professional 360° Virtual Tour Platform
 
-Xeno is a feature-rich, high-performance web platform for creating, managing, and exporting interactive 360° virtual tours. Built on top of a robust 360° rendering core, Xeno provides a professional editor interface, auto-saving workspace, project dashboard, and single-click offline-ready ZIP exports.
+Xeno is a high-performance, feature-rich web platform for creating, managing, and exporting interactive 360° virtual tours. Built on a robust WebGL rendering core, Xeno provides a professional studio interface with real-time editing, cloud persistence via Supabase, and single-click offline-ready exports.
 
 ## 🚀 Key Features
 
-- **Project Dashboard**: A Panoee-style projects management hub to create, search, and manage virtual tours.
-- **Visual Editor**: Author scene properties, configure hotspot placements (Navigate, Info, URL, Tooltip, Audio/Video), customize icons, transitions, rotation angles, and other metadata.
-- **Drag & Drop Scene Reordering**: Rearrange scene ordering in the editor sidebar using natural HTML5 drag-and-drop actions.
-- **Distraction-Free Live Viewer**: Segmented `preview.html` workspace optimized for showing the published virtual tour.
-- **Granular Transitions Control**: Configure transition types (opacity, slide from directions, width expand, color offsets) and ease profiles per hotspot to guide users smoothly between scenes.
-- **Offline ZIP Exporter**: Pack your entire virtual tour project into a self-contained ZIP bundle with relative paths, so it can be hosted anywhere, local server or static web host.
+- **Project Dashboard**: Manage multiple tours from a centralized hub with search and filtering.
+- **Visual Studio**: Real-time authoring of scene properties, hotspots, and transitions.
+- **Multi-Type Hotspots**: Support for Navigation (Scene-to-Scene), Info (Popups), External Links, and Media hotspots.
+- **Gyroscope & Motion**: Built-in support for mobile device orientation, allowing users to look around by moving their phone.
+- **360° Video Scenes**: Native playback support for spherical video scenes with autoplay, loop, and muted options.
+- **Smart Logic**: Automatic hotspot naming based on target scenes and self-linking prevention.
+- **Modern UI**: Clean, dark, technical interface built with a glassmorphic aesthetic.
+- **Cloud & Local Sync**: Dual persistence using LocalStorage and Supabase for maximum reliability.
+- **Offline Exporter**: Bundle your entire tour into a self-contained ZIP for hosting anywhere.
 
-## 🛠️ Tech Stack & Architecture
+## 📂 Project Structure
 
-- **Core**: HTML5, Vanilla JavaScript, and WebGL 360° rendering.
-- **Styling**: Premium custom CSS with a modern glassmorphic dark theme.
-- **Persistence**: Debounced local storage (or Supabase remote integration) to prevent data loss.
-- **Bundling**: Integrated with JSZip for real-time asset compiling and exporting.
+- `engine/`: Core 360° rendering engine source, scripts, and legacy reference demos.
+- `engine/demos/`: Legacy Marzipano examples (Anaglyph, Video, etc.) for feature reference.
+- `js/`: Application-specific logic (UI, Hotspots, Supabase integration).
+- `css/`: Thematic styling and component layouts.
+- `img/`: Optimized UI assets and hotspot icons.
+- `Schema.sql`: Master database schema for Supabase setup.
+
+## 🛠️ Tech Stack
+
+- **Rendering**: WebGL / Marzipano Engine
+- **Backend**: Supabase (PostgreSQL, Storage, RLS)
+- **Frontend**: Vanilla JavaScript (ES5/ES6 compatible), CSS3
+- **Bundling**: JSZip for real-time exports
 
 ## 📦 Getting Started
 
-To launch the project locally:
+1. **Setup Database**:
+   Run the provided `Schema.sql` in your Supabase SQL Editor. It will set up all tables and storage buckets (`xeno-media`).
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/YumiNoona/Xeno.git
-   cd Xeno
-   ```
+2. **Configure Environment**:
+   Update `config.js` with your Supabase URL and Anon Key.
 
-2. Install dependencies:
+3. **Install & Run**:
    ```bash
    npm install
-   ```
-
-3. Run the development server:
-   ```bash
    npm run dev
    ```
-
-4. Open `http://localhost:8080` in your web browser.
 
 ## 📄 License
 This project is licensed under the Apache-2.0 License.

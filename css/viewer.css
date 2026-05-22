@@ -260,6 +260,67 @@ html, body {
   fill: currentColor;
 }
 
+/* ─── View Mode Menu ────────────────────────────────────── */
+.view-mode-menu {
+  position: absolute;
+  bottom: 20px; /* Align with bottom of control bar */
+  right: 74px;  /* 20px edge + 44px button + 10px gap */
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 9999; /* Ensure it's on top of EVERYTHING */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(10px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 160px;
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+.view-mode-menu.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.view-mode-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.view-mode-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  transform: translateX(2px);
+}
+
+.view-mode-item svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+.view-mode-item span {
+  font-size: 14px;
+  font-weight: 500;
+}
+
 /* ─── View Control Buttons (directional) ─────────────────── */
 #viewControls {
   position: absolute;

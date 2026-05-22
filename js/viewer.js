@@ -14,16 +14,14 @@
   }
   
   var data = window.data;
-  if (!window.isExported) {
-    var previewSlug = new URLSearchParams(window.location.search).get('project') || 'sample-tour';
-    var savedData = window.XenoSupabase ? window.XenoSupabase.loadTour(previewSlug) : null;
-    if (savedData) {
-      window.data = savedData;
-      data = savedData;
-    }
-  }
 
-  // Grab elements from DOM.
+  function initViewer(tourData) {
+    if (tourData) {
+      data = tourData;
+      window.data = tourData;
+    }
+
+    // Grab elements from DOM.
   var panoElement = document.querySelector('#pano');
   var sceneNameElement = document.querySelector('#titleBar .sceneName');
   var sceneListElement = document.querySelector('#sceneList');
@@ -240,6 +238,9 @@
   var viewLeftElement = document.querySelector('#viewLeft');
   var viewRightElement = document.querySelector('#viewRight');
 
+  var gyroToggleElement = document.querySelector('#gyroToggle');
+  var vrToggleElement = document.querySelector('#vrToggle');
+
   var velocity = 0.7;
   var friction = 3;
 
@@ -248,6 +249,40 @@
   if (viewDownElement) controls.registerMethod('downElement', new Xeno.ElementPressControlMethod(viewDownElement, 'y', velocity, friction), true);
   if (viewLeftElement) controls.registerMethod('leftElement', new Xeno.ElementPressControlMethod(viewLeftElement, 'x', -velocity, friction), true);
   if (viewRightElement) controls.registerMethod('rightElement', new Xeno.ElementPressControlMethod(viewRightElement, 'x', velocity, friction), true);
+
+  // Gyroscope Control
+  var gyroMethod = null;
+  if (gyroToggleElement && window.DeviceOrientationControlMethod) {
+    gyroToggleElement.addEventListener('click', function() {
+      if (gyroMethod) {
+        controls.unregisterMethod('deviceOrientation');
+        gyroMethod.destroy();
+        gyroMethod = null;
+        gyroToggleElement.classList.remove('enabled');
+        gyroToggleElement.classList.remove('active');
+      } else {
+        gyroMethod = new DeviceOrientationControlMethod();
+        gyroMethod.requestPermission(function(granted) {
+          if (granted) {
+            controls.registerMethod('deviceOrientation', gyroMethod);
+            gyroToggleElement.classList.add('enabled');
+            gyroToggleElement.classList.add('active');
+          } else {
+            gyroMethod.destroy();
+            gyroMethod = null;
+            alert("Gyroscope permission denied.");
+          }
+        });
+      }
+    });
+  }
+
+  // WebVR Support
+  if (vrToggleElement) {
+    vrToggleElement.addEventListener('click', function() {
+      alert("VR Mode: This feature requires a secure HTTPS connection and a supported VR headset/browser.");
+    });
+  }
 
   function sanitize(s) {
     return (s || '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;');
@@ -351,6 +386,45 @@
   var anaglyphToggle = document.querySelector('#anaglyphToggle');
   var minimapToggle = document.querySelector('#minimapToggle');
   var viewControlsToggle = document.querySelector('#viewControlsToggle');
+  var viewModeToggle = document.querySelector('#viewModeToggle');
+  var viewModeMenu = document.querySelector('#viewModeMenu');
+
+  if (viewModeToggle && viewModeMenu) {
+    viewModeToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      viewModeMenu.classList.toggle('visible');
+    });
+
+    document.addEventListener('click', function() {
+      viewModeMenu.classList.remove('visible');
+    });
+
+    viewModeMenu.querySelectorAll('.view-mode-item').forEach(function(item) {
+      item.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var mode = this.getAttribute('data-mode');
+        setViewMode(mode);
+        viewModeMenu.classList.remove('visible');
+      });
+    });
+  }
+
+  function setViewMode(mode) {
+    if (!viewer) return;
+    var view = viewer.view();
+    if (!view) return;
+
+    var params = {};
+    if (mode === 'normal') {
+      params = { yaw: view.yaw(), pitch: 0, fov: Math.PI/2 };
+    } else if (mode === 'mirror-ball') {
+      params = { yaw: view.yaw(), pitch: Math.PI/2, fov: 140 * Math.PI/180 };
+    } else if (mode === 'little-planet') {
+      params = { yaw: view.yaw(), pitch: -Math.PI/2, fov: 140 * Math.PI/180 };
+    }
+    
+    view.setParameters(params);
+  }
 
   // Set up Device Orientation (Gyroscope)
   var deviceOrientationControlMethod = null;
@@ -419,10 +493,22 @@
     });
   }
 
-  // Initial Scene Load
-  if (scenes.length > 0) {
-    var firstVisibleScene = scenes.find(function(s) { return !s.data.hidden; }) || scenes[0];
-    switchScene(firstVisibleScene);
+    // Initial Scene Load
+    if (scenes.length > 0) {
+      var firstVisibleScene = scenes.find(function(s) { return !s.data.hidden; }) || scenes[0];
+      switchScene(firstVisibleScene);
+    }
+  }
+
+  // Startup logic
+  if (!window.isExported) {
+    var previewSlug = new URLSearchParams(window.location.search).get('project') || 'sample-tour';
+    (window.XenoSupabase ? window.XenoSupabase.loadTour(previewSlug) : Promise.resolve(null))
+      .then(function(savedData) {
+        initViewer(savedData || window.data);
+      });
+  } else {
+    initViewer(window.data);
   }
 
 })();

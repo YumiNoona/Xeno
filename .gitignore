@@ -1,6 +1,18 @@
+# Dependencies
 node_modules/
+package-lock.json
+
+# Local Environment
 .env
-.gemini/
-build/
 .DS_Store
 *.log
+.vscode/
+.idea/
+.gemini/
+
+# Engine Dev Artifacts
+engine.jshintrc
+jsdoc-conf.json
+jsdoc.md
+testem.json
+test.js

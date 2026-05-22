@@ -17,6 +17,9 @@
     
     if (!minimapElement || !data || !data.floorplan || !scenes) return;
 
+    // Clear existing
+    minimapElement.innerHTML = '';
+
     // Is this editor? (presence of saveTour suggests so)
     var isEditor = !!window.XenoSupabase;
     if (isEditor) minimapElement.classList.add('edit-mode');
@@ -24,15 +27,13 @@
     var enabled = data.settings.showMinimap === true && data.floorplan.enabled === true;
     var positionClass = 'pos-' + (data.settings.minimapPosition || 'bottom-left');
     
+    minimapElement.classList.remove('pos-bottom-left', 'pos-bottom-right', 'pos-top-left', 'pos-top-right');
     minimapElement.classList.add(positionClass);
 
     if (enabled && minimapToggle) {
       minimapToggle.classList.add('active');
       minimapElement.style.display = 'block';
     }
-
-    // Clear existing
-    minimapElement.innerHTML = '';
 
     if (!data.floorplan.imageUrl) {
       if (isEditor) {
@@ -44,6 +45,21 @@
       return;
     }
 
+    // Header
+    var header = document.createElement('div');
+    header.style.cssText = 'padding:8px 12px; background:var(--bg-panel); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;';
+    header.innerHTML = '<span style="font-size:10px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em;">Mini-map</span>' +
+                       '<div style="display:flex; gap:8px; align-items:center;">' +
+                         '<span class="minimap-count" style="font-size:10px; color:var(--accent);">0 hotspots</span>' +
+                         '<button class="minimap-collapse" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:12px; padding:0 4px;">^</button>' +
+                       '</div>';
+    minimapElement.appendChild(header);
+
+    var mapBody = document.createElement('div');
+    mapBody.className = 'minimap-body';
+    mapBody.style.cssText = 'position:relative; width:100%; height:calc(100% - 30px);';
+    minimapElement.appendChild(mapBody);
+
     // Build the DOM map
     var mapImage = document.createElement('img');
     mapImage.src = data.floorplan.imageUrl || '';
@@ -53,7 +69,7 @@
     mapImage.style.position = 'absolute';
     mapImage.style.top = '0';
     mapImage.style.left = '0';
-    minimapElement.appendChild(mapImage);
+    mapBody.appendChild(mapImage);
 
     var dotElements = {};
 
@@ -66,11 +82,9 @@
         dot.classList.add('minimap-dot');
         dot.style.position = 'absolute';
         // Use percentages for responsive positioning over the contain-fitted image.
-        // Note: If aspect ratios differ, this needs a wrapper to match image aspect precisely.
-        // For simplicity, we assume the minimap container matches the floorplan aspect ratio closely.
         dot.style.left = sData.minimapPosition.x + '%';
         dot.style.top = sData.minimapPosition.y + '%';
-        dot.title = sData.name;
+        dot.title = sData.name.replace(/\.[^/.]+$/, "");
 
         // Radar element
         var radar = document.createElement('div');
@@ -79,14 +93,11 @@
 
         dot.addEventListener('click', function(e) {
           if (dot.classList.contains('dragging')) return;
-          // Since we are in the same environment and viewer.js is main, 
-          // we'll rely on a global `window.xenoSwitchScene(sceneCtx)` being added in viewer.js.
           if (window.switchSceneById) {
             window.switchSceneById(sData.id);
           } else if (window.xenoSwitchScene) {
             window.xenoSwitchScene(sceneCtx);
           } else {
-            // Fallback to basic switch
             sceneCtx.scene.switchTo();
             if (window.updateMinimap) window.updateMinimap(sceneCtx);
           }
@@ -98,7 +109,7 @@
             e.stopPropagation();
             e.preventDefault();
             
-            var rect = minimapElement.getBoundingClientRect();
+            var rect = mapBody.getBoundingClientRect();
             var onMouseMove = function(moveE) {
               dot.classList.add('dragging');
               var x = ((moveE.clientX - rect.left) / rect.width) * 100;
@@ -126,10 +137,49 @@
           });
         }
 
-        minimapElement.appendChild(dot);
+        mapBody.appendChild(dot);
         dotElements[sData.id] = dot;
       }
     });
+
+    // Unplaced scenes list (Editor only)
+    if (isEditor) {
+      var unplaced = scenes.filter(function(s) { 
+        return !s.data.hidden && (!s.data.minimapPosition || s.data.minimapPosition.x == null); 
+      });
+      if (unplaced.length > 0) {
+        var unplacedBar = document.createElement('div');
+        unplacedBar.style.cssText = 'position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.8); padding:4px 8px; font-size:9px; color:#fff; display:flex; gap:6px; overflow-x:auto; white-space:nowrap; z-index:10; border-top:1px solid var(--border);';
+        unplacedBar.innerHTML = '<span style="opacity:0.6;">Unplaced:</span>';
+        unplaced.forEach(function(sCtx) {
+          var btn = document.createElement('button');
+          btn.textContent = sCtx.data.name.replace(/\.[^/.]+$/, "").substring(0, 10);
+          btn.style.cssText = 'background:var(--accent); border:none; border-radius:3px; color:#fff; padding:2px 6px; cursor:pointer; font-size:9px;';
+          btn.addEventListener('click', function() {
+            sCtx.data.minimapPosition = { x: 50, y: 50 };
+            window.initMinimap();
+            if (window.debouncedSave) window.debouncedSave();
+          });
+          unplacedBar.appendChild(btn);
+        });
+        mapBody.appendChild(unplacedBar);
+      }
+    }
+
+    // Collapse toggle
+    header.querySelector('.minimap-collapse').addEventListener('click', function() {
+      var isCollapsed = mapBody.style.display === 'none';
+      mapBody.style.display = isCollapsed ? 'block' : 'none';
+      this.textContent = isCollapsed ? '^' : 'v';
+      minimapElement.style.height = isCollapsed ? '150px' : '30px';
+    });
+
+    function updateHotspotCount(currentSceneCtx) {
+      var count = (currentSceneCtx && currentSceneCtx.data.hotspots) 
+        ? currentSceneCtx.data.hotspots.length : 0;
+      var label = header.querySelector('.minimap-count');
+      if (label) label.textContent = count + ' hotspot' + (count !== 1 ? 's' : '');
+    }
 
     // Rotation tracker
     var lastYaw = 0;
@@ -145,16 +195,13 @@
       if (yaw !== lastYaw) {
         lastYaw = yaw;
         // Find the active dot's radar
-        var activeDot = minimapElement.querySelector('.minimap-dot.active');
+        var activeDot = mapBody.querySelector('.minimap-dot.active');
         if (activeDot) {
           var radar = activeDot.querySelector('.minimap-radar');
           if (radar) {
-            // Marzipano yaw is in radians, 0 is forward. 
-            // Minimap radar rotate(0) is usually up.
             var deg = (yaw * 180 / Math.PI);
             radar.style.transform = 'translate(-50%, -50%) rotate(' + deg + 'deg)';
             
-            // Adjust radar cone width based on FOV
             var fov = view.fov();
             var fovDeg = (fov * 180 / Math.PI);
             var halfFov = fovDeg / 2;
@@ -178,7 +225,13 @@
       if (dotElements[currentId]) {
         dotElements[currentId].classList.add('active');
       }
+
+      updateHotspotCount(currentSceneCtx);
     };
+
+    // Initial count
+    var firstVisible = scenes.find(function(s) { return !s.data.hidden; }) || scenes[0];
+    updateHotspotCount(firstVisible);
   };
 
 })();

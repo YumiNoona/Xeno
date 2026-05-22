@@ -7,7 +7,7 @@
  *   XenoSupabase.init({ url: '...', anonKey: '...' });
  *   XenoSupabase.loadTour('my-tour').then(data => ...);
  *   XenoSupabase.saveTour('my-tour', dataObj).then(() => ...);
- *   XenoSupabase.uploadFile('panoramas', file).then(publicUrl => ...);
+ *   XenoSupabase.uploadFile('xeno-media', file).then(publicUrl => ...);
  */
 (function () {
   'use strict';
@@ -263,16 +263,35 @@
   }
 
   /**
-   * Load a tour synchronously by slug from localStorage
+   * Load a tour by slug (checks localStorage first, then Supabase if configured)
+   * Returns a Promise resolving to the tour data object or null.
    */
   function loadTour(slug) {
     var raw = localStorage.getItem(LOCAL_STORAGE_PREFIX + slug);
     if (raw) {
       try {
-        return JSON.parse(raw).data;
+        var parsed = JSON.parse(raw);
+        return Promise.resolve(parsed.data || parsed);
       } catch(e) {}
     }
-    return null;
+    
+    if (isConfigured()) {
+      return restGet('/rest/v1/tours?slug=eq.' + encodeURIComponent(slug) + '&select=*')
+        .then(function(rows) {
+          if (rows && rows.length > 0) {
+            var r = rows[0];
+            var tourData = typeof r.data === 'string' ? JSON.parse(r.data) : r.data;
+            // Sync to local storage
+            localStorage.setItem(LOCAL_STORAGE_PREFIX + r.slug, JSON.stringify({ data: tourData, updated_at: r.updated_at }));
+            return tourData;
+          }
+          return null;
+        }).catch(function(err) {
+          console.warn('Supabase loadTour failed', err);
+          return null;
+        });
+    }
+    return Promise.resolve(null);
   }
 
   /**

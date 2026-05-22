@@ -4,7 +4,12 @@
   <meta charset="utf-8">
   <title>Xeno — Universal 360° Tour</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
+  <link rel="icon" type="image/x-icon" href="img/logo.ico">
   
+  <!-- Font: Roboto Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/hint.css">
@@ -44,16 +49,16 @@
       <svg class="icon off" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"/></svg>
     </div>
     <div id="gyroToggle" class="ctrl-btn" title="Toggle Gyroscope">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M12,2L1,21H23M12,6L19.53,19H4.47"/></svg>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m12 12 3-3"/><path d="m12 12-3 3"/><path d="m12 12 3 3"/><path d="m12 12-3-3"/><circle cx="12" cy="12" r="2"/></svg>
     </div>
-    <div id="vrToggle" class="ctrl-btn" title="Enter VR Mode" style="display: none;">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M12 2A9.91 9.91 0 0 0 2.22 10.33C2.08 10.87 2 11.42 2 12C2 17.5 6.5 22 12 22S22 17.5 22 12C22 11.42 21.92 10.87 21.78 10.33A9.91 9.91 0 0 0 12 2M12 20C7.59 20 4 16.41 4 12C4 11.66 4.04 11.33 4.1 11H9V14A3 3 0 0 0 15 14V11H19.9C19.96 11.33 20 11.66 20 12C20 16.41 16.41 20 12 20Z"/></svg>
-    </div>
-    <div id="anaglyphToggle" class="ctrl-btn" title="Toggle Red/Cyan 3D">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M11,19.93C7.05,19.43 4,16.05 4,12C4,7.95 7.05,4.57 11,4.07V19.93M13,4.07C16.95,4.57 20,7.95 20,12C20,16.05 16.95,19.43 13,19.93V4.07Z"/></svg>
+    <div id="vrToggle" class="ctrl-btn" title="Enter VR Mode">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="7" cy="12" r="2"/><circle cx="17" cy="12" r="2"/><path d="M12 12h.01"/></svg>
     </div>
     <div id="minimapToggle" class="ctrl-btn" title="Toggle Minimap">
       <svg class="icon" viewBox="0 0 24 24"><path d="M12,2L4,5V19L12,22L20,19V5M12,4.38L18,6.63V17.38L12,19.63V4.38Z"/></svg>
+    </div>
+    <div id="viewModeToggle" class="ctrl-btn" title="Change View Mode">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
     </div>
     <div id="viewControlsToggle" class="ctrl-btn" title="Toggle Move Controls">
       <svg class="icon" viewBox="0 0 24 24">
@@ -106,5 +111,22 @@
 
   <!-- App Entry -->
   <script src="js/viewer.js"></script>
+
+  <!-- Global UI Menus -->
+  <div id="viewModeMenu" class="view-mode-menu">
+    <div class="view-mode-item" data-mode="normal">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      <span>Normal</span>
+    </div>
+    <div class="view-mode-item" data-mode="mirror-ball">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      <span>Mirror Ball</span>
+    </div>
+    <div class="view-mode-item" data-mode="little-planet">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"/><path d="M12.5 8.5h.01"/><path d="M16 12h.01"/><path d="M11 12h.01"/><path d="M15 15h.01"/><path d="M2 12a10 10 0 1 0 13-9.54"/></svg>
+      <span>Little Planet</span>
+    </div>
+  </div>
+
 </body>
 </html>
