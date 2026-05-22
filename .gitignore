@@ -4,7 +4,6 @@ package-lock.json
 
 # Local Environment
 .env
-config.js
 .DS_Store
 *.log
 .vscode/
@@ -17,3 +16,4 @@ jsdoc-conf.json
 jsdoc.md
 testem.json
 test.js
+config.js

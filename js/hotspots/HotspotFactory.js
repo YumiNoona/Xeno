@@ -499,7 +499,7 @@
 
         var closeBtn = document.createElement('div');
         closeBtn.textContent = '×';
-        closeBtn.style.cssText = 'position:absolute; top:20px; right:30px; font-size:40px; color:#fff; cursor:pointer; opacity:0.7; transition:opacity 0.2s;';
+        closeBtn.style.cssText = 'position:absolute; top:20px; right:30px; font-size:var(--type-4xl); font-family:inherit; color:#fff; cursor:pointer; opacity:0.7; transition:opacity 0.2s;';
         closeBtn.addEventListener('mouseenter', function() { closeBtn.style.opacity = '1'; });
         closeBtn.addEventListener('mouseleave', function() { closeBtn.style.opacity = '0.7'; });
         closeBtn.addEventListener('click', function() { document.body.removeChild(overlay); });
@@ -523,7 +523,7 @@
         if (hotspot.content && hotspot.content.caption) {
           var caption = document.createElement('div');
           caption.textContent = hotspot.content.caption;
-          caption.style.cssText = 'margin-top:15px; color:#fff; font-size:16px; font-family:sans-serif; text-shadow:0 2px 4px rgba(0,0,0,0.8); opacity:0.9; text-align:center;';
+          caption.style.cssText = 'margin-top:15px; color:#fff; font-size:var(--type-lg); font-family:inherit; text-shadow:0 2px 4px rgba(0,0,0,0.8); opacity:0.9; text-align:center;';
           contentWrapper.appendChild(caption);
         }
 
@@ -582,7 +582,7 @@
 
         var closeBtn = document.createElement('div');
         closeBtn.textContent = '×';
-        closeBtn.style.cssText = 'position:absolute; top:20px; right:30px; font-size:40px; color:#fff; cursor:pointer; opacity:0.7; transition:opacity 0.2s;';
+        closeBtn.style.cssText = 'position:absolute; top:20px; right:30px; font-size:var(--type-4xl); font-family:inherit; color:#fff; cursor:pointer; opacity:0.7; transition:opacity 0.2s;';
         closeBtn.addEventListener('mouseenter', function() { closeBtn.style.opacity = '1'; });
         closeBtn.addEventListener('mouseleave', function() { closeBtn.style.opacity = '0.7'; });
         closeBtn.addEventListener('click', function() { document.body.removeChild(overlay); });

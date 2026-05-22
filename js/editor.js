@@ -160,6 +160,74 @@
   var btnConfirmMove = document.getElementById('btn-confirm-move');
   var btnCloseMoveModal = document.getElementById('btn-close-move-modal');
 
+  // Media Action Bar elements
+  var mediaActionBar = document.getElementById('media-action-bar');
+  var btnAddSelected = document.getElementById('btn-add-selected');
+  var btnDeleteSelected = document.getElementById('btn-delete-selected');
+  var btnClearMediaSel = document.getElementById('btn-clear-media-sel');
+
+  btnAddSelected.addEventListener('click', function() {
+    if (selectedMediaIds.size === 0) return;
+
+    selectedMediaIds.forEach(function(mediaId) {
+      var media = selectedMediaMap[mediaId];
+      if (media) {
+        var isVideo = media.type && media.type.startsWith('video/');
+        if (isVideo) {
+          addVideoSceneFromUrl(media.url, media.filename);
+        } else {
+          addSceneFromUrl(media.url, media.filename);
+        }
+      }
+    });
+    mediaModal.classList.remove('visible');
+    selectedMediaIds.clear();
+    selectedMediaMap = {};
+    lastClickedMediaIndex = null;
+    syncMediaSelection();
+    debouncedSave();
+  });
+
+  document.getElementById('btn-clear-scene-sel').addEventListener('click', function() {
+    selectedSceneIds.clear();
+    lastClickedSceneIndex = null;
+    syncSceneSelection();
+  });
+
+  btnDeleteSelected.addEventListener('click', function() {
+    if (selectedMediaIds.size === 0) return;
+
+    if (!confirm('Delete ' + selectedMediaIds.size + ' items? This cannot be undone.')) return;
+
+    var deletePromises = [];
+    selectedMediaIds.forEach(function(mediaId) {
+      var media = selectedMediaMap[mediaId];
+      if (media) {
+        deletePromises.push(window.XenoSupabase.deleteMedia(media.id, media.url));
+      }
+    });
+
+    Promise.all(deletePromises)
+      .then(function() {
+        selectedMediaIds.clear();
+        selectedMediaMap = {};
+        lastClickedMediaIndex = null;
+        loadMedia(currentAlbumId); // Reload media grid
+        showToast('Deleted ' + deletePromises.length + ' media items.');
+      })
+      .catch(function(err) {
+        alert('Error deleting media: ' + err.message);
+        console.error('Error deleting media:', err);
+      });
+  });
+
+  btnClearMediaSel.addEventListener('click', function() {
+    selectedMediaIds.clear();
+    selectedMediaMap = {};
+    lastClickedMediaIndex = null;
+    syncMediaSelection();
+  });
+
   var albumCtxTarget = null;
   var mediaCtxTarget = null;
 
@@ -469,7 +537,31 @@
 
   // ─── Scene Grid ───────────────────────────────────────────
   var contextTarget = null; // scene being right-clicked
+  var selectedSceneIds = new Set(); // Set of scene data.id strings
+  var lastClickedSceneIndex = null; // for shift-click range
+  var dragIsMulti = false; // true when dragging a selected group
   var dragSourceIndex = null; // scene being dragged index
+
+  function syncSceneSelection() {
+    var sceneCards = sceneGridEl.querySelectorAll('.scene-card');
+    sceneCards.forEach(function(card) {
+      var sceneId = card.__sceneData.id;
+      if (selectedSceneIds.has(sceneId)) {
+        card.classList.add('scene-selected');
+      } else {
+        card.classList.remove('scene-selected');
+      }
+    });
+
+    var sceneMultiToolbar = document.getElementById('scene-multi-toolbar');
+    var sceneSelCount = document.getElementById('scene-sel-count');
+    if (selectedSceneIds.size > 1) { // Only show if more than one scene is selected
+      sceneSelCount.textContent = selectedSceneIds.size + ' scenes selected';
+      sceneMultiToolbar.style.display = 'flex';
+    } else {
+      sceneMultiToolbar.style.display = 'none';
+    }
+  }
 
   function renderSceneGrid() {
     sceneGridEl.innerHTML = '';
@@ -507,10 +599,20 @@
       card.draggable = true;
 
       card.addEventListener('dragstart', function(e) {
+        if (selectedSceneIds.has(s.data.id)) {
+          dragIsMulti = true;
+          // Store all selected scene IDs for multi-drag
+          e.dataTransfer.setData('text/plain', JSON.stringify(Array.from(selectedSceneIds)));
+        } else {
+          dragIsMulti = false;
+          // Clear selection if dragging an unselected card
+          selectedSceneIds.clear();
+          syncSceneSelection();
+          e.dataTransfer.setData('text/plain', JSON.stringify([s.data.id]));
+        }
         dragSourceIndex = index;
         card.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', index);
       });
 
       card.addEventListener('dragend', function() {
@@ -520,6 +622,7 @@
           c.classList.remove('drag-over');
         });
         dragSourceIndex = null;
+        dragIsMulti = false; // Reset multi-drag flag
       });
 
       card.addEventListener('dragover', function(e) {
@@ -542,23 +645,73 @@
         e.preventDefault();
         e.stopPropagation();
 
-        if (dragSourceIndex !== null && dragSourceIndex !== index) {
-          // Splice out the dragged scene
+        if (dragSourceIndex === null) return false;
+
+        var droppedSceneIds = JSON.parse(e.dataTransfer.getData('text/plain'));
+        var dropTargetIndex = index;
+
+        if (dragIsMulti) {
+          // Filter out selected scenes from the original array
+          var remainingScenes = scenes.filter(function(scene) {
+            return !selectedSceneIds.has(scene.data.id);
+          });
+
+          // Get the actual scene objects for the dropped IDs, maintaining original order
+          var draggedScenes = droppedSceneIds.map(function(id) {
+            return scenes.find(function(scene) { return scene.data.id === id; });
+          }).filter(Boolean); // Filter out any nulls if a scene wasn't found
+
+          // Calculate adjusted drop index
+          var numSelectedBeforeTarget = scenes.slice(0, dropTargetIndex).filter(function(scene) {
+            return selectedSceneIds.has(scene.data.id);
+          }).length;
+          var adjustedDropIndex = dropTargetIndex - numSelectedBeforeTarget;
+
+          // Insert the dragged scenes at the adjusted drop index
+          remainingScenes.splice(adjustedDropIndex, 0, ...draggedScenes);
+          scenes = remainingScenes;
+
+        } else {
+          // Existing single-card splice logic
           var draggedScene = scenes.splice(dragSourceIndex, 1)[0];
-          // Insert at the drop target index
-          scenes.splice(index, 0, draggedScene);
-
-          // Update underlying database configurations array order
-          data.scenes = scenes.map(function(item) { return item.data; });
-
-          renderSceneGrid();
-          debouncedSave();
+          scenes.splice(dropTargetIndex, 0, draggedScene);
         }
+
+        // Update underlying database configurations array order
+        data.scenes = scenes.map(function(item) { return item.data; });
+
+        renderSceneGrid();
+        debouncedSave();
         return false;
       });
 
-      card.addEventListener('click', function() {
-        switchSceneById(s.data.id);
+      card.addEventListener('click', function(e) {
+        var sceneId = s.data.id;
+        if (e.shiftKey) {
+          if (lastClickedSceneIndex !== null) {
+            var startIndex = Math.min(lastClickedSceneIndex, index);
+            var endIndex = Math.max(lastClickedSceneIndex, index);
+            for (var i = startIndex; i <= endIndex; i++) {
+              selectedSceneIds.add(scenes[i].data.id);
+            }
+          } else {
+            selectedSceneIds.add(sceneId);
+          }
+        } else {
+          if (selectedSceneIds.size > 0) {
+            // Multi-select mode is active, toggle this card's selection
+            if (selectedSceneIds.has(sceneId)) {
+              selectedSceneIds.delete(sceneId);
+            } else {
+              selectedSceneIds.add(sceneId);
+            }
+          } else {
+            // No multi-select active, behave as before (navigate)
+            switchSceneById(sceneId);
+          }
+        }
+        lastClickedSceneIndex = index;
+        syncSceneSelection();
       });
 
       // Handle clicking the eye icon to toggle visibility
@@ -588,6 +741,40 @@
     mediaModal.classList.add('visible');
     loadAlbums();
     loadMedia(currentAlbumId);
+  });
+
+  // Scene Multi-select Toolbar buttons
+  document.getElementById('btn-delete-scenes').addEventListener('click', function() {
+    if (selectedSceneIds.size === 0) return;
+
+    if (scenes.length - selectedSceneIds.size < 1) {
+      alert('Cannot delete all scenes. At least one scene must remain.');
+      return;
+    }
+
+    if (!confirm('Delete ' + selectedSceneIds.size + ' selected scenes? This cannot be undone.')) return;
+
+    var currentSceneWasDeleted = selectedSceneIds.has(currentSceneCtx.data.id);
+
+    // Filter out selected scenes
+    scenes = scenes.filter(function(s) {
+      return !selectedSceneIds.has(s.data.id);
+    });
+    data.scenes = scenes.map(function(item) { return item.data; });
+
+    if (currentSceneWasDeleted && scenes.length > 0) {
+      switchSceneById(scenes[0].data.id); // Switch to the first remaining scene
+    } else if (scenes.length === 0) {
+      // This case should be prevented by the check above, but as a fallback
+      alert('All scenes deleted. Please add a new scene.');
+      // Potentially reset editor state or navigate to dashboard
+    }
+
+    selectedSceneIds.clear();
+    lastClickedSceneIndex = null;
+    renderSceneGrid();
+    syncSceneSelection();
+    debouncedSave();
   });
 
   // Context menu actions
@@ -1270,9 +1457,10 @@
         return;
       }
       var view = currentSceneCtx.view;
-      var y = (view.yaw() * 180 / Math.PI).toFixed(0);
-      var p = (view.pitch() * 180 / Math.PI).toFixed(0);
-      var f = (view.fov() * 180 / Math.PI).toFixed(0);
+      var params = view.parameters();
+      var y = (params.yaw * 180 / Math.PI).toFixed(0);
+      var p = (params.pitch * 180 / Math.PI).toFixed(0);
+      var f = (params.fov * 180 / Math.PI).toFixed(0);
 
       // Update bottom bar (always)
       if (document.activeElement !== bottomViewYaw) bottomViewYaw.value = y;
@@ -1479,6 +1667,10 @@
 
   // ─── Media Manager ────────────────────────────────────────
   var currentAlbumId = null;
+  var selectedMediaIds = new Set(); // Set of media.id strings
+  var selectedMediaMap = {}; // id → full media object
+  var lastClickedMediaIndex = null; // for shift-click range
+  var mediaListCache = []; // current flat array for indexing
 
   document.getElementById('btn-media-manager').addEventListener('click', function() {
     mediaModal.classList.add('visible');
@@ -1540,14 +1732,44 @@
     });
   }
 
+  function syncMediaSelection() {
+    var mediaGrid = document.getElementById('media-grid');
+    var mediaItems = mediaGrid.querySelectorAll('.media-item');
+    mediaItems.forEach(function(item) {
+      var mediaId = item.__mediaData.id;
+      if (selectedMediaIds.has(mediaId)) {
+        item.classList.add('selected');
+      } else {
+        item.classList.remove('selected');
+      }
+    });
+
+    var mediaActionBar = document.getElementById('media-action-bar');
+    var mediaSelCount = document.getElementById('media-sel-count');
+    if (selectedMediaIds.size > 0) {
+      mediaSelCount.textContent = selectedMediaIds.size + ' selected';
+      mediaActionBar.style.display = 'flex';
+    } else {
+      mediaActionBar.style.display = 'none';
+    }
+  }
+
   function loadMedia(albumId) {
+    selectedMediaIds.clear();
+    selectedMediaMap = {};
+    lastClickedMediaIndex = null;
+    mediaListCache = [];
+    syncMediaSelection(); // Update UI to reflect cleared selection
     mediaGridEl.innerHTML = '<div class="media-loading"><i class="ti ti-loader animate-spin"></i> Loading...</div>';
     window.XenoSupabase.fetchMedia(albumId).then(function(mediaList) {
+      mediaListCache = mediaList; // Populate cache
       mediaGridEl.innerHTML = '';
-      mediaList.forEach(function(media) {
+      mediaList.forEach(function(media, index) {
         var item = document.createElement('div');
         item.className = 'media-item';
         item.style.position = 'relative';
+        item.__mediaIndex = index; // Store index
+        item.__mediaData = media; // Store full media object
         
         var thumb = (media.type && media.type.startsWith('video')) ? '' : media.url;
         var imgHtml = '';
@@ -1568,29 +1790,35 @@
         
         item.innerHTML = badgeHtml + imgHtml + '<div class="title">' + media.filename + '</div>';
         
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function(e) {
           if (mediaPickerCallback) {
             mediaPickerCallback(media.url, media.filename);
             mediaPickerCallback = null;
             mediaModal.classList.remove('visible');
-          } else {
-            var isImage = media.type && media.type.startsWith('image/');
-            var isVideo = media.type && media.type.startsWith('video/');
-            
-            if (!isImage && !isVideo) {
-              showToast("Use this in a hotspot from the properties panel");
-              return;
+            return;
+          }
+
+          // Multi-select logic
+          var mediaId = media.id;
+          if (e.shiftKey && lastClickedMediaIndex !== null) {
+            var startIndex = Math.min(lastClickedMediaIndex, index);
+            var endIndex = Math.max(lastClickedMediaIndex, index);
+            for (var i = startIndex; i <= endIndex; i++) {
+              var currentMedia = mediaListCache[i];
+              selectedMediaIds.add(currentMedia.id);
+              selectedMediaMap[currentMedia.id] = currentMedia;
             }
-            
-            if (confirm('Add "' + media.filename + '" as a new scene?')) {
-              if (isVideo) {
-                addVideoSceneFromUrl(media.url, media.filename);
-              } else {
-                addSceneFromUrl(media.url, media.filename);
-              }
-              mediaModal.classList.remove('visible');
+          } else {
+            if (selectedMediaIds.has(mediaId)) {
+              selectedMediaIds.delete(mediaId);
+              delete selectedMediaMap[mediaId];
+            } else {
+              selectedMediaIds.add(mediaId);
+              selectedMediaMap[mediaId] = media;
             }
           }
+          lastClickedMediaIndex = index;
+          syncMediaSelection();
         });
 
         // Right click media item context menu

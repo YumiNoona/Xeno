@@ -6,17 +6,23 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-/* ── 1. FONT IMPORT ──────────────────────────────────────────
-   One place to swap: change the @import URL + --font-family-base
-   Current: Roboto Mono (variable, 100–700, normal + italic)
-   Swap ideas:
+/* ── 1. FONT LOADING ─────────────────────────────────────────
+   Font is loaded via <link> tags in each HTML file (faster than @import).
+   To swap the font for the whole project:
+     Step 1 — Update the Google Fonts URL in index.html, editor.html, preview.html
+     Step 2 — Update --font-family-base below
+   
+   Current font: Roboto Mono (variable, wght 100–700)
+   Google Fonts URL pattern:
+     https://fonts.googleapis.com/css2?family=FAMILY_NAME:ital,wght@WEIGHTS&display=swap
+   
+   Quick swap options:
      JetBrains Mono : family=JetBrains+Mono:ital,wght@0,100..800;1,100..800
      Fira Code      : family=Fira+Code:wght@300..700
      IBM Plex Mono  : family=IBM+Plex+Mono:ital,wght@0,100;0,400;0,700;1,400
      Space Mono     : family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700
-     Inter (sans)   : family=Inter:wght@300..700  → remove monospace fallback
+     Inter (sans)   : family=Inter:wght@300..700  → also remove "monospace" fallback below
 */
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
 :root {
 

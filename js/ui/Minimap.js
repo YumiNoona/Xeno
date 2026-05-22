@@ -37,7 +37,7 @@
     if (!data.floorplan.imageUrl) {
       if (isEditor) {
         var msg = document.createElement('div');
-        msg.style.cssText = 'color:var(--text-muted); font-size:10px; text-align:center; padding:40px 10px;';
+        msg.style.cssText = 'color:var(--text-muted); font-size:var(--type-xs); font-family:inherit; text-align:center; padding:40px 10px;';
         msg.innerHTML = 'No floorplan set.<br>Set it in Scene Settings.';
         minimapElement.appendChild(msg);
       }
@@ -148,12 +148,12 @@
       });
       if (unplaced.length > 0) {
         var unplacedBar = document.createElement('div');
-        unplacedBar.style.cssText = 'position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.8); padding:4px 8px; font-size:9px; color:#fff; display:flex; gap:6px; overflow-x:auto; white-space:nowrap; z-index:10; border-top:1px solid var(--border);';
+        unplacedBar.style.cssText = 'position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.8); padding:4px 8px; font-size:var(--type-2xs); font-family:inherit; color:var(--text-primary); display:flex; gap:6px; overflow-x:auto; white-space:nowrap; z-index:10; border-top:1px solid var(--border);';
         unplacedBar.innerHTML = '<span style="opacity:0.6;">Unplaced:</span>';
         unplaced.forEach(function(sCtx) {
           var btn = document.createElement('button');
           btn.textContent = sCtx.data.name.replace(/\.[^/.]+$/, "").substring(0, 10);
-          btn.style.cssText = 'background:var(--accent); border:none; border-radius:3px; color:#fff; padding:2px 6px; cursor:pointer; font-size:9px;';
+          btn.style.cssText = 'background:var(--accent); border:none; border-radius:3px; color:#fff; padding:2px 6px; cursor:pointer; font-size:var(--type-2xs); font-family:inherit;';
           btn.addEventListener('click', function() {
             sCtx.data.minimapPosition = { x: 50, y: 50 };
             window.initMinimap();
