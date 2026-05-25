@@ -580,17 +580,19 @@
       var thumb = s.data.thumbnailUrl || s.data.mediaUrl || '';
       var imgHtml = '';
       if (thumb) {
-        imgHtml = '<img class="scene-card-thumb" src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;scene-thumb-placeholder&quot;><i class=&quot;ti ti-photo&quot;></i>Scene</div>\'">';
+        imgHtml = '<img class="scene-card-thumb" src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;scene-thumb-placeholder&quot;>Scene</div>\'">';
       } else {
-        imgHtml = '<div class="scene-thumb-placeholder"><i class="ti ti-photo"></i>Scene</div>';
+        imgHtml = '<div class="scene-thumb-placeholder">Scene</div>';
       }
-      var eyeIconClass = s.data.hidden ? 'ti-eye-off' : 'ti-eye';
+      var eyeSvg = s.data.hidden
+        ? '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24\"/><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"/></svg>'
+        : '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>';
 
       var cleanName = (s.data.name || 'Untitled').replace(/\.[^/.]+$/, "");
 
       card.innerHTML =
         imgHtml +
-        '<div class="scene-card-eye"><i class="ti ' + eyeIconClass + '"></i></div>' +
+        '<div class="scene-card-eye">' + eyeSvg + '</div>' +
         '<div class="scene-card-overlay">' +
           '<div class="scene-card-label">' + cleanName + '</div>' +
         '</div>';
@@ -1702,14 +1704,14 @@
 
       var rootEl = document.createElement('div');
       rootEl.className = 'album-item' + (currentAlbumId === null ? ' active' : '');
-      rootEl.innerHTML = '<i class="ti ti-folder"></i> Root';
+      rootEl.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"/></svg> Root';
       rootEl.addEventListener('click', function() { currentAlbumId = null; loadAlbums(); loadMedia(null); });
       albumListEl.appendChild(rootEl);
 
       albums.forEach(function(album) {
         var el = document.createElement('div');
         el.className = 'album-item' + (currentAlbumId === album.id ? ' active' : '');
-        el.innerHTML = '<i class="ti ti-folder"></i> ' + album.name;
+        el.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"/></svg> ' + album.name;
         el.addEventListener('click', function() { currentAlbumId = album.id; loadAlbums(); loadMedia(album.id); });
         
         // Right click album context menu
@@ -1760,7 +1762,7 @@
     lastClickedMediaIndex = null;
     mediaListCache = [];
     syncMediaSelection(); // Update UI to reflect cleared selection
-    mediaGridEl.innerHTML = '<div class="media-loading"><i class="ti ti-loader animate-spin"></i> Loading...</div>';
+    mediaGridEl.innerHTML = '<div class="media-loading"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" class=\"spin\"><path d=\"M21 12a9 9 0 1 1-6.219-8.56\"/></svg> Loading...</div>';
     window.XenoSupabase.fetchMedia(albumId).then(function(mediaList) {
       mediaListCache = mediaList; // Populate cache
       mediaGridEl.innerHTML = '';
@@ -1774,7 +1776,7 @@
         var thumb = (media.type && media.type.startsWith('video')) ? '' : media.url;
         var imgHtml = '';
         if (thumb) {
-          imgHtml = '<img src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;media-thumb-placeholder&quot;><i class=&quot;ti ti-photo&quot;></i>Broken</div>\'">';
+          imgHtml = '<img src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;media-thumb-placeholder&quot;>Broken</div>\'">';
         } else {
           var isVideo = media.type && media.type.startsWith('video');
           var isAudio = media.type && media.type.startsWith('audio');
@@ -1785,7 +1787,7 @@
         
         var badgeHtml = '';
         if (media.is_ephemeral) {
-          badgeHtml = '<div class="media-ephemeral-badge"><i class="ti ti-bolt"></i> Ephemeral</div>';
+          badgeHtml = '<div class="media-ephemeral-badge"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\" viewBox=\"0 0 24 24\" fill=\"currentColor\" stroke=\"none\"><polygon points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"/></svg> Ephemeral</div>';
         }
         
         item.innerHTML = badgeHtml + imgHtml + '<div class="title">' + media.filename + '</div>';
@@ -1839,7 +1841,7 @@
         mediaGridEl.appendChild(item);
       });
     }).catch(function(err) {
-      mediaGridEl.innerHTML = '<div class="media-error"><i class="ti ti-alert-triangle"></i> Error: ' + err.message + '</div>';
+      mediaGridEl.innerHTML = '<div class="media-error"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z\"/><line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"13\"/><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"/></svg> Error: ' + err.message + '</div>';
     });
   }
 
@@ -2059,7 +2061,7 @@
       
       var exportBtn = this;
       var originalText = exportBtn.innerHTML;
-      exportBtn.innerHTML = '<i class="ti ti-loader animate-spin"></i> Exporting...';
+      exportBtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" class=\"spin\"><path d=\"M21 12a9 9 0 1 1-6.219-8.56\"/></svg> Exporting...';
       exportBtn.disabled = true;
       
       var zip = new window.JSZip();
@@ -2315,7 +2317,7 @@
             '</div>' +
           '</div>' +
           '<div class="project-card-actions">' +
-            '<button class="btn-delete-project" title="Delete Project"><i class="ti ti-trash"></i></button>' +
+            '<button class="btn-delete-project" title="Delete Project"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"3 6 5 6 21 6\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2\"/></svg></button>' +
           '</div>';
           
         card.addEventListener('click', function() {
@@ -2343,7 +2345,7 @@
       toast.className = 'xeno-toast';
       document.body.appendChild(toast);
     }
-    toast.innerHTML = '<i class="ti ti-info-circle"></i> ' + msg;
+    toast.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"12\"/><line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\"/></svg> ' + msg;
     toast.classList.add('visible');
     
     if (toast.timeoutId) clearTimeout(toast.timeoutId);
