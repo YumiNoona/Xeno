@@ -6,20 +6,10 @@
 
 /* ─── CSS Custom Properties ──────────────────────────────── */
 :root {
-  --accent: var(--accent, #e62e5a);
-  --accent-glow: var(--accent-glow, rgba(230,46,90,0.3));
-  --bg-panel: var(--bg-glass);
-  --bg-panel-solid: var(--bg-panel-solid);
-  --bg-hover: var(--bg-hover);
-  --border-glass: var(--border-glass);
-  --text-primary: var(--text-primary);
-  --text-secondary: var(--text-secondary);
-  --radius: var(--radius-md);
-  --radius-sm: var(--radius-sm);
-  --shadow-lg: var(--shadow-lg);
-  --shadow-sm: var(--shadow-sm);
-  --transition: var(--transition);
-  --font: 'Roboto Mono', 'Courier New', monospace;
+  /* Inherit from tokens.css or use defaults if not available */
+  --accent: var(--accent, #e11d48);
+  --accent-glow: var(--accent-glow, rgba(225, 29, 72, 0.3));
+  --font: var(--font-family-base, 'Roboto Mono', 'Courier New', monospace);
 }
 
 /* ─── Reset & Base ───────────────────────────────────────── */

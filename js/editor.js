@@ -71,9 +71,14 @@
   var viewer = new Xeno.Viewer(document.getElementById('pano'), viewerOpts);
 
   // Expose for minimap
-  window.xenoViewer = viewer;
-  window.xenoScenes = [];
-  var scenes = window.xenoScenes;
+    window.xenoViewer = viewer;
+    window.xenoScenes = [];
+    var scenes = window.xenoScenes;
+
+    // Set initial project name
+    if (topbarProjectName && data.settings && data.settings.title) {
+      topbarProjectName.textContent = data.settings.title;
+    }
   
   var currentSceneCtx = null;
   var selectedHotspotData = null;
@@ -264,6 +269,9 @@
   var btnReadView = document.getElementById('btn-read-view');
   var btnApplyView = document.getElementById('btn-apply-view');
 
+  // Topbar Project Name
+  var topbarProjectName = document.getElementById('topbar-project-name');
+
   // Bottom view controls
   var bottomViewYaw = document.getElementById('bottom-view-yaw');
   var bottomViewPitch = document.getElementById('bottom-view-pitch');
@@ -303,6 +311,25 @@
   var propVideoMuted = document.getElementById('prop-video-muted');
   var propAudioAutoplay = document.getElementById('prop-audio-autoplay');
   var propAudioLabel = document.getElementById('prop-audio-label');
+
+  if (topbarProjectName) {
+    topbarProjectName.addEventListener('blur', function() {
+      var newName = this.textContent.trim() || 'Untitled Tour';
+      this.textContent = newName;
+      if (data.settings) {
+        data.settings.title = newName;
+        data.settings.name = newName;
+      }
+      debouncedSave();
+    });
+
+    topbarProjectName.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this.blur();
+      }
+    });
+  }
 
   // ─── Tools Pill Logic ─────────────────────────────────────
   pillTools.forEach(function(btn) {
@@ -2067,17 +2094,18 @@
       var zip = new window.JSZip();
       
       var filesToBundle = [
+        'css/tokens.css',
         'css/viewer.css',
         'css/hotspots.css',
         'css/minimap.css',
         'css/hint.css',
         'js/vendor/screenfull.js',
         'js/vendor/webvr-polyfill.js',
-        'js/xeno.js',
-        'js/transitions.js',
-        'js/VideoAsset.js',
-        'js/DeviceOrientation.js',
-        'js/colorEffects.js',
+        'js/core/xeno.js',
+        'js/core/transitions.js',
+        'js/core/VideoAsset.js',
+        'js/core/DeviceOrientation.js',
+        'js/core/colorEffects.js',
         'js/hotspots/HotspotFactory.js',
         'js/ui/Minimap.js',
         'js/ui/SceneList.js',
@@ -2091,7 +2119,7 @@
         'img/photo.png',
         'img/info.png',
         'img/hotspot.png',
-        'img/logo.png',
+        'img/logo.ico',
         'img/tooltip.svg'
       ];
 
@@ -2161,7 +2189,9 @@
             return res.text();
           })
           .then(function(content) {
-            zip.file(path, content);
+            // config.example.js becomes config.js in the bundle
+            var zipPath = path === 'config.example.js' ? 'config.js' : path;
+            zip.file(zipPath, content);
           });
       });
 

@@ -24,6 +24,7 @@
       gap: 48px;
       padding: 40px;
       -webkit-font-smoothing: antialiased;
+      transition: background 0.3s, color 0.3s;
     }
 
     /* Subtle warm grain texture */
@@ -42,68 +43,112 @@
       font-size: var(--type-4xl);
       font-weight: var(--weight-bold);
       color: var(--text-primary);
-      letter-spacing: -0.02em;
-      margin-bottom: 10px;
+      letter-spacing: -0.04em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
     }
     .logo span { color: var(--accent); }
     .tagline {
       font-size: var(--type-md);
       color: var(--text-muted);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.02em;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-full);
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: all 0.2s;
+    }
+    .theme-toggle:hover {
+      background: var(--bg-hover);
+      transform: scale(1.1);
+    }
+    .theme-toggle:active {
+      transform: scale(0.9);
     }
 
     .cards {
       display: flex;
-      gap: 14px;
+      gap: 20px;
       flex-wrap: wrap;
       justify-content: center;
       position: relative;
       z-index: 1;
+      max-width: 800px;
     }
     .card {
-      background: #161313;
-      border: 1px solid #2c2626;
-      border-radius: 16px;
-      padding: 24px;
-      width: 210px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px 24px;
+      width: 240px;
       cursor: pointer;
-      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       text-decoration: none;
       color: inherit;
-      display: block;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      box-shadow: var(--shadow);
     }
     .card:hover {
-      border-color: rgba(230,46,90,0.4);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 32px rgba(230,46,90,0.1);
+      border-color: var(--accent);
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-xl), 0 0 20px var(--accent-dim);
     }
     .card-icon {
-      width: 40px; height: 40px;
-      background: rgba(230,46,90,0.1);
-      border: 1px solid rgba(230,46,90,0.2);
-      border-radius: 10px;
+      width: 48px; height: 48px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-glow);
+      border-radius: var(--radius-md);
       display: flex; align-items: center; justify-content: center;
-      margin-bottom: 14px;
-      font-size: var(--type-xl);
+      font-size: var(--type-2xl);
       color: var(--accent);
+      transition: all 0.3s;
+    }
+    .card:hover .card-icon {
+      transform: scale(1.1) rotate(5deg);
+      background: var(--accent);
+      color: #fff;
     }
     .card h3 {
-      font-size: var(--type-md);
-      font-weight: var(--weight-semibold);
+      font-size: var(--type-lg);
+      font-weight: var(--weight-bold);
       color: var(--text-primary);
-      margin-bottom: 5px;
     }
-    .card p { font-size: var(--type-sm); color: var(--text-muted); line-height: 1.5; }
+    .card p { font-size: var(--type-sm); color: var(--text-muted); line-height: 1.6; }
 
     .footer {
       position: relative; z-index: 1;
       font-size: var(--type-xs);
       color: var(--text-disabled);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
   </style>
 </head>
 <body>
+  <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">
+    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+
   <div class="hero">
     <div class="logo">✦ <span>Xeno</span></div>
     <p class="tagline">Build and share immersive 360° virtual tours</p>
@@ -111,22 +156,57 @@
 
   <div class="cards">
     <a href="editor.html" class="card">
-      <div class="card-icon">✎</div>
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </div>
       <h3>Open Editor</h3>
-      <p>Create and manage your 360° tours</p>
+      <p>Create and manage your 360° tours with powerful tools</p>
     </a>
     <a href="preview.html" class="card">
-      <div class="card-icon">▶</div>
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
       <h3>Preview Tour</h3>
-      <p>View your current tour in fullscreen</p>
+      <p>Experience your current project in full immersion</p>
     </a>
     <a href="https://www.marzipano.net/demos/sample-tour/" target="_blank" class="card">
-      <div class="card-icon">✦</div>
-      <h3>Demo Tour</h3>
-      <p>Sample Marzipano tour</p>
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <h3>Explore Demo</h3>
+      <p>See what's possible with the Marzipano engine</p>
     </a>
   </div>
 
   <div class="footer">Made With Love by Veil ❤ Xeno Tour</div>
+
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const sunIcon = document.getElementById('sun-icon');
+    const moonIcon = document.getElementById('moon-icon');
+    
+    // Check for saved theme preference
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateIcons(currentTheme);
+
+    themeToggle.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      updateIcons(theme);
+    });
+
+    function updateIcons(theme) {
+      if (theme === 'dark') {
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
+      } else {
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
+      }
+    }
+  </script>
 </body>
+
 </html>

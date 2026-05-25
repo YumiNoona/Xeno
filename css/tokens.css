@@ -25,32 +25,15 @@
 */
 
 :root {
-
-  /* ── 2. FONT FAMILY ────────────────────────────────────────
-     Change --font-family-base to swap the whole project font.
-     --font-family-mono is used for code snippets / coordinates.
-  */
+  /* ── 2. FONT FAMILY ──────────────────────────────────────── */
   --font-family-base: 'Roboto Mono', 'Courier New', monospace;
   --font-family-mono: 'Roboto Mono', 'Courier New', monospace;
 
-  /* Aliases used throughout the codebase — do NOT rename */
+  /* Aliases */
   --font: var(--font-family-base);
   --font-mono: var(--font-family-mono);
 
-  /* ── 3. TYPE SCALE ─────────────────────────────────────────
-     Modular scale (minor-third, ×1.2) anchored at 13px base.
-     Rename the steps if you want; update usages below to match.
-       --type-2xs  →  9px   badge labels, hint text
-       --type-xs   → 10px   overlines, captions
-       --type-sm   → 12px   helper text, tooltips, meta
-       --type-base → 13px   body copy (root default)
-       --type-md   → 14px   UI labels, inputs, buttons
-       --type-lg   → 16px   subheadings, panel titles
-       --type-xl   → 18px   section headings
-       --type-2xl  → 22px   page titles, modal headings
-       --type-3xl  → 28px   hero numbers, large display
-       --type-4xl  → 36px   splash / onboarding display
-  */
+  /* ── 3. TYPE SCALE ───────────────────────────────────────── */
   --type-2xs: 9px;
   --type-xs: 10px;
   --type-sm: 12px;
@@ -62,7 +45,7 @@
   --type-3xl: 28px;
   --type-4xl: 36px;
 
-  /* Legacy aliases — kept so existing var(--size-*) still compile */
+  /* Legacy aliases */
   --size-xxs: var(--type-2xs);
   --size-xs: var(--type-xs);
   --size-sm: var(--type-sm);
@@ -73,124 +56,141 @@
   --size-2xl: var(--type-2xl);
   --size-3xl: var(--type-3xl);
 
-  /* ── 4. FONT WEIGHTS ───────────────────────────────────────
-     Roboto Mono variable font supports 100–700.
-     Project only uses regular and bold — keep it tight.
-  */
+  /* ── 4. FONT WEIGHTS ─────────────────────────────────────── */
   --weight-light: 300;
-  /* light labels, secondary numerics */
   --weight-regular: 400;
-  /* body, inputs, most UI text       */
   --weight-medium: 500;
-  /* nav items, active states         */
   --weight-semibold: 600;
-  /* panel headings, strong labels    */
   --weight-bold: 700;
-  /* section titles, counts, emphasis */
 
-  /* ── 5. LINE-HEIGHT & LETTER-SPACING ───────────────────────
-     Tight line-heights for a dense dark UI.
-     Letter-spacing is used sparingly — only for overlines/badges.
-  */
-  --leading-tight: 1.2;
-  --leading-snug: 1.4;
-  --leading-normal: 1.6;
-  --leading-loose: 1.8;
+  /* ── 5. LINE-HEIGHT & LETTER-SPACING ─────────────────────── */
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-loose: 2;
 
-  --tracking-tight: -0.01em;
+  --tracking-tight: -0.02em;
   --tracking-normal: 0;
-  --tracking-wide: 0.04em;
-  --tracking-wider: 0.08em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
 
-  /* ── 6. NAMED TEXT ROLES ────────────────────────────────────
-     Semantic pairing of (size, weight, line-height) per role.
-     Use these to keep headings/labels consistent.
-     Format: font-size / font-weight / line-height
-  */
-  /* Display */
+  /* ── 6. RADIUS & SHADOWS (Shadcn-like) ────────────────────── */
+  --radius-sm: 0.3rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+  /* ── 7. THEME: DARK (Default) ────────────────────────────── */
+  --bg-base: #0a0a0a;
+  --bg-panel: #111111;
+  --bg-raised: #1a1a1a;
+  --bg-elevated: #262626;
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(255, 255, 255, 0.1);
+  --bg-ash: #0d0d0d;
+  --bg-ash-grey: #1f1f1f;
+  --bg-glass: rgba(10, 10, 10, 0.85);
+
+  --border: #262626;
+  --border-subtle: #1a1a1a;
+  --border-hover: #404040;
+  --border-focus: var(--accent);
+
+  --text-primary: #ffffff;
+  --text-secondary: #e5e5e5;
+  --text-muted: #a3a3a3;
+  --text-disabled: #737373;
+  --text-inverse: #0a0a0a;
+
+  --accent: #e11d48;
+  --accent-dim: rgba(225, 29, 72, 0.15);
+  --accent-glow: rgba(225, 29, 72, 0.3);
+  --accent-hover: #f43f5e;
+  --accent-active: #be123c;
+  --accent-text: #fb7185;
+
+  --success: #10b981;
+  --success-dim: rgba(16, 185, 129, 0.15);
+  --success-hover: #34d399;
+  --warning: #f59e0b;
+  --warning-dim: rgba(245, 158, 11, 0.15);
+  --danger: #ef4444;
+  --danger-dim: rgba(239, 68, 68, 0.15);
+  --info: #3b82f6;
+  --info-dim: rgba(59, 130, 246, 0.15);
+
+  /* Hotspot types */
+  --hs-navigate: var(--accent);
+  --hs-info: var(--warning);
+  --hs-url: var(--success);
+  --hs-image: #d946ef;
+  --hs-video: #f43f5e;
+  --hs-audio: #8b5cf6;
+
+  /* Legacy radius support */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+}
+
+/* ── 8. THEME: LIGHT ──────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-base: #ffffff;
+  --bg-panel: #fafafa;
+  --bg-raised: #f5f5f5;
+  --bg-elevated: #e5e5e5;
+  --bg-hover: rgba(0, 0, 0, 0.04);
+  --bg-active: rgba(0, 0, 0, 0.08);
+  --bg-ash: #fdfdfd;
+  --bg-ash-grey: #f0f0f0;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+
+  --border: #e5e5e5;
+  --border-subtle: #f0f0f0;
+  --border-hover: #d4d4d4;
+  --border-focus: var(--accent);
+
+  --text-primary: #000000;
+  --text-secondary: #262626;
+  --text-muted: #525252;
+  --text-disabled: #737373;
+  --text-inverse: #ffffff;
+
+  --accent: #e11d48;
+  --accent-dim: rgba(225, 29, 72, 0.1);
+  --accent-glow: rgba(225, 29, 72, 0.2);
+  --accent-hover: #fb7185;
+  --accent-active: #be123c;
+  --accent-text: #e11d48;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+:root {
+  /* ── 9. NAMED TEXT ROLES ──────────────────────────────────── */
   --text-display: var(--type-4xl) / var(--weight-bold) / var(--leading-tight);
-  /* Headings */
   --text-h1: var(--type-3xl) / var(--weight-bold) / var(--leading-tight);
   --text-h2: var(--type-2xl) / var(--weight-semibold)/ var(--leading-tight);
   --text-h3: var(--type-xl) / var(--weight-semibold)/ var(--leading-snug);
   --text-h4: var(--type-lg) / var(--weight-semibold)/ var(--leading-snug);
-  /* UI labels / body */
   --text-label: var(--type-md) / var(--weight-medium) / var(--leading-tight);
   --text-body: var(--type-base)/ var(--weight-regular) / var(--leading-normal);
   --text-small: var(--type-sm) / var(--weight-regular) / var(--leading-snug);
-  /* Micro / badges */
   --text-micro: var(--type-xs) / var(--weight-medium) / var(--leading-tight);
   --text-badge: var(--type-2xs) / var(--weight-bold) / var(--leading-tight);
-  /* Monospace inputs & coords */
   --text-mono: var(--type-sm) / var(--weight-regular) / var(--leading-normal);
 
-  /* ── 7. COLOUR PALETTE ──────────────────────────────────────
-     Background family — warm charcoal
-  */
-  --bg-base: #181818;
-  /* root page background           */
-  --bg-panel: #202020;
-  /* panels, sidebars               */
-  --bg-raised: #2a2a2a;
-  /* cards, popovers                */
-  --bg-elevated: #313131;
-  /* hover surfaces, nested panels  */
-  --bg-hover: rgba(255, 255, 255, 0.05);
-  --bg-active: rgba(255, 255, 255, 0.09);
-  --bg-ash: #252525;
-  /* topbar, header surfaces        */
-  --bg-ash-grey: #313131;
-  /* pill, toolbar surfaces         */
-  --bg-glass: rgba(32, 32, 32, 0.94);
-
-  /* Borders */
-  --border: #3a3a3a;
-  --border-subtle: #2e2e2e;
-  --border-hover: #555555;
-  --border-focus: var(--accent);
-
-  /* Text colours */
-  --text-primary: #f0eded;
-  /* headings, primary content     */
-  --text-secondary: #c8c5c5;
-  /* labels, panel copy            */
-  --text-muted: #888888;
-  /* placeholders, hints           */
-  --text-disabled: #555555;
-  --text-inverse: #1A1A1A;
-  /* text on accent/light bg       */
-
-  /* ── 8. BRAND ACCENT ────────────────────────────────────────
-     Change one variable to retheme the whole accent colour.
-  */
-  --accent: #e62e5a;
-  --accent-dim: rgba(230, 46, 90, 0.20);
-  --accent-glow: rgba(230, 46, 90, 0.40);
-  --accent-hover: #f03d6a;
-  --accent-active: #c42249;
-  --accent-text: #ff8099;
-  /* accent-coloured text on dark bg */
-
-  /* Functional colours */
-  --success: #3dba78;
-  --success-dim: rgba(61, 186, 120, 0.18);
-  --success-hover: #4dc88a;
-  --warning: #e8a020;
-  --warning-dim: rgba(232, 160, 32, 0.18);
-  --danger: #e62e5a;
-  --danger-dim: rgba(230, 46, 90, 0.18);
-  --info: #4a9eff;
-  --info-dim: rgba(74, 158, 255, 0.18);
-
-  /* Hotspot type colours */
-  --hs-navigate: #e62e5a;
-  --hs-info: #e8a020;
-  --hs-url: #3dba78;
-  --hs-image: #d4608a;
-  --hs-video: #cc4444;
-  --hs-audio: #e8a020;
-
-  /* ── 9. SPACING & RADIUS ────────────────────────────────────*/
+  /* ── 10. SPACING ────────────────────────────────────────── */
   --space-1: 2px;
   --space-2: 4px;
   --space-3: 6px;
@@ -198,6 +198,7 @@
   --space-5: 12px;
   --space-6: 16px;
   --space-7: 20px;
+
   --space-8: 24px;
   --space-9: 32px;
   --space-10: 40px;
