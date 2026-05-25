@@ -19,7 +19,7 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-sm: var(--shadow-sm);
   --transition: var(--transition);
-  --font: var(--font);
+  --font: 'Roboto Mono', 'Courier New', monospace;
 }
 
 /* ─── Reset & Base ───────────────────────────────────────── */
@@ -33,7 +33,7 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: var(--font);
+  font-family: 'Roboto Mono', 'Courier New', monospace !important;
   font-size: var(--type-md);
   line-height: 1.5;
   color: var(--text-primary);
@@ -257,68 +257,108 @@ html, body {
 #controls .ctrl-btn svg {
   width: 20px;
   height: 20px;
-  fill: currentColor;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* ─── View Mode Menu ────────────────────────────────────── */
+/* ─── View Mode Menu — positioned dynamically via JS ─────── */
 .view-mode-menu {
-  position: absolute;
-  bottom: 20px; /* Align with bottom of control bar */
-  right: 74px;  /* 20px edge + 44px button + 10px gap */
-  background: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-md);
-  padding: 6px;
+  /* position/top/right set by JS via getBoundingClientRect */
+  position: fixed;
+  background: rgba(24,24,24,0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 5px;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  z-index: 9999; /* Ensure it's on top of EVERYTHING */
+  z-index: 9999;
   opacity: 0;
   pointer-events: none;
-  transform: translateX(10px);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  min-width: 160px;
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.05);
+  transform: translateX(8px) scale(0.97);
+  transform-origin: center right;
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 172px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
 }
 
 .view-mode-menu.visible {
   opacity: 1;
   pointer-events: auto;
-  transform: translateX(0);
+  transform: translateX(0) scale(1);
+}
+
+/* Label above items */
+.view-mode-menu::before {
+  content: "VIEW MODE";
+  display: block;
+  font-size: 9px;
+  font-family: 'Roboto Mono', monospace;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  padding: 6px 12px 2px;
 }
 
 .view-mode-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 7px;
   cursor: pointer;
-  color: var(--text-secondary);
-  transition: all var(--transition);
+  color: rgba(255,255,255,0.55);
+  transition: background 0.12s, color 0.12s;
   user-select: none;
   white-space: nowrap;
+  border: 1px solid transparent;
 }
 
 .view-mode-item:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  transform: translateX(2px);
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.9);
+}
+
+.view-mode-item.active {
+  background: rgba(230,46,90,0.12);
+  border-color: rgba(230,46,90,0.3);
+  color: rgba(255,130,155,0.95);
 }
 
 .view-mode-item svg {
   width: 18px;
   height: 18px;
+  flex-shrink: 0;
   stroke: currentColor;
   fill: none;
-  stroke-width: 2.2;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .view-mode-item span {
-  font-size: var(--type-md);
-  font-weight: var(--weight-medium);
+  font-size: 12px;
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+/* Active indicator dot */
+.view-mode-item.active::after {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(230,46,90,0.8);
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* ─── View Control Buttons (directional) ─────────────────── */
@@ -361,7 +401,11 @@ html, body {
 #viewControls .ctrl-btn svg {
   width: 18px;
   height: 18px;
-  fill: currentColor;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* ─── Branding Logo ──────────────────────────────────────── */

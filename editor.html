@@ -18,6 +18,10 @@
     rel="stylesheet">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/editor.css">
+  <!-- Critical: inline font lock — fires before external CSS, kills Times New Roman -->
+  <style>
+    html, body, * { font-family: 'Roboto Mono', 'Courier New', monospace !important; }
+  </style>
   <link rel="stylesheet" href="css/viewer.css">
   <link rel="stylesheet" href="css/hotspots.css">
   <!-- Inline SVG icon system — zero CDN dependency -->

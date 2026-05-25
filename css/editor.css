@@ -1,8 +1,19 @@
 /* ============================================================
    Xeno Editor — UI/UX Overhaul v2
    Theme: Lit Ash — dark warm charcoal, white icons, crisp
-   Font: Roboto Mono everywhere, no exceptions
+   Font: Roboto Mono — hardcoded, no cascade can override
    ============================================================ */
+
+/* ── Nuclear font lock — beats any cascaded viewer.css rule ── */
+html, body,
+input, textarea, select, button, label,
+.btn, .pill-tool, .sidebar-label, .scene-card-label,
+.album-item, .ctx-item, .form-group label,
+.panel-header h3, .topbar-project-name,
+.media-header-title, .upload-title, .upload-sub,
+.view-control-field span, .view-control-field input {
+  font-family: 'Roboto Mono', 'Courier New', monospace !important;
+}
 
 *,
 *::before,
@@ -13,7 +24,7 @@
 }
 
 body {
-  font-family: var(--font) !important;
+  font-family: 'Roboto Mono', 'Courier New', monospace !important;
   background: var(--bg-base);
   color: var(--text-primary);
   overflow: hidden;

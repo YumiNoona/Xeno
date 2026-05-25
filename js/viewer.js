@@ -342,8 +342,22 @@
   var viewModeMenu = document.querySelector('#viewModeMenu');
 
   if (viewModeToggle && viewModeMenu) {
+    // Position menu dynamically next to the button using getBoundingClientRect
+    function positionViewModeMenu() {
+      var rect = viewModeToggle.getBoundingClientRect();
+      viewModeMenu.style.position = 'fixed';
+      viewModeMenu.style.top = rect.top + 'px';
+      viewModeMenu.style.right = (window.innerWidth - rect.left + 8) + 'px';
+      viewModeMenu.style.bottom = 'auto';
+      viewModeMenu.style.left = 'auto';
+    }
+
     viewModeToggle.addEventListener('click', function(e) {
       e.stopPropagation();
+      var isVisible = viewModeMenu.classList.contains('visible');
+      if (!isVisible) {
+        positionViewModeMenu();
+      }
       viewModeMenu.classList.toggle('visible');
     });
 
@@ -351,14 +365,25 @@
       viewModeMenu.classList.remove('visible');
     });
 
+    // Mark active mode item
+    function updateActiveModeItem(mode) {
+      viewModeMenu.querySelectorAll('.view-mode-item').forEach(function(el) {
+        el.classList.toggle('active', el.getAttribute('data-mode') === mode);
+      });
+    }
+
     viewModeMenu.querySelectorAll('.view-mode-item').forEach(function(item) {
       item.addEventListener('click', function(e) {
         e.stopPropagation();
         var mode = this.getAttribute('data-mode');
         setViewMode(mode);
+        updateActiveModeItem(mode);
         viewModeMenu.classList.remove('visible');
       });
     });
+
+    // Default active state
+    updateActiveModeItem('normal');
   }
 
   function setViewMode(mode) {
