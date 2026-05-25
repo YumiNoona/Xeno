@@ -399,7 +399,18 @@
       },
       body: file
     }).then(function (res) {
-      if (!res.ok) throw new Error('Upload failed: ' + res.statusText);
+      if (!res.ok) {
+        return parseJsonOrText(res).then(function(payload) {
+          var msg = payload && payload.message ? payload.message : (res.statusText || 'Unknown error');
+          
+          // Provide specific guidance for common Supabase Storage errors
+          if (msg.toLowerCase().indexOf('maximum allowed size') !== -1) {
+            msg += '\n\nTIP: Go to your Supabase Dashboard > Storage > Settings and increase the "Maximum File Size" for your bucket (default is often 50MB).';
+          }
+          
+          throw new Error('Upload failed (' + res.status + '): ' + msg);
+        });
+      }
       return SUPABASE_URL + '/storage/v1/object/public/' + bucket + '/' + filePath;
     });
   }
@@ -456,20 +467,35 @@
   function uploadAndRecordMedia(file, albumId) {
     if (!isConfigured()) {
       return new Promise(function(resolve, reject) {
+        var mediaId = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        var record = {
+          id: mediaId,
+          filename: file.name,
+          type: file.type,
+          size: file.size,
+          album_id: albumId || null,
+          created_at: new Date().toISOString()
+        };
+
+        // If file is large (> 2MB), don't even try to read as Data URL for localStorage
+        // Just use URL.createObjectURL immediately
+        if (file.size > 2 * 1024 * 1024) {
+          console.log('[Xeno] Large file detected, using ephemeral Object URL');
+          record.url = URL.createObjectURL(file);
+          record.is_ephemeral = true;
+          
+          var mediaList = getLocalMedia();
+          mediaList.push(record);
+          saveLocalMedia(mediaList);
+          resolve(record);
+          return;
+        }
+
         var reader = new FileReader();
         reader.onload = function(e) {
           var base64Url = e.target.result;
-          var mediaId = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-          var record = {
-            id: mediaId,
-            filename: file.name,
-            url: base64Url,
-            type: file.type,
-            size: file.size,
-            album_id: albumId || null,
-            created_at: new Date().toISOString(),
-            is_ephemeral: false
-          };
+          record.url = base64Url;
+          record.is_ephemeral = false;
           
           var mediaList = getLocalMedia();
           mediaList.push(record);
@@ -488,12 +514,7 @@
               
               // Try saving again with the smaller objectUrl record instead of large Base64 URL
               mediaList[mediaList.length - 1] = record;
-              try {
-                localStorage.setItem('xeno_media', JSON.stringify(mediaList));
-                console.log('[Xeno] Saved ephemeral media reference to localStorage');
-              } catch(e2) {
-                console.error('[Xeno] Failed to save media reference to localStorage', e2);
-              }
+              saveLocalMedia(mediaList);
               resolve(record);
             } else {
               reject(err);

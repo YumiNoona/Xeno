@@ -198,6 +198,161 @@
       return wrapper;
     },
 
+    // ─── Quadrilateral Hotspots (4-Point Surface Mapping) ──────
+    quad: function(scene, hotspotData) {
+      var wrapper = document.createElement('div');
+      wrapper.classList.add('xeno-hotspot-quad');
+      wrapper.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none;';
+
+      var content = document.createElement('div');
+      content.classList.add('xeno-hotspot-quad-content');
+      content.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 0 0;';
+      
+      var embedCode = hotspotData.embedCode || '';
+      var srcWidth = hotspotData.srcWidth || 480;
+      var srcHeight = hotspotData.srcHeight || 270;
+
+      if (embedCode) {
+        if (embedCode.indexOf('<iframe') !== -1) {
+          content.innerHTML = embedCode;
+          var iframe = content.querySelector('iframe');
+          if (iframe) {
+            iframe.width = srcWidth;
+            iframe.height = srcHeight;
+            iframe.style.maxWidth = '100%';
+            iframe.style.maxHeight = '100%';
+          }
+        } else {
+          var iframe = document.createElement('iframe');
+          iframe.src = embedCode;
+          iframe.width = srcWidth;
+          iframe.height = srcHeight;
+          iframe.frameBorder = '0';
+          iframe.allowFullscreen = true;
+          iframe.style.maxWidth = '100%';
+          iframe.style.maxHeight = '100%';
+          content.appendChild(iframe);
+        }
+      }
+
+      wrapper.appendChild(content);
+
+      // Calculate and apply homography if 4 points are defined
+      if (hotspotData.quadPoints && hotspotData.quadPoints.length === 4) {
+        var srcPoints = [
+          { x: 0, y: 0 },
+          { x: srcWidth, y: 0 },
+          { x: srcWidth, y: srcHeight },
+          { x: 0, y: srcHeight }
+        ];
+        
+        // Convert yaw/pitch to screen coordinates for homography calculation
+        // This requires a temporary Marzipano hotspot for each point to get screen coords
+        var dstPoints = hotspotData.quadPoints.map(function(p) {
+          var tempHotspot = scene.hotspotContainer().createHotspot(document.createElement('div'), { yaw: p.yaw, pitch: p.pitch });
+          var screenCoords = tempHotspot.screen();
+          scene.hotspotContainer().destroyHotspot(tempHotspot); // Clean up temp hotspot
+          return { x: screenCoords.x, y: screenCoords.y };
+        });
+
+        var transformMatrix = window.Homography.getTransform(srcPoints, dstPoints);
+        content.style.transform = transformMatrix;
+        content.style.transformOrigin = '0 0'; // Important for correct transformation
+      }
+
+      // Create Marzipano hotspot
+      var hotspot = scene.hotspotContainer().createHotspot(wrapper, {
+        yaw: hotspotData.yaw, // Use the first point's yaw/pitch as the hotspot's anchor
+        pitch: hotspotData.pitch
+      });
+
+      // Add visual markers for the 4 points in editor mode
+      if (window.isEditorMode && hotspotData.quadPoints && hotspotData.quadPoints.length === 4) {
+        hotspotData.quadPoints.forEach(function(p, index) {
+          var marker = document.createElement('div');
+          marker.className = 'quad-point-marker';
+          marker.textContent = index + 1;
+          scene.hotspotContainer().createHotspot(marker, { yaw: p.yaw, pitch: p.pitch });
+        });
+      }
+
+      return hotspot.domElement();
+    },
+
+    // ─── Embedded Hotspots (YouTube, Maps, etc.) ───────────────
+    embed: function(hotspot) {
+      var wrapper = document.createElement('div');
+      wrapper.classList.add('xeno-hotspot-info'); // Use same base styles
+
+      var iconWrapper = document.createElement('div');
+      iconWrapper.classList.add('icon_wrapper');
+      
+      iconWrapper.style.cssText = 'display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,0.6); border:2px solid rgba(255,255,255,0.4); cursor:pointer; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,0.5); transition:transform 0.2s, background-color 0.2s;';
+      var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('width', '24');
+      svg.setAttribute('height', '24');
+      svg.style.color = hotspot.iconColor || '#ffffff';
+      svg.innerHTML = '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" fill="none"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" fill="none"/>';
+      iconWrapper.appendChild(svg);
+
+      var content = document.createElement('div');
+      content.classList.add('content');
+      
+      var contentTitle = document.createElement('h2');
+      contentTitle.textContent = hotspot.title || 'Embedded Content';
+      content.appendChild(contentTitle);
+
+      var embedDiv = document.createElement('div');
+      embedDiv.className = 'content-text';
+      
+      var embedCode = hotspot.embedCode || '';
+      var width = hotspot.embedWidth || 480;
+      var height = hotspot.embedHeight || 270;
+
+      if (embedCode) {
+        if (embedCode.indexOf('<iframe') !== -1) {
+          // It's full iframe code
+          embedDiv.innerHTML = embedCode;
+          var iframe = embedDiv.querySelector('iframe');
+          if (iframe) {
+            iframe.width = width;
+            iframe.height = height;
+            iframe.style.maxWidth = '100%';
+          }
+        } else {
+          // Assume it's just a URL
+          var iframe = document.createElement('iframe');
+          iframe.src = embedCode;
+          iframe.width = width;
+          iframe.height = height;
+          iframe.frameBorder = '0';
+          iframe.allowFullscreen = true;
+          iframe.style.maxWidth = '100%';
+          embedDiv.appendChild(iframe);
+        }
+      }
+
+      content.appendChild(embedDiv);
+
+      var closeBtn = document.createElement('button');
+      closeBtn.className = 'close';
+      closeBtn.textContent = 'Close';
+      content.appendChild(closeBtn);
+
+      wrapper.appendChild(iconWrapper);
+      wrapper.appendChild(content);
+
+      var toggle = function() {
+        wrapper.classList.toggle('expanded');
+      };
+
+      iconWrapper.addEventListener('click', toggle);
+      closeBtn.addEventListener('click', toggle);
+
+      return wrapper;
+    },
+
     // ─── URL Hotspot ───────────────────────────────────────────
     url: function(hotspot) {
       var wrapper = document.createElement('div');
@@ -724,10 +879,20 @@
         animTarget.classList.add(animClass);
       }
 
-      var hotspot = scene.hotspotContainer().createHotspot(element, { 
+      var hotspotOptions = { 
         yaw: hotspotData.yaw, 
         pitch: hotspotData.pitch 
-      });
+      };
+
+      // Add perspective support for embedded surface hotspots
+      if (hotspotData.perspectiveEnabled) {
+        hotspotOptions.perspective = {
+          radius: hotspotData.perspectiveRadius || 1000,
+          extraTransforms: hotspotData.perspectiveTransform || ''
+        };
+      }
+
+      var hotspot = scene.hotspotContainer().createHotspot(element, hotspotOptions);
       element.__marzipanoHotspot = hotspot;
 
       return element;

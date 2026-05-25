@@ -65,6 +65,40 @@
 
   function startEditor(data) {
     window.data = data;
+    window.isEditorMode = true; // Flag for HotspotFactory to show point markers
+    
+    // Topbar Project Name
+    var topbarProjectName = document.getElementById('topbar-project-name');
+    if (topbarProjectName && data.settings) {
+      topbarProjectName.textContent = data.settings.title || data.settings.name || 'Untitled Tour';
+      
+      topbarProjectName.addEventListener('input', function() {
+        var newName = this.textContent.trim();
+        if (data.settings) {
+          data.settings.title = newName || 'Untitled Tour';
+          data.settings.name = newName || 'Untitled Tour';
+        }
+        debouncedSave();
+      });
+
+      topbarProjectName.addEventListener('blur', function() {
+        if (!this.textContent.trim()) {
+          this.textContent = 'Untitled Tour';
+        }
+        // Save immediately on blur to ensure persistence before refresh
+        if (projectSlug && window.XenoSupabase) {
+          window.XenoSupabase.saveTour(projectSlug, window.data);
+          console.log('[Xeno] Project name saved on blur');
+        }
+      });
+
+      topbarProjectName.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.blur();
+        }
+      });
+    }
 
   // ─── Viewer Init ──────────────────────────────────────────
   var viewerOpts = { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } };
@@ -74,11 +108,6 @@
     window.xenoViewer = viewer;
     window.xenoScenes = [];
     var scenes = window.xenoScenes;
-
-    // Set initial project name
-    if (topbarProjectName && data.settings && data.settings.title) {
-      topbarProjectName.textContent = data.settings.title;
-    }
   
   var currentSceneCtx = null;
   var selectedHotspotData = null;
@@ -128,7 +157,7 @@
 
   var mediaPickerCallback = null;
 
-  var HOTSPOT_TOOLS = ['navigate', 'info', 'url', 'image', 'video', 'audio'];
+  var HOTSPOT_TOOLS = ['navigate', 'info', 'url', 'image', 'video', 'audio', 'embed', 'quad'];
   var TOGGLE_TOOLS = ['select', 'autorotate', 'minimap', 'scene-settings', 'move'];
 
   // ─── DOM Refs ─────────────────────────────────────────────
@@ -269,9 +298,6 @@
   var btnReadView = document.getElementById('btn-read-view');
   var btnApplyView = document.getElementById('btn-apply-view');
 
-  // Topbar Project Name
-  var topbarProjectName = document.getElementById('topbar-project-name');
-
   // Bottom view controls
   var bottomViewYaw = document.getElementById('bottom-view-yaw');
   var bottomViewPitch = document.getElementById('bottom-view-pitch');
@@ -295,6 +321,23 @@
   var propVideoUrl = document.getElementById('prop-video-url');
   var propAudioUrl = document.getElementById('prop-audio-url');
 
+  // Embed inputs
+  var propEmbedCode = document.getElementById('prop-embed-code');
+  var propEmbedWidth = document.getElementById('prop-embed-width');
+  var propEmbedHeight = document.getElementById('prop-embed-height');
+  var propEmbedPerspective = document.getElementById('prop-embed-perspective');
+  var propEmbedRadius = document.getElementById('prop-embed-radius');
+  var propEmbedTransform = document.getElementById('prop-embed-transform');
+  var perspectiveOptionsDiv = document.getElementById('perspective-options');
+
+  // Quad inputs
+  var propQuadCode = document.getElementById('prop-quad-code');
+  var propQuadSrcWidth = document.getElementById('prop-quad-src-width');
+  var propQuadSrcHeight = document.getElementById('prop-quad-src-height');
+  var quadPointsList = document.getElementById('quad-points-list');
+  var btnAddQuadPoint = document.getElementById('btn-add-quad-point');
+  var btnClearQuadPoints = document.getElementById('btn-clear-quad-points');
+
   // Media picking buttons
   var btnPickCustomIcon = document.getElementById('btn-pick-custom-icon');
   var btnPickImage = document.getElementById('btn-pick-image');
@@ -312,32 +355,1431 @@
   var propAudioAutoplay = document.getElementById('prop-audio-autoplay');
   var propAudioLabel = document.getElementById('prop-audio-label');
 
-  if (topbarProjectName) {
-    topbarProjectName.addEventListener('blur', function() {
-      var newName = this.textContent.trim() || 'Untitled Tour';
-      this.textContent = newName;
-      if (data.settings) {
-        data.settings.title = newName;
-        data.settings.name = newName;
+  // Embed fields
+    var propEmbedCode = document.getElementById('prop-embed-code');
+    var propEmbedWidth = document.getElementById('prop-embed-width');
+    var propEmbedHeight = document.getElementById('prop-embed-height');
+    var propEmbedPerspective = document.getElementById('prop-embed-perspective');
+    var propEmbedRadius = document.getElementById('prop-embed-radius');
+    var propEmbedTransform = document.getElementById('prop-embed-transform');
+
+    // Quad fields
+    var propQuadCode = document.getElementById('prop-quad-code');
+    var propQuadSrcWidth = document.getElementById('prop-quad-src-width');
+    var propQuadSrcHeight = document.getElementById('prop-quad-src-height');
+    var quadPointsList = document.getElementById('quad-points-list');
+    var btnAddQuadPoint = document.getElementById('btn-add-quad-point');
+    var btnClearQuadPoints = document.getElementById('btn-clear-quad-points');
+
+    // Function to populate hotspot properties panel based on selected hotspot data
+    function fillTypeFields(hsData) {
+      // Common fields
+      propTitle.value = hsData.title || '';
+      propAnimation.value = hsData.animation || 'none';
+      propIconStyle.value = hsData.iconStyle || 'default';
+      propRingEnabled.checked = hsData.ringEnabled !== false;
+      propIconColor.value = hsData.iconColor || '#ffffff';
+      propRingColor.value = hsData.ringColor || '#ffffff';
+      propIconSize.value = hsData.iconSize || 32;
+      propSizeLabel.textContent = 'Size (' + (hsData.iconSize || 32) + 'px)';
+      groupCustomIcon.style.display = (hsData.iconStyle === 'custom') ? 'flex' : 'none';
+
+      // Position fields
+      posYaw.textContent = (hsData.yaw * 180 / Math.PI).toFixed(0);
+      posPitch.textContent = (hsData.pitch * 180 / Math.PI).toFixed(0);
+
+      // Type-specific fields
+      document.getElementById('fields-navigate').style.display = 'none';
+      document.getElementById('fields-info').style.display = 'none';
+      document.getElementById('fields-url').style.display = 'none';
+      document.getElementById('fields-image').style.display = 'none';
+      document.getElementById('fields-video').style.display = 'none';
+      document.getElementById('fields-audio').style.display = 'none';
+      document.getElementById('fields-embed').style.display = 'none';
+      document.getElementById('fields-quad').style.display = 'none'; // Hide quad fields by default
+
+      var fieldEl = document.getElementById('fields-' + hsData.type);
+      if (fieldEl) {
+        fieldEl.style.display = 'block';
       }
+
+      if (hsData.type === 'navigate') {
+        populateTargetDropdowns(propTargetScene, hsData.target);
+        propTransition.value = hsData.transition || 'opacity';
+        propTransDuration.value = hsData.transitionDuration || 800;
+        propTransDurLabel.textContent = 'Duration (' + (hsData.transitionDuration || 800) + 'ms)';
+      } else if (hsData.type === 'info') {
+        propBodyText.value = hsData.text || '';
+        propLinkUrl.value = hsData.linkUrl || '';
+        propLinkLabel.value = hsData.linkLabel || '';
+        populateTargetDropdowns(propInfoTargetScene, hsData.target);
+      } else if (hsData.type === 'url') {
+        propUrlHref.value = hsData.urlHref || '';
+        propUrlLabel.value = hsData.urlLabel || 'Open link';
+        propUrlOpenIn.value = hsData.urlOpenIn || 'newtab';
+      } else if (hsData.type === 'image') {
+        propImageUrl.value = hsData.content.src || '';
+        propImageCaption.value = hsData.content.caption || '';
+        propImageLink.value = hsData.content.linkUrl || '';
+      } else if (hsData.type === 'video') {
+        propVideoUrl.value = hsData.content.src || '';
+        propVideoAutoplay.checked = hsData.content.autoplay || false;
+        propVideoLoop.checked = hsData.content.loop || false;
+        propVideoMuted.checked = hsData.content.muted || false;
+      } else if (hsData.type === 'audio') {
+        propAudioUrl.value = hsData.content.src || '';
+        propAudioAutoplay.checked = hsData.content.autoplay || false;
+        propAudioLabel.value = hsData.content.label || '';
+      } else if (hsData.type === 'embed') {
+        propEmbedCode.value = hsData.embedCode || '';
+        propEmbedWidth.value = hsData.embedWidth || 480;
+        propEmbedHeight.value = hsData.embedHeight || 270;
+        propEmbedPerspective.checked = hsData.perspective || false;
+        propEmbedRadius.value = hsData.radius || 1000;
+        propEmbedTransform.value = hsData.transform || '';
+      } else if (hsData.type === 'quad') {
+        propQuadCode.value = hsData.embedCode || '';
+        propQuadSrcWidth.value = hsData.srcWidth || 480;
+        propQuadSrcHeight.value = hsData.srcHeight || 270;
+        renderQuadPoints(hsData.quadPoints || []);
+      }
+
+      // Update the dropdown
+      propType.value = hsData.type;
+
+      // Update the icon preview
+      updateIconPreview();
+    }
+
+    // Event Listeners for Hotspot Properties
+    propType.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.type = this.value;
+      selectedHotspotData.style = this.value; // Keep style in sync with type for now
+      fillTypeFields(selectedHotspotData); // Re-render fields for new type
+      renderSceneHotspots(); // Re-render to update hotspot visual
       debouncedSave();
     });
 
-    topbarProjectName.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        this.blur();
+    propTitle.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.title = this.value;
+      renderSceneHotspots(); // Update title on hotspot
+      debouncedSave();
+    });
+
+    propAnimation.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.animation = this.value;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propIconStyle.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.iconStyle = this.value;
+      updateIconPreview();
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propTargetScene.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.target = this.value;
+      debouncedSave();
+    });
+
+    propTransition.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.transition = this.value;
+      debouncedSave();
+    });
+
+    propTransDuration.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.transitionDuration = parseInt(this.value) || 0;
+      propTransDurLabel.textContent = 'Duration (' + this.value + 'ms)';
+      debouncedSave();
+    });
+
+    propBodyText.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.text = this.value;
+      debouncedSave();
+    });
+
+    propLinkUrl.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.linkUrl = this.value;
+      debouncedSave();
+    });
+
+    propLinkLabel.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.linkLabel = this.value;
+      debouncedSave();
+    });
+
+    propInfoTargetScene.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.target = this.value;
+      debouncedSave();
+    });
+
+    propUrlHref.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.urlHref = this.value;
+      debouncedSave();
+    });
+
+    propUrlLabel.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.urlLabel = this.value;
+      debouncedSave();
+    });
+
+    propUrlOpenIn.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.urlOpenIn = this.value;
+      debouncedSave();
+    });
+
+    posYaw.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.yaw = parseFloat(this.textContent) * Math.PI / 180;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    posPitch.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.pitch = parseFloat(this.textContent) * Math.PI / 180;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propRingEnabled.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.ringEnabled = this.checked;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propIconColor.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.iconColor = this.value;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    btnResetIconColor.addEventListener('click', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.iconColor = null; // Reset to default
+      propIconColor.value = '#ffffff'; // Update UI
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propRingColor.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.ringColor = this.value;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    btnResetRingColor.addEventListener('click', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.ringColor = null; // Reset to default
+      propRingColor.value = '#ffffff'; // Update UI
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propIconSize.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.iconSize = parseInt(this.value);
+      propSizeLabel.textContent = 'Size (' + this.value + 'px)';
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propCustomIconUrl.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.customIconUrl = this.value;
+      updateIconPreview();
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    btnPickCustomIcon.addEventListener('click', function() {
+      mediaPickerCallback = function(media) {
+        if (!selectedHotspotData) return;
+        selectedHotspotData.customIconUrl = media.url;
+        propCustomIconUrl.value = media.url;
+        updateIconPreview();
+        renderSceneHotspots();
+        debouncedSave();
+      };
+      mediaModal.classList.add('visible');
+      loadAlbums();
+      loadMedia(currentAlbumId);
+    });
+
+    propImageUrl.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      if (!selectedHotspotData.content) {
+        selectedHotspotData.content = {};
+      }
+      selectedHotspotData.content.src = this.value;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    btnPickImage.addEventListener('click', function() {
+      mediaPickerCallback = function(media) {
+        if (!selectedHotspotData) return;
+        selectedHotspotData.content.src = media.url;
+        propImageUrl.value = media.url;
+        renderSceneHotspots();
+        debouncedSave();
+      };
+      mediaModal.classList.add('visible');
+      loadAlbums();
+      loadMedia(currentAlbumId);
+    });
+
+    propImageCaption.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      if (!selectedHotspotData.content) {
+        selectedHotspotData.content = {};
+      }
+      selectedHotspotData.content.caption = this.value;
+      debouncedSave();
+    });
+
+    propImageLink.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      if (!selectedHotspotData.content) {
+        selectedHotspotData.content = {};
+      }
+      selectedHotspotData.content.linkUrl = this.value;
+      debouncedSave();
+    });
+
+    propVideoUrl.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      if (!selectedHotspotData.content) {
+        selectedHotspotData.content = {};
+      }
+      selectedHotspotData.content.src = this.value;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    btnPickVideo.addEventListener('click', function() {
+      mediaPickerCallback = function(media) {
+        if (!selectedHotspotData) return;
+        selectedHotspotData.content.src = media.url;
+        propVideoUrl.value = media.url;
+        renderSceneHotspots();
+        debouncedSave();
+      };
+      mediaModal.classList.add('visible');
+      loadAlbums();
+      loadMedia(currentAlbumId);
+    });
+
+    propVideoAutoplay.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      if (!selectedHotspotData.content) {
+        selectedHotspotData.content = {};
+      }
+      selectedHotspotData.content.autoplay = this.checked;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propVideoLoop.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      if (!selectedHotspotData.content) {
+        selectedHotspotData.content = {};
+      }
+      selectedHotspotData.content.loop = this.checked;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propVideoMuted.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      if (!selectedHotspotData.content) {
+        selectedHotspotData.content = {};
+      }
+      selectedHotspotData.content.muted = this.checked;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propAudioUrl.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      if (!selectedHotspotData.content) {
+        selectedHotspotData.content = {};
+      }
+      selectedHotspotData.content.src = this.value;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    btnPickAudio.addEventListener('click', function() {
+      mediaPickerCallback = function(media) {
+        if (!selectedHotspotData) return;
+        selectedHotspotData.content.src = media.url;
+        propAudioUrl.value = media.url;
+        renderSceneHotspots();
+        debouncedSave();
+      };
+      mediaModal.classList.add('visible');
+      loadAlbums();
+      loadMedia(currentAlbumId);
+    });
+
+    propAudioLabel.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      if (!selectedHotspotData.content) {
+        selectedHotspotData.content = {};
+      }
+      selectedHotspotData.content.label = this.value;
+      debouncedSave();
+    });
+
+    propEmbedCode.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.embedCode = this.value;
+      debouncedSave();
+    });
+
+    propEmbedWidth.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.embedWidth = parseInt(this.value) || 480;
+      debouncedSave();
+    });
+
+    propEmbedHeight.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.embedHeight = parseInt(this.value) || 270;
+      debouncedSave();
+    });
+
+    propEmbedPerspective.addEventListener('change', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.perspective = this.checked;
+      debouncedSave();
+    });
+
+    propEmbedRadius.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.radius = parseInt(this.value) || 1000;
+      debouncedSave();
+    });
+
+    propEmbedTransform.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.transform = this.value;
+      debouncedSave();
+    });
+
+    propQuadCode.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.embedCode = this.value;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propQuadSrcWidth.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.srcWidth = parseInt(this.value) || 480;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    propQuadSrcHeight.addEventListener('input', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.srcHeight = parseInt(this.value) || 270;
+      renderSceneHotspots();
+      debouncedSave();
+    });
+
+    btnAddQuadPoint.addEventListener('click', function() {
+      if (!selectedHotspotData) return;
+      if (!selectedHotspotData.quadPoints) selectedHotspotData.quadPoints = [];
+      if (selectedHotspotData.quadPoints.length < 4) {
+        var view = viewer.lookAt();
+        selectedHotspotData.quadPoints.push({ yaw: view.yaw, pitch: view.pitch });
+        renderQuadPoints(selectedHotspotData.quadPoints);
+        renderSceneHotspots(); // Re-render to show new point marker
+        debouncedSave();
+      } else {
+        alert('You can only add up to 4 points for a quadrilateral hotspot.');
       }
     });
-  }
 
-  // ─── Tools Pill Logic ─────────────────────────────────────
-  pillTools.forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var tool = this.getAttribute('data-tool');
-      handleToolClick(tool, this);
+    btnClearQuadPoints.addEventListener('click', function() {
+      if (!selectedHotspotData) return;
+      selectedHotspotData.quadPoints = [];
+      renderQuadPoints([]);
+      renderSceneHotspots(); // Re-render to remove point markers
+      debouncedSave();
     });
-  });
+
+    // ─── Hotspot Management ───────────────────────────────────
+    function createVisualHotspot(hsData) {
+      // Remove existing hotspot if it's being re-created (e.g., after type change)
+      if (hsData.__marzipanoHotspot) {
+        currentSceneCtx.scene.hotspotContainer().destroyHotspot(hsData.__marzipanoHotspot);
+        hsData.__marzipanoHotspot = null;
+      }
+
+      var hotspotEl = Xeno.HotspotFactory.create(currentSceneCtx.scene, hsData);
+      if (!hotspotEl) return;
+
+      // Store a reference to the Marzipano hotspot object on the data
+      hsData.__marzipanoHotspot = hotspotEl.__marzipanoHotspot;
+      // Store a reference to the data on the DOM element for drag/drop
+      hotspotEl.__hsData = hsData;
+
+      // Add click listener to open properties panel
+      hotspotEl.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (editorState.activeTool === 'select') {
+          openPropertiesPanel(hsData);
+        }
+      });
+
+      // Add context menu for hotspots
+      hotspotEl.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openPropertiesPanel(hsData); // Open properties on right-click
+        // TODO: Add a specific context menu for hotspots (delete, duplicate, etc.)
+      });
+
+      // Apply initial size
+      if (hsData.iconSize) {
+        applyIconSize(hotspotEl, hsData.iconSize);
+      }
+
+      return hotspotEl;
+    }
+
+    function renderSceneHotspots() {
+      if (!currentSceneCtx) return;
+
+      // Clear existing hotspots
+      currentSceneCtx.scene.hotspotContainer().destroyAllHotspots();
+
+      // Render new ones
+      (currentSceneCtx.data.hotspots || []).forEach(function(hsData) {
+        createVisualHotspot(hsData);
+      });
+    }
+
+    function openPropertiesPanel(hsData) {
+      selectedHotspotData = hsData;
+      panelTitle.textContent = 'Hotspot Properties';
+      propsPanel.classList.add('visible');
+      document.getElementById('props-reopen-btn').style.display = 'none';
+      document.getElementById('fields-scene-settings').style.display = 'none';
+      document.getElementById('fields-hotspot-properties').style.display = 'block';
+
+      fillTypeFields(hsData);
+    }
+
+    function closePropertiesPanel() {
+      selectedHotspotData = null;
+      propsPanel.classList.remove('visible');
+      document.getElementById('props-reopen-btn').style.display = 'block';
+    }
+
+    function openSceneSettingsPanel() {
+      selectedHotspotData = null; // Ensure no hotspot is selected
+      panelTitle.textContent = 'Scene Settings';
+      propsPanel.classList.add('visible');
+      document.getElementById('props-reopen-btn').style.display = 'none';
+      document.getElementById('fields-hotspot-properties').style.display = 'none';
+      document.getElementById('fields-scene-settings').style.display = 'block';
+
+      // Populate scene settings fields
+      propSceneName.value = currentSceneCtx.data.name || '';
+      propFloorplanEnabled.checked = currentSceneCtx.data.floorplanEnabled || false;
+      propFloorplanUrl.value = currentSceneCtx.data.floorplanUrl || '';
+
+      // Initial view parameters
+      var view = viewer.lookAt();
+      propViewYaw.value = (view.yaw * 180 / Math.PI).toFixed(2);
+      propViewPitch.value = (view.pitch * 180 / Math.PI).toFixed(2);
+      propViewFov.value = (view.fov * 180 / Math.PI).toFixed(2);
+
+      // Scene FOV
+      propSceneFov.value = (currentSceneCtx.data.initialViewParameters.fov * 180 / Math.PI).toFixed(0);
+      sceneFovLabel.textContent = 'FOV (' + propSceneFov.value + '°)';
+    }
+
+    // Scene Settings Event Listeners
+    propSceneName.addEventListener('input', function() {
+      if (!currentSceneCtx) return;
+      currentSceneCtx.data.name = this.value;
+      renderSceneGrid();
+      debouncedSave();
+    });
+
+    propFloorplanEnabled.addEventListener('change', function() {
+      if (!currentSceneCtx) return;
+      currentSceneCtx.data.floorplanEnabled = this.checked;
+      debouncedSave();
+    });
+
+    propFloorplanUrl.addEventListener('input', function() {
+      if (!currentSceneCtx) return;
+      currentSceneCtx.data.floorplanUrl = this.value;
+      debouncedSave();
+    });
+
+    btnPickFloorplan.addEventListener('click', function() {
+      mediaPickerCallback = function(media) {
+        if (!currentSceneCtx) return;
+        currentSceneCtx.data.floorplanUrl = media.url;
+        propFloorplanUrl.value = media.url;
+        debouncedSave();
+      };
+      mediaModal.classList.add('visible');
+      loadAlbums();
+      loadMedia(currentAlbumId);
+    });
+
+    btnReadView.addEventListener('click', function() {
+      var view = viewer.lookAt();
+      propViewYaw.value = (view.yaw * 180 / Math.PI).toFixed(2);
+      propViewPitch.value = (view.pitch * 180 / Math.PI).toFixed(2);
+      propViewFov.value = (view.fov * 180 / Math.PI).toFixed(2);
+    });
+
+    btnApplyView.addEventListener('click', function() {
+      if (!currentSceneCtx) return;
+      currentSceneCtx.data.initialViewParameters.yaw = parseFloat(propViewYaw.value) * Math.PI / 180;
+      currentSceneCtx.data.initialViewParameters.pitch = parseFloat(propViewPitch.value) * Math.PI / 180;
+      currentSceneCtx.data.initialViewParameters.fov = parseFloat(propViewFov.value) * Math.PI / 180;
+      viewer.lookTo(currentSceneCtx.data.initialViewParameters);
+      debouncedSave();
+    });
+
+    propSceneFov.addEventListener('input', function() {
+      if (!currentSceneCtx) return;
+      var newFov = parseFloat(this.value) * Math.PI / 180;
+      currentSceneCtx.data.initialViewParameters.fov = newFov;
+      sceneFovLabel.textContent = 'FOV (' + this.value + '°)';
+      debouncedSave();
+    });
+
+    btnApplyFov.addEventListener('click', function() {
+      if (!currentSceneCtx) return;
+      var newFov = parseFloat(propSceneFov.value) * Math.PI / 180;
+      viewer.view().setFov(newFov);
+      currentSceneCtx.data.initialViewParameters.fov = newFov;
+      debouncedSave();
+    });
+
+    // Update bottom view controls
+    viewer.view().addEventListener('change', function() {
+      var view = viewer.lookAt();
+      bottomViewYaw.textContent = (view.yaw * 180 / Math.PI).toFixed(0);
+      bottomViewPitch.textContent = (view.pitch * 180 / Math.PI).toFixed(0);
+      bottomViewFov.textContent = (view.fov * 180 / Math.PI).toFixed(0);
+    });
+
+    // ─── Media Manager ────────────────────────────────────────
+    var mediaGrid = document.getElementById('media-grid');
+    var albumGrid = document.getElementById('album-grid');
+    var mediaUploadArea = document.getElementById('media-upload-area');
+    var mediaUploadInput = document.getElementById('media-upload-input');
+    var mediaUploadProgress = document.getElementById('media-upload-progress');
+    var mediaUploadProgressBar = document.getElementById('media-upload-progress-bar');
+    var mediaUploadProgressText = document.getElementById('media-upload-progress-text');
+    var mediaSearchInput = document.getElementById('media-search-input');
+    var mediaSearchClear = document.getElementById('media-search-clear');
+    var mediaAlbumName = document.getElementById('media-album-name');
+    var btnCreateAlbum = document.getElementById('btn-create-album');
+    var btnBackToAlbums = document.getElementById('btn-back-to-albums');
+    var btnDeleteAlbum = document.getElementById('btn-delete-album');
+    var btnRenameAlbum = document.getElementById('btn-rename-album');
+    var btnMoveMedia = document.getElementById('btn-move-media');
+
+    var currentAlbumId = 'all'; // Default to 'all' album
+    var selectedMediaIds = new Set(); // Set of media item IDs
+    var selectedMediaMap = {}; // Map of media item IDs to their data
+    var lastClickedMediaIndex = null; // for shift-click range
+
+    // Drag and drop upload
+    mediaUploadArea.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      this.classList.add('drag-over');
+    });
+
+    mediaUploadArea.addEventListener('dragleave', function(e) {
+      this.classList.remove('drag-over');
+    });
+
+    mediaUploadArea.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      var files = e.dataTransfer.files;
+      handleMediaUpload(files);
+    });
+
+    mediaUploadInput.addEventListener('change', function(e) {
+      var files = e.target.files;
+      handleMediaUpload(files);
+    });
+
+    function handleMediaUpload(files) {
+      if (!window.XenoSupabase) {
+        alert('Supabase not initialized. Cannot upload files.');
+        return;
+      }
+
+      var uploadPromises = [];
+      var totalFiles = files.length;
+      var uploadedCount = 0;
+
+      mediaUploadProgress.style.display = 'flex';
+      mediaUploadProgressBar.style.width = '0%';
+      mediaUploadProgressText.textContent = 'Uploading 0/' + totalFiles + ' files...';
+
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var albumToUploadTo = currentAlbumId === 'all' ? null : currentAlbumId; // Don't assign 'all' album
+        uploadPromises.push(
+          window.XenoSupabase.uploadAndRecordMedia(file, albumToUploadTo, function(progress) {
+            // Update progress for individual file (optional, more complex for multiple files)
+            // For simplicity, we'll update overall progress after each file completes
+          })
+          .then(function() {
+            uploadedCount++;
+            mediaUploadProgressText.textContent = 'Uploading ' + uploadedCount + '/' + totalFiles + ' files...';
+            mediaUploadProgressBar.style.width = (uploadedCount / totalFiles) * 100 + '%';
+          })
+          .catch(function(err) {
+            console.error('Error uploading file:', file.name, err);
+            showToast('Error uploading ' + file.name + ': ' + err.message, 'error');
+          })
+        );
+      }
+
+      Promise.all(uploadPromises)
+        .then(function() {
+          mediaUploadProgress.style.display = 'none';
+          showToast('Successfully uploaded ' + uploadedCount + ' files.');
+          loadMedia(currentAlbumId); // Reload media grid
+        })
+        .catch(function(err) {
+          mediaUploadProgress.style.display = 'none';
+          showToast('Some uploads failed. Check console for details.', 'error');
+          console.error('Batch upload error:', err);
+        });
+    }
+
+    mediaSearchInput.addEventListener('input', function() {
+      loadMedia(currentAlbumId, this.value);
+    });
+
+    mediaSearchClear.addEventListener('click', function() {
+      mediaSearchInput.value = '';
+      loadMedia(currentAlbumId);
+    });
+
+    btnCreateAlbum.addEventListener('click', function() {
+      var albumName = prompt('Enter new album name:');
+      if (albumName) {
+        window.XenoSupabase.createAlbum(albumName)
+          .then(function() {
+            showToast('Album "' + albumName + '" created.');
+            loadAlbums();
+          })
+          .catch(function(err) {
+            alert('Error creating album: ' + err.message);
+            console.error('Error creating album:', err);
+          });
+      }
+    });
+
+    btnBackToAlbums.addEventListener('click', function() {
+      document.getElementById('media-albums-view').style.display = 'flex';
+      document.getElementById('media-album-view').style.display = 'none';
+      currentAlbumId = 'all';
+      mediaSearchInput.value = '';
+      selectedMediaIds.clear();
+      selectedMediaMap = {};
+      syncMediaSelection();
+    });
+
+    btnDeleteAlbum.addEventListener('click', function() {
+      if (currentAlbumId === 'all') {
+        alert('Cannot delete "All Media" album.');
+        return;
+      }
+      if (!confirm('Delete album "' + mediaAlbumName.textContent + '" and all its media? This cannot be undone.')) return;
+
+      window.XenoSupabase.deleteAlbum(currentAlbumId)
+        .then(function() {
+          showToast('Album deleted.');
+          btnBackToAlbums.click(); // Go back to albums view
+        })
+        .catch(function(err) {
+          alert('Error deleting album: ' + err.message);
+          console.error('Error deleting album:', err);
+        });
+    });
+
+    btnRenameAlbum.addEventListener('click', function() {
+      if (currentAlbumId === 'all') {
+        alert('Cannot rename "All Media" album.');
+        return;
+      }
+      var newName = prompt('Rename album:', mediaAlbumName.textContent);
+      if (newName) {
+        window.XenoSupabase.renameAlbum(currentAlbumId, newName)
+          .then(function() {
+            showToast('Album renamed.');
+            mediaAlbumName.textContent = newName;
+            loadAlbums(); // Refresh album list
+          })
+          .catch(function(err) {
+            alert('Error renaming album: ' + err.message);
+            console.error('Error renaming album:', err);
+          });
+      }
+    });
+
+    btnMoveMedia.addEventListener('click', function() {
+      if (selectedMediaIds.size === 0) {
+        alert('Please select media items to move.');
+        return;
+      }
+      moveMediaModal.classList.add('visible');
+      loadMoveTargetAlbums();
+    });
+
+    btnCancelMove.addEventListener('click', function() {
+      moveMediaModal.classList.remove('visible');
+    });
+
+    btnCloseMoveModal.addEventListener('click', function() {
+      moveMediaModal.classList.remove('visible');
+    });
+
+    btnConfirmMove.addEventListener('click', function() {
+      var targetAlbumId = moveTargetAlbum.value;
+      if (!targetAlbumId) {
+        alert('Please select a target album.');
+        return;
+      }
+
+      var movePromises = [];
+      selectedMediaIds.forEach(function(mediaId) {
+        movePromises.push(window.XenoSupabase.moveMedia(mediaId, targetAlbumId));
+      });
+
+      Promise.all(movePromises)
+        .then(function() {
+          showToast('Moved ' + movePromises.length + ' media items.');
+          moveMediaModal.classList.remove('visible');
+          selectedMediaIds.clear();
+          selectedMediaMap = {};
+          lastClickedMediaIndex = null;
+          loadMedia(currentAlbumId); // Reload current album
+        })
+        .catch(function(err) {
+          alert('Error moving media: ' + err.message);
+          console.error('Error moving media:', err);
+        });
+    });
+
+    function loadAlbums() {
+      if (!window.XenoSupabase) {
+        albumGrid.innerHTML = '<p>Supabase not configured.</p>';
+        return;
+      }
+      window.XenoSupabase.getAlbums()
+        .then(function(albums) {
+          albumGrid.innerHTML = '';
+          // Add "All Media" album
+          var allMediaCard = createAlbumCard({ id: 'all', name: 'All Media', media_count: 0 });
+          albumGrid.appendChild(allMediaCard);
+
+          albums.forEach(function(album) {
+            var card = createAlbumCard(album);
+            albumGrid.appendChild(card);
+          });
+        })
+        .catch(function(err) {
+          albumGrid.innerHTML = '<p class="error-message">Error loading albums: ' + err.message + '</p>';
+          console.error('Error loading albums:', err);
+        });
+    }
+
+    function createAlbumCard(album) {
+      var card = document.createElement('div');
+      card.className = 'album-card';
+      card.innerHTML = `
+        <div class="album-icon">${xIcon('folder', 48)}</div>
+        <div class="album-name">${album.name}</div>
+        <div class="album-count">${album.media_count} items</div>
+      `;
+      card.addEventListener('click', function() {
+        currentAlbumId = album.id;
+        document.getElementById('media-albums-view').style.display = 'flex';
+        document.getElementById('media-album-view').style.display = 'none';
+        mediaAlbumName.textContent = album.name;
+        loadMedia(album.id);
+      });
+      return card;
+    }
+
+    function loadMoveTargetAlbums() {
+      if (!window.XenoSupabase) {
+        moveTargetAlbum.innerHTML = '<option value="">Supabase not configured</option>';
+        return;
+      }
+      window.XenoSupabase.getAlbums()
+        .then(function(albums) {
+          moveTargetAlbum.innerHTML = '<option value="">Select Album</option>';
+          albums.forEach(function(album) {
+            if (album.id !== currentAlbumId) { // Don't allow moving to the current album
+              var option = document.createElement('option');
+              option.value = album.id;
+              option.textContent = album.name;
+              moveTargetAlbum.appendChild(option);
+            }
+          });
+        })
+        .catch(function(err) {
+          moveTargetAlbum.innerHTML = '<option value="">Error loading albums</option>';
+          console.error('Error loading move target albums:', err);
+        });
+    }
+
+    function loadMedia(albumId, searchTerm = '') {
+      if (!window.XenoSupabase) {
+        mediaGrid.innerHTML = '<p>Supabase not configured.</p>';
+        return;
+      }
+      window.XenoSupabase.getMedia(albumId, searchTerm)
+        .then(function(mediaItems) {
+          mediaGrid.innerHTML = '';
+          if (mediaItems.length === 0) {
+            mediaGrid.innerHTML = '<p class="empty-state">No media found.</p>';
+            return;
+          }
+          mediaItems.forEach(function(media, index) {
+            var card = createMediaCard(media, index);
+            mediaGrid.appendChild(card);
+          });
+          syncMediaSelection();
+        })
+        .catch(function(err) {
+          mediaGrid.innerHTML = '<p class="error-message">Error loading media: ' + err.message + '</p>';
+          console.error('Error loading media:', err);
+        });
+    }
+
+    function createMediaCard(media, index) {
+      var card = document.createElement('div');
+      card.className = 'media-card';
+      if (selectedMediaIds.has(media.id)) {
+        card.classList.add('media-selected');
+      }
+
+      var isVideo = media.type && media.type.startsWith('video/');
+      var isImage = media.type && media.type.startsWith('image/');
+      var isAudio = media.type && media.type.startsWith('audio/');
+
+      var mediaContentHtml = '';
+      if (isVideo) {
+        mediaContentHtml = `<video src="${media.url}" preload="metadata" muted></video>`;
+      } else if (isImage) {
+        mediaContentHtml = `<img src="${media.url}" alt="${media.filename}">`;
+      } else if (isAudio) {
+        mediaContentHtml = `<div class="audio-placeholder">${xIcon('music', 48)}</div>`;
+      } else {
+        mediaContentHtml = `<div class="file-placeholder">${xIcon('file', 48)}</div>`;
+      }
+
+      card.innerHTML = `
+        <div class="media-thumbnail-wrapper">
+          ${mediaContentHtml}
+          <div class="media-overlay">
+            <div class="media-filename">${media.filename}</div>
+          </div>
+        </div>
+      `;
+
+      card.addEventListener('click', function(e) {
+        if (e.shiftKey) {
+          if (lastClickedMediaIndex !== null) {
+            var startIndex = Math.min(lastClickedMediaIndex, index);
+            var endIndex = Math.max(lastClickedMediaIndex, index);
+            for (var i = startIndex; i <= endIndex; i++) {
+              var mediaItem = mediaGrid.children[i].__mediaData;
+              if (mediaItem) {
+                selectedMediaIds.add(mediaItem.id);
+                selectedMediaMap[mediaItem.id] = mediaItem;
+              }
+            }
+          } else {
+            selectedMediaIds.add(media.id);
+            selectedMediaMap[media.id] = media;
+          }
+        } else if (e.ctrlKey || e.metaKey) { // Ctrl/Cmd click for toggling individual items
+          if (selectedMediaIds.has(media.id)) {
+            selectedMediaIds.delete(media.id);
+            delete selectedMediaMap[media.id];
+          } else {
+            selectedMediaIds.add(media.id);
+            selectedMediaMap[media.id] = media;
+          }
+        } else {
+          // Single click behavior
+          if (selectedMediaIds.size > 0 && !selectedMediaIds.has(media.id)) {
+            // If other items are selected, and this one isn't, clear selection and select this one
+            selectedMediaIds.clear();
+            selectedMediaMap = {};
+            selectedMediaIds.add(media.id);
+            selectedMediaMap[media.id] = media;
+          } else if (selectedMediaIds.size === 1 && selectedMediaIds.has(media.id)) {
+            // If only this item is selected, and it's clicked again, it means "use this media"
+            if (mediaPickerCallback) {
+              mediaPickerCallback(media);
+              mediaPickerCallback = null;
+              mediaModal.classList.remove('visible');
+              selectedMediaIds.clear();
+              selectedMediaMap = {};
+              syncMediaSelection();
+              return; // Exit to prevent re-selection logic below
+            } else {
+              // If no callback, just toggle selection off
+              selectedMediaIds.clear();
+              selectedMediaMap = {};
+            }
+          } else {
+            // No selection, or multiple selected, and this is a single click on an unselected item
+            selectedMediaIds.clear();
+            selectedMediaMap = {};
+            selectedMediaIds.add(media.id);
+            selectedMediaMap[media.id] = media;
+          }
+        }
+        lastClickedMediaIndex = index;
+        syncMediaSelection();
+      });
+
+      // Right-click context menu
+      card.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        mediaCtxTarget = media;
+        mediaItemCtx.style.display = 'block';
+        mediaItemCtx.style.left = e.clientX + 'px';
+        mediaItemCtx.style.top = e.clientY + 'px';
+      });
+
+      card.__mediaData = media; // Store data for easy access
+      return card;
+    }
+
+    function syncMediaSelection() {
+      var mediaCards = mediaGrid.querySelectorAll('.media-card');
+      mediaCards.forEach(function(card) {
+        var mediaId = card.__mediaData.id;
+        if (selectedMediaIds.has(mediaId)) {
+          card.classList.add('media-selected');
+        } else {
+          card.classList.remove('media-selected');
+        }
+      });
+
+      var mediaActionBar = document.getElementById('media-action-bar');
+      var mediaSelCount = document.getElementById('media-sel-count');
+      if (selectedMediaIds.size > 0) {
+        mediaSelCount.textContent = selectedMediaIds.size + ' selected';
+        mediaActionBar.style.display = 'flex';
+      } else {
+        mediaActionBar.style.display = 'none';
+      }
+    }
+
+    mediaItemCtx.querySelectorAll('.ctx-item').forEach(function(item) {
+      item.addEventListener('click', function() {
+        if (!mediaCtxTarget) return;
+        var action = this.getAttribute('data-action');
+
+        if (action === 'use-media') {
+          if (mediaPickerCallback) {
+            mediaPickerCallback(mediaCtxTarget);
+            mediaPickerCallback = null;
+            mediaModal.classList.remove('visible');
+            selectedMediaIds.clear();
+            selectedMediaMap = {};
+            syncMediaSelection();
+          } else {
+            showToast('No active media picker. Select a hotspot property to pick media for.', 'info');
+          }
+        } else if (action === 'delete-media') {
+          if (!confirm('Delete "' + mediaCtxTarget.filename + '"? This cannot be undone.')) return;
+          window.XenoSupabase.deleteMedia(mediaCtxTarget.id, mediaCtxTarget.url)
+            .then(function() {
+              showToast('Media deleted.');
+              loadMedia(currentAlbumId);
+            })
+            .catch(function(err) {
+              alert('Error deleting media: ' + err.message);
+              console.error('Error deleting media:', err);
+            });
+        } else if (action === 'move-media') {
+          selectedMediaIds.clear();
+          selectedMediaMap = {};
+          selectedMediaIds.add(mediaCtxTarget.id);
+          selectedMediaMap[mediaCtxTarget.id] = mediaCtxTarget;
+          syncMediaSelection();
+          btnMoveMedia.click(); // Trigger the move modal
+        }
+        mediaCtxTarget = null;
+      });
+    });
+
+    // ─── Dashboard ────────────────────────────────────────────
+    function initDashboard() {
+      var projectGrid = document.getElementById('project-grid');
+      var btnCreateProject = document.getElementById('btn-create-project');
+
+      function renderProjects(projects) {
+        projectGrid.innerHTML = '';
+        if (!projects || projects.length === 0) {
+          projectGrid.innerHTML = '<p class="empty-state">No projects found. Create one to get started!</p>';
+          return;
+        }
+        projects.forEach(function(project) {
+          var card = document.createElement('div');
+          card.className = 'project-card';
+          card.innerHTML = `
+            <div class="project-card-thumb">
+              ${project.thumbnailUrl ? `<img src="${project.thumbnailUrl}" alt="${project.name}">` : `<div class="project-thumb-placeholder">${xIcon('project', 48)}</div>`}
+            </div>
+            <div class="project-card-overlay">
+              <div class="project-name">${project.name}</div>
+              <div class="project-actions">
+                <button class="btn-icon btn-edit-project" data-slug="${project.slug}">${xIcon('edit', 16)}</button>
+                <button class="btn-icon btn-view-project" data-slug="${project.slug}">${xIcon('eye', 16)}</button>
+                <button class="btn-icon btn-export-project" data-slug="${project.slug}">${xIcon('download', 16)}</button>
+                <button class="btn-icon btn-delete-project" data-slug="${project.slug}">${xIcon('trash', 16)}</button>
+              </div>
+            </div>
+          `;
+          projectGrid.appendChild(card);
+        });
+
+        projectGrid.querySelectorAll('.btn-edit-project').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var slug = this.getAttribute('data-slug');
+            window.location.href = window.location.pathname + '?project=' + slug;
+          });
+        });
+
+        projectGrid.querySelectorAll('.btn-view-project').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var slug = this.getAttribute('data-slug');
+            window.open('preview.html?project=' + slug, '_blank');
+          });
+        });
+
+        projectGrid.querySelectorAll('.btn-export-project').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var slug = this.getAttribute('data-slug');
+            exportProject(slug);
+          });
+        });
+
+        projectGrid.querySelectorAll('.btn-delete-project').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var slug = this.getAttribute('data-slug');
+            if (confirm('Are you sure you want to delete this project? This cannot be undone.')) {
+              window.XenoSupabase.deleteTour(slug)
+                .then(function() {
+                  showToast('Project deleted.');
+                  loadDashboardProjects();
+                })
+                .catch(function(err) {
+                  alert('Error deleting project: ' + err.message);
+                  console.error('Error deleting project:', err);
+                });
+            }
+          });
+        });
+      }
+
+      function loadDashboardProjects() {
+        if (!window.XenoSupabase) {
+          projectGrid.innerHTML = '<p>Supabase not configured. Cannot load projects.</p>';
+          return;
+        }
+        window.XenoSupabase.getTours()
+          .then(function(projects) {
+            renderProjects(projects);
+          })
+          .catch(function(err) {
+            projectGrid.innerHTML = '<p class="error-message">Error loading projects: ' + err.message + '</p>';
+            console.error('Error loading projects:', err);
+          });
+      }
+
+      btnCreateProject.addEventListener('click', function() {
+        var projectName = prompt('Enter new project name:');
+        if (projectName) {
+          var slug = projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-*|-*$/g, '');
+          if (!slug) slug = 'new-project-' + Date.now();
+
+          // Check if slug already exists
+          window.XenoSupabase.getTour(slug)
+            .then(function(existingTour) {
+              if (existingTour) {
+                alert('A project with this name already exists. Please choose a different name.');
+                return;
+              }
+
+              var newProjectData = {
+                settings: {
+                  title: projectName,
+                  name: projectName,
+                  mouseViewMode: "drag",
+                  autorotateEnabled: false,
+                  autorotateSpeed: 0.03,
+                  autorotateInactivityDelay: 3000,
+                  fullscreenButton: true,
+                  sceneListStyle: "sidebar",
+                  showMinimap: false,
+                  minimapPosition: "bottom-left",
+                  showControls: true,
+                  gyroscopeEnabled: false,
+                  vrEnabled: false,
+                  defaultTransition: "opacity",
+                  defaultTransitionDuration: 1000,
+                  defaultTransitionEasing: "easeInOut",
+                  branding: { logoUrl: null, accentColor: "#e62e5a", logoPosition: "top-left" },
+                  intro: { enabled: false, title: "", subtitle: "", buttonText: "Enter Tour" }
+                },
+                scenes: [],
+                floorplan: { enabled: false, imageUrl: "", width: 800, height: 600 }
+              };
+
+              window.XenoSupabase.saveTour(slug, newProjectData)
+                .then(function() {
+                  showToast('Project "' + projectName + '" created.');
+                  window.location.href = window.location.pathname + '?project=' + slug;
+                })
+                .catch(function(err) {
+                  alert('Error creating project: ' + err.message);
+                  console.error('Error creating project:', err);
+                });
+            })
+            .catch(function(err) {
+              alert('Error checking existing project: ' + err.message);
+              console.error('Error checking existing project:', err);
+            });
+        }
+      });
+
+      loadDashboardProjects();
+    }
+
+    // ─── Export Project ───────────────────────────────────────
+    function exportProject(slug) {
+      showToast('Preparing export...', 'info', 5000);
+
+      window.XenoSupabase.getTour(slug)
+        .then(function(projectData) {
+          if (!projectData) {
+            throw new Error('Project data not found for export.');
+          }
+
+          // Create a temporary iframe to load the preview.html
+          var iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          document.body.appendChild(iframe);
+
+          iframe.onload = function() {
+            var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            // Inject project data
+            var script = iframeDoc.createElement('script');
+            script.textContent = 'window.projectData = ' + JSON.stringify(projectData) + ';';
+            iframeDoc.head.appendChild(script);
+
+            // Trigger the export function within the iframe
+            var exportScript = iframeDoc.createElement('script');
+            exportScript.textContent = `
+              (function() {
+                // Wait for the viewer to be ready
+                var checkInterval = setInterval(function() {
+                  if (window.viewer && window.projectData) {
+                    clearInterval(checkInterval);
+                    window.exportTour(window.projectData);
+                  }
+                }, 100);
+              })();
+            `;
+            iframeDoc.body.appendChild(exportScript);
+          };
+
+          iframe.src = 'preview.html'; // Load the preview template
+        })
+        .catch(function(err) {
+          showToast('Export failed: ' + err.message, 'error');
+          console.error('Export error:', err);
+        });
+    }
+
+    // ─── Utility Functions ────────────────────────────────────
+    function showToast(message, type = 'success', duration = 3000) {
+      var toastContainer = document.getElementById('toast-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        document.body.appendChild(toastContainer);
+      }
+
+      var toast = document.createElement('div');
+      toast.className = 'toast toast-' + type;
+      toast.textContent = message;
+      toastContainer.appendChild(toast);
+
+      setTimeout(function() {
+        toast.classList.add('hide');
+        toast.addEventListener('transitionend', function() {
+          toast.remove();
+        });
+      }, duration);
+    }
+
+    // Function to update the icon preview based on selected hotspot data
+    function updateIconPreview() {
+      var iconPreview = document.getElementById('icon-preview');
+      if (!iconPreview || !selectedHotspotData) return;
+
+      iconPreview.innerHTML = ''; // Clear previous icon
+
+      var iconType = selectedHotspotData.iconStyle;
+      var iconSize = selectedHotspotData.iconSize || 32;
+      var iconColor = selectedHotspotData.iconColor || 'var(--text-primary)';
+      var ringColor = selectedHotspotData.ringEnabled ? (selectedHotspotData.ringColor || 'var(--accent)') : 'transparent';
+
+      var iconEl;
+
+      if (iconType === 'custom' && selectedHotspotData.customIconUrl) {
+        iconEl = document.createElement('img');
+        iconEl.src = selectedHotspotData.customIconUrl;
+        iconEl.style.width = '100%';
+        iconEl.style.height = '100%';
+        iconEl.style.objectFit = 'contain';
+      } else {
+        var iconName = 'info'; // Default icon
+        if (selectedHotspotData.type === 'navigate') iconName = 'arrow-right';
+        if (selectedHotspotData.type === 'info') iconName = 'info';
+        if (selectedHotspotData.type === 'url') iconName = 'link';
+        if (selectedHotspotData.type === 'image') iconName = 'image';
+        if (selectedHotspotData.type === 'video') iconName = 'video';
+        if (selectedHotspotData.type === 'audio') iconName = 'music';
+        if (selectedHotspotData.type === 'embed') iconName = 'code';
+        if (selectedHotspotData.type === 'quad') iconName = 'grid'; // New icon for quad
+
+        iconEl = document.createElement('div');
+        iconEl.innerHTML = xIcon(iconName, iconSize * 0.6); // Scale SVG icon
+        iconEl.querySelector('svg').style.stroke = iconColor;
+      }
+
+      iconPreview.appendChild(iconEl);
+      iconPreview.style.borderColor = ringColor;
+      iconPreview.style.width = iconSize + 'px';
+      iconPreview.style.height = iconSize + 'px';
+    }
+
+    // Function to render quad points in the properties panel
+    function renderQuadPoints(points) {
+      quadPointsList.innerHTML = '';
+      if (points.length === 0) {
+        btnClearQuadPoints.style.display = 'none';
+        return;
+      } else {
+        btnClearQuadPoints.style.display = 'inline-flex';
+      }
+
+      points.forEach(function(p, index) {
+        var pointEl = document.createElement('div');
+        pointEl.className = 'quad-point-item';
+        pointEl.innerHTML = `
+          <span>Point ${index + 1}: Yaw ${p.yaw.toFixed(2)}, Pitch ${p.pitch.toFixed(2)}</span>
+          <button class="btn-icon btn-remove-quad-point" data-index="${index}">
+            ${xIcon('x', 12)}
+          </button>
+        `;
+        quadPointsList.appendChild(pointEl);
+      });
+
+      quadPointsList.querySelectorAll('.btn-remove-quad-point').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var indexToRemove = parseInt(this.getAttribute('data-index'));
+          if (selectedHotspotData && selectedHotspotData.quadPoints) {
+            selectedHotspotData.quadPoints.splice(indexToRemove, 1);
+            renderQuadPoints(selectedHotspotData.quadPoints);
+            renderSceneHotspots();
+            debouncedSave();
+          }
+        });
+      });
+    }
+
+    // Initial render of scene grid
+    renderSceneGrid();
+
+    // If a project is loaded, switch to the first scene or a specified one
+    if (data.scenes && data.scenes.length > 0) {
+      var initialSceneId = new URLSearchParams(window.location.search).get('scene') || data.scenes[0].id;
+      switchSceneById(initialSceneId);
+    } else {
+      // No scenes, open scene settings panel to prompt user to add one
+      openSceneSettingsPanel();
+    }
+
+  // Global utility to get SVG icons
+  window.xIcon = function(name, size = 24) {
+    var icons = {
+      'arrow-right': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>',
+      'info': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
+      'link': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07L9.5 3.5"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07L14.5 20.5"></path></svg>',
+      'image': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>',
+      'video': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7L16 12 23 17 23 7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>',
+      'music': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>',
+      'code': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>',
+      'grid': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line><line x1="12" y1="3" x2="12" y2="21"></line></svg>',
+      'x': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+      'folder': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>',
+      'project': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>',
+      'edit': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>',
+      'eye': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>',
+      'download': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
+      'trash': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>',
+      'check': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+    };
+    var svg = icons[name] || '';
+    return svg.replace(/width="24"/g, 'width="' + size + '"').replace(/height="24"/g, 'height="' + size + '"');
+  };
+
+})();
 
   // Initialize pill buttons from saved settings
   var autorotateBtn = Array.prototype.find.call(pillTools, function(btn) {
@@ -560,6 +2002,24 @@
       dragHsData = null;
       debouncedSave();
     }
+  });
+
+  propEmbedCode.addEventListener('input', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.embedCode = this.value;
+    debouncedSave();
+  });
+
+  propEmbedWidth.addEventListener('input', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.embedWidth = parseInt(this.value) || 480;
+    debouncedSave();
+  });
+
+  propEmbedHeight.addEventListener('input', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.embedHeight = parseInt(this.value) || 270;
+    debouncedSave();
   });
 
   // ─── Scene Grid ───────────────────────────────────────────
@@ -872,6 +2332,19 @@
   function switchSceneById(id) {
     var sceneCtx = scenes.find(function(s) { return s.data.id === id; });
     if (!sceneCtx) return;
+
+    // Handle video scenes - ensure video starts playing
+    if (sceneCtx.data.type === 'video') {
+      var source = sceneCtx.scene.source();
+      var asset = source.asset();
+      if (asset && typeof asset.element === 'function') {
+        var videoEl = asset.element();
+        if (videoEl) {
+          videoEl.play().catch(function(e) { console.warn('Autoplay prevented:', e); });
+        }
+      }
+    }
+
     currentSceneCtx = sceneCtx;
     sceneCtx.scene.switchTo({}, function() {
       if (autorotateEnabled) {
@@ -1162,6 +2635,21 @@
     propAudioUrl.value = (hsData.content && hsData.content.src) || '';
     propAudioAutoplay.checked = hsData.autoplay === true;
     propAudioLabel.checked = hsData.showPlayerLabel !== false;
+
+    // Embed
+    propEmbedCode.value = hsData.embedCode || '';
+    propEmbedWidth.value = hsData.embedWidth || 480;
+    propEmbedHeight.value = hsData.embedHeight || 270;
+    propEmbedPerspective.checked = hsData.perspectiveEnabled === true;
+    propEmbedRadius.value = hsData.perspectiveRadius || 1000;
+    propEmbedTransform.value = hsData.perspectiveTransform || '';
+    perspectiveOptionsDiv.style.display = hsData.perspectiveEnabled ? 'block' : 'none';
+
+    // Quad
+    propQuadCode.value = hsData.embedCode || '';
+    propQuadSrcWidth.value = hsData.srcWidth || 480;
+    propQuadSrcHeight.value = hsData.srcHeight || 270;
+    renderQuadPoints(hsData.quadPoints || []);
   }
 
   // Type change
@@ -1261,6 +2749,133 @@
     renderSceneHotspots();
     debouncedSave();
   });
+
+  propEmbedCode.addEventListener('input', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.embedCode = this.value;
+    debouncedSave();
+  });
+
+  propEmbedWidth.addEventListener('input', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.embedWidth = parseInt(this.value) || 480;
+    debouncedSave();
+  });
+
+  propEmbedHeight.addEventListener('input', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.embedHeight = parseInt(this.value) || 270;
+    debouncedSave();
+  });
+
+  propEmbedPerspective.addEventListener('change', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.perspectiveEnabled = this.checked;
+    perspectiveOptionsDiv.style.display = this.checked ? 'block' : 'none';
+    
+    // We need to re-render the hotspots because perspective is a creation-time option
+    renderSceneHotspots();
+    debouncedSave();
+  });
+
+  propEmbedRadius.addEventListener('input', function() {
+    if (!selectedHotspotData || !selectedHotspotElement || !selectedHotspotElement.__marzipanoHotspot) return;
+    selectedHotspotData.perspectiveRadius = parseInt(this.value) || 1000;
+    
+    // Update the live hotspot directly
+    selectedHotspotElement.__marzipanoHotspot.setPerspective({
+      radius: selectedHotspotData.perspectiveRadius,
+      extraTransforms: selectedHotspotData.perspectiveTransform
+    });
+    debouncedSave();
+  });
+
+  propEmbedTransform.addEventListener('input', function() {
+    if (!selectedHotspotData || !selectedHotspotElement || !selectedHotspotElement.__marzipanoHotspot) return;
+    selectedHotspotData.perspectiveTransform = this.value;
+    
+    // Update the live hotspot directly
+    selectedHotspotElement.__marzipanoHotspot.setPerspective({
+      radius: selectedHotspotData.perspectiveRadius,
+      extraTransforms: selectedHotspotData.perspectiveTransform
+    });
+    debouncedSave();
+  });
+
+  propQuadCode.addEventListener('input', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.embedCode = this.value;
+    debouncedSave();
+  });
+
+  propQuadSrcWidth.addEventListener('input', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.srcWidth = parseInt(this.value) || 480;
+    debouncedSave();
+  });
+
+  propQuadSrcHeight.addEventListener('input', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.srcHeight = parseInt(this.value) || 270;
+    debouncedSave();
+  });
+
+  btnAddQuadPoint.addEventListener('click', function() {
+    if (!selectedHotspotData) return;
+    if (!selectedHotspotData.quadPoints) selectedHotspotData.quadPoints = [];
+    if (selectedHotspotData.quadPoints.length < 4) {
+      // Get current view yaw/pitch
+      var view = viewer.lookAt();
+      selectedHotspotData.quadPoints.push({ yaw: view.yaw, pitch: view.pitch });
+      renderQuadPoints(selectedHotspotData.quadPoints);
+      renderSceneHotspots(); // Re-render to show new point marker
+      debouncedSave();
+    } else {
+      alert('You can only add up to 4 points for a quadrilateral hotspot.');
+    }
+  });
+
+  btnClearQuadPoints.addEventListener('click', function() {
+    if (!selectedHotspotData) return;
+    selectedHotspotData.quadPoints = [];
+    renderQuadPoints([]);
+    renderSceneHotspots(); // Re-render to remove point markers
+    debouncedSave();
+  });
+
+  function renderQuadPoints(points) {
+    quadPointsList.innerHTML = '';
+    if (points.length === 0) {
+      btnClearQuadPoints.style.display = 'none';
+      return;
+    } else {
+      btnClearQuadPoints.style.display = 'inline-flex';
+    }
+
+    points.forEach(function(p, index) {
+      var pointEl = document.createElement('div');
+      pointEl.className = 'quad-point-item';
+      pointEl.innerHTML = `
+          <span>Point ${index + 1}: Yaw ${p.yaw.toFixed(2)}, Pitch ${p.pitch.toFixed(2)}</span>
+          <button class="btn-icon btn-remove-quad-point" data-index="${index}">
+            ${xIcon('x', 12)}
+          </button>
+        `;
+      quadPointsList.appendChild(pointEl);
+    });
+
+    quadPointsList.querySelectorAll('.btn-remove-quad-point').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var indexToRemove = parseInt(this.getAttribute('data-index'));
+        if (selectedHotspotData && selectedHotspotData.quadPoints) {
+          selectedHotspotData.quadPoints.splice(indexToRemove, 1);
+          renderQuadPoints(selectedHotspotData.quadPoints);
+          renderSceneHotspots();
+          debouncedSave();
+        }
+      });
+    });
+  }
 
   // ICON STYLE — full rebuild needed since SVG content changes
   propIconStyle.addEventListener('change', function() {
@@ -1639,22 +3254,39 @@
   function addSceneFromUrl(url, name) {
     var newId = 'scene_' + Date.now();
     var cleanName = (name || 'Untitled').replace(/\.[^/.]+$/, "");
+    var isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || (name && name.toLowerCase().match(/\.(mp4|webm|ogg)$/));
+    
     var sData = {
       id: newId,
       name: cleanName,
-      type: 'image',
+      type: isVideo ? 'video' : 'image',
       mediaUrl: url,
-      thumbnailUrl: url,
+      thumbnailUrl: isVideo ? 'img/photo.png' : url,
       initialViewParameters: { yaw: 0, pitch: 0, fov: 1.57 },
       hotspots: []
     };
 
+    if (isVideo) {
+      sData.videoOptions = { autoplay: true, loop: true, muted: true };
+    }
+
     data.scenes.push(sData);
 
-    var source = Xeno.ImageUrlSource.fromString(sData.mediaUrl);
-    var geometry = new Xeno.EquirectGeometry([{ width: 4000 }]);
-    var limiter = Xeno.RectilinearView.limit.traditional(1024, 140 * Math.PI / 180);
-    var view = new Xeno.RectilinearView(sData.initialViewParameters, limiter);
+    var source, geometry, view, limiter;
+    
+    if (isVideo) {
+      var asset = new XenoVideoAsset();
+      asset.setVideo(sData.mediaUrl, sData.videoOptions);
+      source = new Xeno.SingleAssetSource(asset);
+      geometry = new Xeno.EquirectGeometry([{ width: 1 }]);
+      limiter = Xeno.RectilinearView.limit.vfov(90*Math.PI/180, 90*Math.PI/180);
+    } else {
+      source = Xeno.ImageUrlSource.fromString(sData.mediaUrl);
+      geometry = new Xeno.EquirectGeometry([{ width: 4000 }]);
+      limiter = Xeno.RectilinearView.limit.traditional(1024, 140 * Math.PI / 180);
+    }
+    
+    view = new Xeno.RectilinearView(sData.initialViewParameters, limiter);
     var scene = viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
     scenes.push({ data: sData, scene: scene, view: view });
 
@@ -2047,17 +3679,20 @@
   }
 
   function handleFiles(files) {
-    uploadArea.innerHTML = '<h3>Uploading...</h3><p>Please wait.</p>';
+    var originalHTML = uploadArea.innerHTML;
+    uploadArea.innerHTML = '<div class="upload-icon-wrap"><svg class="spin" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></div><div class="upload-title">Uploading...</div><div class="upload-sub">Please wait while your files are processed.</div>';
+    
     var promises = [];
     for (var i = 0; i < files.length; i++) {
       promises.push(window.XenoSupabase.uploadAndRecordMedia(files[i], currentAlbumId));
     }
+    
     Promise.all(promises).then(function() {
-      uploadArea.innerHTML = '<h3>Upload Media</h3><p>Drag & drop images, video or audio here or click to browse</p>';
+      uploadArea.innerHTML = originalHTML;
       loadMedia(currentAlbumId);
     }).catch(function(err) {
       alert('Error uploading: ' + err.message);
-      uploadArea.innerHTML = '<h3>Upload Media</h3><p>Drag & drop images, video or audio here or click to browse</p>';
+      uploadArea.innerHTML = originalHTML;
     });
   }
 
@@ -2313,8 +3948,12 @@
       if (filterQuery) {
         var query = filterQuery.trim().toLowerCase();
         filtered = tours.filter(function(t) {
-          var title = (t.data.settings.name || t.data.settings.title || t.slug).toLowerCase();
-          return title.indexOf(query) !== -1;
+          var title = '';
+          if (t.data && t.data.settings) {
+            title = t.data.settings.name || t.data.settings.title || '';
+          }
+          title = title || t.slug || '';
+          return title.toLowerCase().indexOf(query) !== -1;
         });
       }
       
@@ -2332,7 +3971,12 @@
         var firstScene = (tour.data && tour.data.scenes && tour.data.scenes[0]) || null;
         var thumb = (firstScene && (firstScene.thumbnailUrl || firstScene.mediaUrl)) || 'img/photo.png';
         var sceneCount = (tour.data && tour.data.scenes && tour.data.scenes.length) || 0;
-        var title = tour.data.settings.name || tour.data.settings.title || tour.slug;
+        
+        var title = '';
+        if (tour.data && tour.data.settings) {
+          title = tour.data.settings.name || tour.data.settings.title || '';
+        }
+        title = title || tour.slug || 'Untitled Project';
         
         card.innerHTML = 
           '<div class="project-card-thumb-wrapper">' +

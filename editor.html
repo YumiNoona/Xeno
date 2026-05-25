@@ -266,6 +266,8 @@
                 <option value="image">Image</option>
                 <option value="video">Video</option>
                 <option value="audio">Audio</option>
+                <option value="embed">Embedded (YouTube/Maps)</option>
+                <option value="quad">Surface (4-Point)</option>
               </select>
             </div>
             <div class="form-group">
@@ -493,6 +495,74 @@
               <div class="form-group toggle-group">
                 <label>Show Player Label</label>
                 <input type="checkbox" id="prop-audio-label" checked>
+              </div>
+            </div>
+
+            <!-- Embed fields -->
+            <div class="type-fields" id="fields-embed" style="display:none;">
+              <div class="form-group">
+                <label>Iframe URL / Embed Code</label>
+                <textarea id="prop-embed-code" placeholder="https://www.youtube.com/embed/... or <iframe> code" rows="3"></textarea>
+                <div style="font-size:var(--type-2xs);color:var(--text-muted);margin-top:4px;">
+                  Supports YouTube, Vimeo, Google Maps, etc.
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Width (px)</label>
+                <input type="number" id="prop-embed-width" value="480">
+              </div>
+              <div class="form-group">
+                <label>Height (px)</label>
+                <input type="number" id="prop-embed-height" value="270">
+              </div>
+              
+              <div class="ctx-sep" style="margin: 12px 0;"></div>
+              
+              <div class="form-group toggle-group">
+                <label>Perspective Mode</label>
+                <input type="checkbox" id="prop-embed-perspective">
+              </div>
+              <div id="perspective-options" style="display:none;">
+                <div class="form-group">
+                  <label>Radius (Depth)</label>
+                  <input type="number" id="prop-embed-radius" value="1000" step="10">
+                </div>
+                <div class="form-group">
+                  <label>Extra Transforms</label>
+                  <input type="text" id="prop-embed-transform" placeholder="e.g. rotateX(5deg) scale(1.2)">
+                </div>
+              </div>
+            </div>
+
+            <!-- Quad fields -->
+            <div class="type-fields" id="fields-quad" style="display:none;">
+              <div class="form-group">
+                <label>Iframe URL / Embed Code</label>
+                <textarea id="prop-quad-code" placeholder="https://www.youtube.com/embed/... or <iframe> code" rows="3"></textarea>
+                <div style="font-size:var(--type-2xs);color:var(--text-muted);margin-top:4px;">
+                  Supports YouTube, Vimeo, Google Maps, etc.
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Source Width (px)</label>
+                <input type="number" id="prop-quad-src-width" value="480">
+              </div>
+              <div class="form-group">
+                <label>Source Height (px)</label>
+                <input type="number" id="prop-quad-src-height" value="270">
+              </div>
+              <div class="ctx-sep" style="margin: 12px 0;"></div>
+              <div class="form-group">
+                <label>Corner Points (Yaw, Pitch)</label>
+                <div id="quad-points-list"></div>
+                <button class="btn btn-secondary" id="btn-add-quad-point">
+                  <script>document.write(xIcon('plus', 14))</script>
+                  Add Point
+                </button>
+                <button class="btn btn-danger" id="btn-clear-quad-points" style="display:none;">
+                  <script>document.write(xIcon('trash', 14))</script>
+                  Clear Points
+                </button>
               </div>
             </div>
 
@@ -733,6 +803,7 @@
   <script src="js/core/VideoAsset.js"></script>
   <script src="js/core/DeviceOrientation.js"></script>
   <script src="js/core/colorEffects.js"></script>
+  <script src="js/core/homography.js"></script>
   <script src="js/hotspots/HotspotFactory.js"></script>
   <script src="js/ui/Minimap.js"></script>
   <script src="js/ui/Supabase.js"></script>
