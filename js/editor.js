@@ -1905,6 +1905,14 @@
     }
   }
 
+  // ─── Wire pill-tool click handlers ───────────────────────
+  pillTools.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var tool = btn.getAttribute('data-tool');
+      if (tool) handleToolClick(tool, btn);
+    });
+  });
+
   function setActiveTool(tool) {
     editorState.activeTool = tool;
     pillTools.forEach(function(p) {
@@ -1993,27 +2001,17 @@
     debouncedSave();
   });
 
-  // ─── Drag to Reposition ───────────────────────────────────
+  // ─── Drag to Reposition (always-on, no move mode required) ──
   panoWrapper.addEventListener('mousedown', function(e) {
-    var moveBtn = Array.prototype.find.call(pillTools, function(btn) {
-      return btn.getAttribute('data-tool') === 'move' && btn.classList.contains('active');
-    });
-    if (!moveBtn) return;
+    if (editorState.placeMode) return; // don't interfere while placing
 
-    // Check if we clicked a hotspot
+    // Walk up from the click target to find a hotspot element
     var target = e.target;
     while (target && target !== panoWrapper) {
       if (target.__marzipanoHotspot) {
         isDragging = true;
         dragHsElement = target;
-        // Find the data object for this hotspot
-        dragHsData = currentSceneCtx.data.hotspots.find(function(h) {
-          return h.__tempElement === target || h.id === target.__hsId; // We need a way to link them
-        });
-        
-        // Let's improve the link by storing data on the element in createVisualHotspot
         dragHsData = target.__hsData;
-
         e.preventDefault();
         e.stopPropagation();
         return;

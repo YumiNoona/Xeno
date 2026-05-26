@@ -815,7 +815,8 @@
       const topbarToggle = document.getElementById('topbar-theme-toggle');
       
       function updateThemeIcons(theme) {
-        const icon = theme === 'dark' ? xIcon('moon', 16) : xIcon('sun', 16);
+        const iconFn = (typeof xIcon === 'function') ? xIcon : (window.xIcon || function(){ return ''; });
+        const icon = theme === 'dark' ? iconFn('moon', 16) : iconFn('sun', 16);
         if (dashboardToggle) dashboardToggle.innerHTML = icon;
         if (topbarToggle) topbarToggle.innerHTML = icon;
       }
