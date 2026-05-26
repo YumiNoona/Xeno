@@ -9,7 +9,6 @@
   <link rel="icon" type="image/x-icon" href="img/logo.ico">
 
   <!-- Font: Roboto Mono -->
-  <!-- Font loading: preconnect first, then direct link for fastest render -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap"
@@ -33,7 +32,7 @@
   <!-- Main Viewer -->
   <div id="pano"></div>
 
-  <!-- Secondary Flat Viewer (Floorplan) -->
+  <!-- Minimap -->
   <div id="xeno-minimap"></div>
 
   <!-- UI Overlays -->
@@ -47,29 +46,26 @@
 
   <div id="controls">
 
-    <!-- Autorotate: spinning orbit icon (on) vs static pause circle (off) -->
+    <!-- Autorotate: circular arrows (on) → pause circle (off) -->
     <div id="autorotateToggle" class="ctrl-btn" title="Toggle Autorotate">
       <svg class="icon on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
         stroke-linecap="round" stroke-linejoin="round">
-        <!-- on = autorotating: circular arrows -->
         <polyline points="23 4 23 10 17 10" />
         <polyline points="1 20 1 14 7 14" />
         <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
       </svg>
       <svg class="icon off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
         stroke-linecap="round" stroke-linejoin="round">
-        <!-- off = paused: pause icon -->
         <circle cx="12" cy="12" r="10" />
         <line x1="10" y1="15" x2="10" y2="9" />
         <line x1="14" y1="15" x2="14" y2="9" />
       </svg>
     </div>
 
-    <!-- Fullscreen: expand corners (on) vs compress corners (off) -->
+    <!-- Fullscreen: expand corners (on) → compress corners (off) -->
     <div id="fullscreenToggle" class="ctrl-btn" title="Toggle Fullscreen">
       <svg class="icon on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
         stroke-linecap="round" stroke-linejoin="round">
-        <!-- on = enter fullscreen: expand arrows -->
         <polyline points="15 3 21 3 21 9" />
         <polyline points="9 21 3 21 3 15" />
         <line x1="21" y1="3" x2="14" y2="10" />
@@ -77,7 +73,6 @@
       </svg>
       <svg class="icon off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
         stroke-linecap="round" stroke-linejoin="round">
-        <!-- off = exit fullscreen: compress arrows -->
         <polyline points="4 14 10 14 10 20" />
         <polyline points="20 10 14 10 14 4" />
         <line x1="10" y1="14" x2="3" y2="21" />
@@ -85,11 +80,10 @@
       </svg>
     </div>
 
-    <!-- Scene List: layers stack icon (on) vs single layer (off) -->
+    <!-- Scene List: list rows (on) → slashed rows (off) -->
     <div id="sceneListToggle" class="ctrl-btn" title="Toggle Scene List">
       <svg class="icon on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
         stroke-linecap="round" stroke-linejoin="round">
-        <!-- on = list visible: three rows -->
         <line x1="8" y1="6" x2="21" y2="6" />
         <line x1="8" y1="12" x2="21" y2="12" />
         <line x1="8" y1="18" x2="21" y2="18" />
@@ -99,7 +93,6 @@
       </svg>
       <svg class="icon off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
         stroke-linecap="round" stroke-linejoin="round">
-        <!-- off = list hidden: slashed rows -->
         <line x1="8" y1="6" x2="21" y2="6" />
         <line x1="8" y1="12" x2="21" y2="12" />
         <line x1="8" y1="18" x2="21" y2="18" />
@@ -110,7 +103,7 @@
       </svg>
     </div>
 
-    <!-- Gyroscope: phone with motion arcs — unique compass-rose style -->
+    <!-- Gyroscope: phone with motion arcs -->
     <div id="gyroToggle" class="ctrl-btn" title="Toggle Gyroscope">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
         stroke-linejoin="round">
@@ -121,7 +114,7 @@
       </svg>
     </div>
 
-    <!-- VR: Quest-style headset with WebXR badge -->
+    <!-- VR: Quest-style headset — glows red when active -->
     <div id="vrToggle" class="ctrl-btn" title="Enter VR Mode">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
         stroke-linejoin="round">
@@ -131,14 +124,14 @@
         <circle cx="8.5" cy="11.5" r="2.2" />
         <!-- Right lens -->
         <circle cx="15.5" cy="11.5" r="2.2" />
-        <!-- Bridge -->
+        <!-- Bridge between lenses -->
         <line x1="10.7" y1="11.5" x2="13.3" y2="11.5" />
-        <!-- Strap top -->
+        <!-- Head strap arc -->
         <path d="M6 7 Q12 4 18 7" stroke-opacity="0.5" />
       </svg>
     </div>
 
-    <!-- Minimap: map with location pin — distinct from grid -->
+    <!-- Minimap: folded map polygon -->
     <div id="minimapToggle" class="ctrl-btn" title="Toggle Minimap">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
         stroke-linejoin="round">
@@ -148,7 +141,7 @@
       </svg>
     </div>
 
-    <!-- View Mode: eye with sparkle — distinct lens/projection feel -->
+    <!-- View Mode: eye with sparkle -->
     <div id="viewModeToggle" class="ctrl-btn" title="Change View Mode">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
         stroke-linejoin="round">
@@ -159,7 +152,7 @@
       </svg>
     </div>
 
-    <!-- Pan Controls: four directional arrows in crosshair — unique from move hotspot -->
+    <!-- Pan Controls: crosshair arrows -->
     <div id="viewControlsToggle" class="ctrl-btn" title="Toggle Pan Controls">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
         stroke-linejoin="round">
@@ -173,6 +166,7 @@
 
   </div>
 
+  <!-- Directional pan controls -->
   <div id="viewControls">
     <div></div>
     <div id="viewUp" class="ctrl-btn" title="Up">
@@ -202,7 +196,6 @@
     </div>
   </div>
 
-  <!-- Branding Logo Removed -->
   <div id="transition-overlay"></div>
 
   <!-- Intro Screen -->
@@ -214,10 +207,8 @@
     </div>
   </div>
 
-  <!-- Marzipano & Dependencies -->
+  <!-- Dependencies -->
   <script src="js/vendor/screenfull.js"></script>
-  <script src="js/vendor/bowser.js"></script>
-
   <script src="config.js"></script>
   <script src="js/core/xeno.js"></script>
   <script src="js/vendor/webvr-polyfill.js"></script>
@@ -226,7 +217,7 @@
   <script src="js/ui/Supabase.js"></script>
   <script src="data.js"></script>
 
-  <!-- Modules (To be built next sessions) -->
+  <!-- Modules -->
   <script src="js/core/transitions.js"></script>
   <script src="js/core/VideoAsset.js"></script>
   <script src="js/core/DeviceOrientation.js"></script>
@@ -235,14 +226,16 @@
   <script src="js/ui/Minimap.js"></script>
   <script src="js/ui/SceneList.js"></script>
 
-  <!-- App Entry -->
+  <!-- VR Engine — must load before viewer.js -->
   <script src="js/vr/XenoVR.js"></script>
+
+  <!-- App Entry -->
   <script src="js/viewer.js"></script>
 
-  <!-- Global UI Menus -->
+  <!-- View Mode Menu -->
   <div id="viewModeMenu" class="view-mode-menu">
 
-    <!-- Normal: standard equirectangular / eye view -->
+    <!-- Normal: standard globe grid -->
     <div class="view-mode-item" data-mode="normal">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
         stroke-linecap="round" stroke-linejoin="round">
@@ -255,17 +248,14 @@
       <span>Normal</span>
     </div>
 
-    <!-- Mirror Ball: sphere looking up — wide fisheye upward pitch -->
+    <!-- Mirror Ball: disco grid sphere -->
     <div class="view-mode-item" data-mode="mirror-ball">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
         stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="9" />
-        <!-- Disco grid lines — horizontal -->
         <path d="M3.5 9h17M3.5 12h17M3.5 15h17" />
-        <!-- Vertical curves -->
         <path d="M12 3c2 2 3 5 3 9s-1 7-3 9" />
         <path d="M12 3c-2 2-3 5-3 9s1 7 3 9" />
-        <!-- Sparkle dots -->
         <circle cx="8" cy="8" r="0.8" fill="currentColor" stroke="none" />
         <circle cx="16" cy="7" r="0.8" fill="currentColor" stroke="none" />
         <circle cx="17" cy="15" r="0.8" fill="currentColor" stroke="none" />
@@ -273,17 +263,13 @@
       <span>Mirror Ball</span>
     </div>
 
-    <!-- Little Planet: small sphere sitting on wide landscape, looking down -->
+    <!-- Little Planet: planet with orbit ring -->
     <div class="view-mode-item" data-mode="little-planet">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
         stroke-linecap="round" stroke-linejoin="round">
-        <!-- Planet body -->
         <circle cx="12" cy="15" r="5" />
-        <!-- Orbit ring around it -->
         <ellipse cx="12" cy="15" rx="9" ry="3" stroke-opacity="0.45" />
-        <!-- Sky / space above -->
         <path d="M5 8 Q12 4 19 8" stroke-opacity="0.4" />
-        <!-- Stars -->
         <circle cx="7" cy="5" r="0.7" fill="currentColor" stroke="none" />
         <circle cx="17" cy="4" r="0.7" fill="currentColor" stroke="none" />
         <circle cx="12" cy="3" r="0.5" fill="currentColor" stroke="none" />

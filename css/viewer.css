@@ -1,25 +1,13 @@
 /*
  * Xeno — Viewer Core Styles
  * Glassmorphic dark design system with HSL-tailored accent colors.
- * --accent is set dynamically from data.settings.branding.accentColor at init.
  */
 
 /* ─── CSS Custom Properties ──────────────────────────────── */
 :root {
-  --accent: var(--accent, #e62e5a);
-  --accent-glow: var(--accent-glow, rgba(230, 46, 90, 0.3));
-  --bg-panel: var(--bg-glass);
-  --bg-panel-solid: var(--bg-panel-solid);
-  --bg-hover: var(--bg-hover);
-  --border-glass: var(--border-glass);
-  --text-primary: var(--text-primary);
-  --text-secondary: var(--text-secondary);
-  --radius: var(--radius-md);
-  --radius-sm: var(--radius-sm);
-  --shadow-lg: var(--shadow-lg);
-  --shadow-sm: var(--shadow-sm);
-  --transition: var(--transition);
-  --font: 'Roboto Mono', 'Courier New', monospace;
+  --accent: var(--accent, #e11d48);
+  --accent-glow: var(--accent-glow, rgba(225, 29, 72, 0.3));
+  --font: var(--font-family-base, 'Roboto Mono', 'Courier New', monospace);
 }
 
 /* ─── Reset & Base ───────────────────────────────────────── */
@@ -81,7 +69,7 @@ body {
   text-overflow: ellipsis;
 }
 
-/* ─── Scene List (Sidebar Mode) ──────────────────────────── */
+/* ─── Scene List (Sidebar) ───────────────────────────────── */
 #sceneList {
   position: absolute;
   top: 0;
@@ -152,7 +140,7 @@ body {
   color: var(--text-primary);
 }
 
-/* ─── Scene List (Bottom Strip Mode) ─────────────────────── */
+/* ─── Scene List (Bottom Strip) ──────────────────────────── */
 #sceneList.bottom-strip {
   top: auto;
   bottom: 0;
@@ -246,6 +234,7 @@ body {
   box-shadow: 0 0 12px var(--accent-glow);
 }
 
+/* Icon on/off toggle support */
 .ctrl-btn .icon.on {
   display: block;
 }
@@ -274,10 +263,43 @@ body {
   stroke-linejoin: round;
 }
 
-/* ─── View Mode Menu ────────────────────────────────────── */
-/* ─── View Mode Menu — positioned dynamically via JS ─────── */
+/* ─── VR Button — special states ─────────────────────────── */
+#vrToggle.active {
+  background: rgba(230, 46, 90, 0.18) !important;
+  border-color: rgba(230, 46, 90, 0.55) !important;
+  color: #ff6b8a !important;
+  animation: vrPulse 2s ease-in-out infinite;
+}
+
+#vrToggle.active svg {
+  stroke: #ff6b8a;
+}
+
+@keyframes vrPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(230, 46, 90, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 22px rgba(230, 46, 90, 0.6);
+  }
+}
+
+/* Dim + no-cursor when unsupported */
+#vrToggle[style*="opacity: 0.45"] {
+  cursor: not-allowed;
+}
+
+#vrToggle[style*="opacity: 0.45"]:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ─── View Mode Menu ─────────────────────────────────────── */
 .view-mode-menu {
-  /* position/top/right set by JS via getBoundingClientRect */
+  /* top/right set dynamically by JS on each open */
   position: fixed;
   background: rgba(24, 24, 24, 0.96);
   backdrop-filter: blur(24px);
@@ -305,7 +327,6 @@ body {
   transform: translateX(0) scale(1);
 }
 
-/* Label above items */
 .view-mode-menu::before {
   content: "VIEW MODE";
   display: block;
@@ -360,7 +381,6 @@ body {
   letter-spacing: 0.04em;
 }
 
-/* Active indicator dot */
 .view-mode-item.active::after {
   content: '';
   width: 5px;
@@ -371,7 +391,7 @@ body {
   flex-shrink: 0;
 }
 
-/* ─── View Control Buttons (directional) ─────────────────── */
+/* ─── Directional View Controls ──────────────────────────── */
 #viewControls {
   position: absolute;
   bottom: 20px;
@@ -421,74 +441,15 @@ body {
 /* ─── Branding Logo ──────────────────────────────────────── */
 #branding-logo {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 25;
+  bottom: 20px;
+  right: 20px;
+  width: 100px;
+  height: 40px;
+  background: url('../img/logo.png') no-repeat center right;
+  background-size: contain;
+  z-index: 1000;
   pointer-events: none;
-}
-
-#branding-logo img {
-  max-height: 40px;
-  opacity: 0.9;
-}
-
-/* ─── Intro Screen ───────────────────────────────────────── */
-#intro-screen {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  opacity: 1;
-  transition: opacity 0.6s ease;
-}
-
-#intro-screen.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-#intro-screen .intro-title {
-  font-size: var(--type-4xl);
-  font-weight: var(--weight-bold);
-  letter-spacing: -0.02em;
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, var(--accent), #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-#intro-screen .intro-subtitle {
-  font-size: var(--type-lg);
-  color: var(--text-secondary);
-  margin-bottom: 32px;
-}
-
-#intro-screen .intro-btn {
-  padding: 14px 40px;
-  font-size: var(--type-md);
-  font-weight: var(--weight-semibold);
-  color: #000;
-  background: var(--accent);
-  border: none;
-  border-radius: 100px;
-  cursor: pointer;
-  transition: all var(--transition);
-  letter-spacing: 0.03em;
-}
-
-#intro-screen .intro-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 24px var(--accent-glow);
+  opacity: 0.8;
 }
 
 /* ─── Transition Overlay ─────────────────────────────────── */
@@ -505,45 +466,7 @@ body {
   transition: opacity 0.5s ease;
 }
 
-/* ─── Mobile Adjustments ─────────────────────────────────── */
-body.mobile #sceneList {
-  width: 100%;
-}
-
-body.mobile #titleBar .sceneName {
-  font-size: var(--type-md);
-}
-
-body.mobile #controls {
-  bottom: 12px;
-  right: 12px;
-}
-
-body.mobile #controls .ctrl-btn {
-  width: 40px;
-  height: 40px;
-}
-
-/* ─── Fullscreen helpers ─────────────────────────────────── */
-body.fullscreen-disabled #fullscreenToggle {
-  display: none;
-}
-
-/* ─── Logo Branding ────────────────────────────────────────── */
-#branding-logo {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  width: 100px;
-  height: 40px;
-  background: url('../img/logo.png') no-repeat center right;
-  background-size: contain;
-  z-index: 1000;
-  pointer-events: none;
-  opacity: 0.8;
-}
-
-/* ─── Intro Screen ─────────────────────────────────────────── */
+/* ─── Intro Screen ───────────────────────────────────────── */
 #intro-screen {
   position: fixed;
   top: 0;
@@ -593,6 +516,7 @@ body.fullscreen-disabled #fullscreenToggle {
   border-radius: 4px;
   cursor: pointer;
   font-weight: var(--weight-semibold);
+  font-family: 'Roboto Mono', monospace;
   transition: background 0.2s;
 }
 
@@ -600,16 +524,33 @@ body.fullscreen-disabled #fullscreenToggle {
   background: var(--accent-glow);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
+/* ─── Mobile Adjustments ─────────────────────────────────── */
+body.mobile #sceneList {
+  width: 100%;
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+body.mobile #titleBar .sceneName {
+  font-size: var(--type-md);
+}
+
+body.mobile #controls {
+  bottom: 12px;
+  right: 12px;
+}
+
+body.mobile #controls .ctrl-btn {
+  width: 40px;
+  height: 40px;
+}
+
+/* ─── Fullscreen helpers ─────────────────────────────────── */
+body.fullscreen-disabled #fullscreenToggle {
+  display: none;
+}
+
+/* ─── VR active — hide Marzipano UI behind overlay ───────── */
+body.xeno-vr-active {
+  overflow: hidden;
 }
 
 /* ─── Animations ─────────────────────────────────────────── */
@@ -635,56 +576,14 @@ body.fullscreen-disabled #fullscreenToggle {
   }
 }
 
-/* ══════════════════════════════════════════════════════════
-   Xeno VR — Button states & support indicator
-══════════════════════════════════════════════════════════ */
-
-/* VR button — glowing accent when active */
-#vrToggle.active {
-  background: rgba(230, 46, 90, 0.18) !important;
-  border-color: rgba(230, 46, 90, 0.5) !important;
-  color: #ff6b8a !important;
-  box-shadow: 0 0 16px rgba(230, 46, 90, 0.35);
-}
-
-#vrToggle.active svg {
-  stroke: #ff6b8a;
-}
-
-/* Subtle pulse animation on active VR button */
-@keyframes vrPulse {
-
-  0%,
-  100% {
-    box-shadow: 0 0 10px rgba(230, 46, 90, 0.3);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
 
-  50% {
-    box-shadow: 0 0 22px rgba(230, 46, 90, 0.6);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-}
-
-#vrToggle.active {
-  animation: vrPulse 2s ease-in-out infinite;
-}
-
-/* Unsupported state */
-#vrToggle[style*="opacity: 0.45"] {
-  cursor: not-allowed;
-}
-
-#vrToggle[style*="opacity: 0.45"]:hover {
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-/* ── VR overlay fade (body class driven) ── */
-body.xeno-vr-active {
-  overflow: hidden;
-}
-
-/* ── ctrl-btn hover lift for VR button ── */
-#vrToggle:not([style*="opacity"]):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }

@@ -986,20 +986,11 @@
       currentSceneCtx.data.initialViewParameters.fov = newFov;
       debouncedSave();
     });
-
-    // Update bottom view controls
-    viewer.view().addEventListener('change', function() {
-      var view = viewer.lookAt();
-      bottomViewYaw.textContent = (view.yaw * 180 / Math.PI).toFixed(0);
-      bottomViewPitch.textContent = (view.pitch * 180 / Math.PI).toFixed(0);
-      bottomViewFov.textContent = (view.fov * 180 / Math.PI).toFixed(0);
-    });
-
     // ─── Media Manager ────────────────────────────────────────
     var mediaGrid = document.getElementById('media-grid');
     var albumGrid = document.getElementById('album-grid');
     var mediaUploadArea = document.getElementById('media-upload-area');
-    var mediaUploadInput = document.getElementById('media-upload-input');
+    var mediaUploadInput = document.getElementById('media-file-input');
     var mediaUploadProgress = document.getElementById('media-upload-progress');
     var mediaUploadProgressBar = document.getElementById('media-upload-progress-bar');
     var mediaUploadProgressText = document.getElementById('media-upload-progress-text');
@@ -1017,27 +1008,32 @@
     var selectedMediaMap = {}; // Map of media item IDs to their data
     var lastClickedMediaIndex = null; // for shift-click range
 
+
     // Drag and drop upload
-    mediaUploadArea.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      this.classList.add('drag-over');
-    });
+    if (mediaUploadArea) {
+      mediaUploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('drag-over');
+      });
 
-    mediaUploadArea.addEventListener('dragleave', function(e) {
-      this.classList.remove('drag-over');
-    });
+      mediaUploadArea.addEventListener('dragleave', function(e) {
+        this.classList.remove('drag-over');
+      });
 
-    mediaUploadArea.addEventListener('drop', function(e) {
-      e.preventDefault();
-      this.classList.remove('drag-over');
-      var files = e.dataTransfer.files;
-      handleMediaUpload(files);
-    });
+      mediaUploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        var files = e.dataTransfer.files;
+        handleMediaUpload(files);
+      });
+    }
 
-    mediaUploadInput.addEventListener('change', function(e) {
-      var files = e.target.files;
-      handleMediaUpload(files);
-    });
+    if (mediaUploadInput) {
+      mediaUploadInput.addEventListener('change', function(e) {
+        var files = e.target.files;
+        handleMediaUpload(files);
+      });
+    }
 
     function handleMediaUpload(files) {
       if (!window.XenoSupabase) {
@@ -1049,9 +1045,15 @@
       var totalFiles = files.length;
       var uploadedCount = 0;
 
-      mediaUploadProgress.style.display = 'flex';
-      mediaUploadProgressBar.style.width = '0%';
-      mediaUploadProgressText.textContent = 'Uploading 0/' + totalFiles + ' files...';
+      if (mediaUploadProgress) {
+        mediaUploadProgress.style.display = 'flex';
+      }
+      if (mediaUploadProgressBar) {
+        mediaUploadProgressBar.style.width = '0%';
+      }
+      if (mediaUploadProgressText) {
+        mediaUploadProgressText.textContent = 'Uploading 0/' + totalFiles + ' files...';
+      }
 
       for (var i = 0; i < files.length; i++) {
         var file = files[i];
@@ -1063,8 +1065,12 @@
           })
           .then(function() {
             uploadedCount++;
-            mediaUploadProgressText.textContent = 'Uploading ' + uploadedCount + '/' + totalFiles + ' files...';
-            mediaUploadProgressBar.style.width = (uploadedCount / totalFiles) * 100 + '%';
+            if (mediaUploadProgressText) {
+              mediaUploadProgressText.textContent = 'Uploading ' + uploadedCount + '/' + totalFiles + ' files...';
+            }
+            if (mediaUploadProgressBar) {
+              mediaUploadProgressBar.style.width = (uploadedCount / totalFiles) * 100 + '%';
+            }
           })
           .catch(function(err) {
             console.error('Error uploading file:', file.name, err);
@@ -1075,132 +1081,176 @@
 
       Promise.all(uploadPromises)
         .then(function() {
-          mediaUploadProgress.style.display = 'none';
+          if (mediaUploadProgress) {
+            mediaUploadProgress.style.display = 'none';
+          }
           showToast('Successfully uploaded ' + uploadedCount + ' files.');
           loadMedia(currentAlbumId); // Reload media grid
         })
         .catch(function(err) {
-          mediaUploadProgress.style.display = 'none';
+          if (mediaUploadProgress) {
+            mediaUploadProgress.style.display = 'none';
+          }
           showToast('Some uploads failed. Check console for details.', 'error');
           console.error('Batch upload error:', err);
         });
     }
 
-    mediaSearchInput.addEventListener('input', function() {
-      loadMedia(currentAlbumId, this.value);
-    });
-
-    mediaSearchClear.addEventListener('click', function() {
-      mediaSearchInput.value = '';
-      loadMedia(currentAlbumId);
-    });
-
-    btnCreateAlbum.addEventListener('click', function() {
-      var albumName = prompt('Enter new album name:');
-      if (albumName) {
-        window.XenoSupabase.createAlbum(albumName)
-          .then(function() {
-            showToast('Album "' + albumName + '" created.');
-            loadAlbums();
-          })
-          .catch(function(err) {
-            alert('Error creating album: ' + err.message);
-            console.error('Error creating album:', err);
-          });
-      }
-    });
-
-    btnBackToAlbums.addEventListener('click', function() {
-      document.getElementById('media-albums-view').style.display = 'flex';
-      document.getElementById('media-album-view').style.display = 'none';
-      currentAlbumId = 'all';
-      mediaSearchInput.value = '';
-      selectedMediaIds.clear();
-      selectedMediaMap = {};
-      syncMediaSelection();
-    });
-
-    btnDeleteAlbum.addEventListener('click', function() {
-      if (currentAlbumId === 'all') {
-        alert('Cannot delete "All Media" album.');
-        return;
-      }
-      if (!confirm('Delete album "' + mediaAlbumName.textContent + '" and all its media? This cannot be undone.')) return;
-
-      window.XenoSupabase.deleteAlbum(currentAlbumId)
-        .then(function() {
-          showToast('Album deleted.');
-          btnBackToAlbums.click(); // Go back to albums view
-        })
-        .catch(function(err) {
-          alert('Error deleting album: ' + err.message);
-          console.error('Error deleting album:', err);
-        });
-    });
-
-    btnRenameAlbum.addEventListener('click', function() {
-      if (currentAlbumId === 'all') {
-        alert('Cannot rename "All Media" album.');
-        return;
-      }
-      var newName = prompt('Rename album:', mediaAlbumName.textContent);
-      if (newName) {
-        window.XenoSupabase.renameAlbum(currentAlbumId, newName)
-          .then(function() {
-            showToast('Album renamed.');
-            mediaAlbumName.textContent = newName;
-            loadAlbums(); // Refresh album list
-          })
-          .catch(function(err) {
-            alert('Error renaming album: ' + err.message);
-            console.error('Error renaming album:', err);
-          });
-      }
-    });
-
-    btnMoveMedia.addEventListener('click', function() {
-      if (selectedMediaIds.size === 0) {
-        alert('Please select media items to move.');
-        return;
-      }
-      moveMediaModal.classList.add('visible');
-      loadMoveTargetAlbums();
-    });
-
-    btnCancelMove.addEventListener('click', function() {
-      moveMediaModal.classList.remove('visible');
-    });
-
-    btnCloseMoveModal.addEventListener('click', function() {
-      moveMediaModal.classList.remove('visible');
-    });
-
-    btnConfirmMove.addEventListener('click', function() {
-      var targetAlbumId = moveTargetAlbum.value;
-      if (!targetAlbumId) {
-        alert('Please select a target album.');
-        return;
-      }
-
-      var movePromises = [];
-      selectedMediaIds.forEach(function(mediaId) {
-        movePromises.push(window.XenoSupabase.moveMedia(mediaId, targetAlbumId));
+    if (mediaSearchInput) {
+      mediaSearchInput.addEventListener('input', function() {
+        loadMedia(currentAlbumId, this.value);
       });
+    }
 
-      Promise.all(movePromises)
-        .then(function() {
-          showToast('Moved ' + movePromises.length + ' media items.');
+    if (mediaSearchClear) {
+      mediaSearchClear.addEventListener('click', function() {
+        if (mediaSearchInput) {
+          mediaSearchInput.value = '';
+        }
+        loadMedia(currentAlbumId);
+      });
+    }
+
+    if (btnCreateAlbum) {
+      btnCreateAlbum.addEventListener('click', function() {
+        var albumName = prompt('Enter new album name:');
+        if (albumName) {
+          window.XenoSupabase.createAlbum(albumName)
+            .then(function() {
+              showToast('Album "' + albumName + '" created.');
+              loadAlbums();
+            })
+            .catch(function(err) {
+              alert('Error creating album: ' + err.message);
+              console.error('Error creating album:', err);
+            });
+        }
+      });
+    }
+
+    if (btnBackToAlbums) {
+      btnBackToAlbums.addEventListener('click', function() {
+        var albumsView = document.getElementById('media-albums-view');
+        if (albumsView) albumsView.style.display = 'flex';
+        var albumView = document.getElementById('media-album-view');
+        if (albumView) albumView.style.display = 'none';
+        currentAlbumId = 'all';
+        if (mediaSearchInput) {
+          mediaSearchInput.value = '';
+        }
+        selectedMediaIds.clear();
+        selectedMediaMap = {};
+        syncMediaSelection();
+      });
+    }
+
+    if (btnDeleteAlbum) {
+      btnDeleteAlbum.addEventListener('click', function() {
+        if (currentAlbumId === 'all') {
+          alert('Cannot delete "All Media" album.');
+          return;
+        }
+        var albumNameText = mediaAlbumName ? mediaAlbumName.textContent : '';
+        if (!confirm('Delete album "' + albumNameText + '" and all its media? This cannot be undone.')) return;
+
+        window.XenoSupabase.deleteAlbum(currentAlbumId)
+          .then(function() {
+            showToast('Album deleted.');
+            if (btnBackToAlbums) {
+              btnBackToAlbums.click(); // Go back to albums view
+            }
+          })
+          .catch(function(err) {
+            alert('Error deleting album: ' + err.message);
+            console.error('Error deleting album:', err);
+          });
+      });
+    }
+
+    if (btnRenameAlbum) {
+      btnRenameAlbum.addEventListener('click', function() {
+        if (currentAlbumId === 'all') {
+          alert('Cannot rename "All Media" album.');
+          return;
+        }
+        var albumNameText = mediaAlbumName ? mediaAlbumName.textContent : '';
+        var newName = prompt('Rename album:', albumNameText);
+        if (newName) {
+          window.XenoSupabase.renameAlbum(currentAlbumId, newName)
+            .then(function() {
+              showToast('Album renamed.');
+              if (mediaAlbumName) {
+                mediaAlbumName.textContent = newName;
+              }
+              loadAlbums(); // Refresh album list
+            })
+            .catch(function(err) {
+              alert('Error renaming album: ' + err.message);
+              console.error('Error renaming album:', err);
+            });
+        }
+      });
+    }
+
+    if (btnMoveMedia) {
+      btnMoveMedia.addEventListener('click', function() {
+        if (selectedMediaIds.size === 0) {
+          alert('Please select media items to move.');
+          return;
+        }
+        if (moveMediaModal) {
+          moveMediaModal.classList.add('visible');
+        }
+        loadMoveTargetAlbums();
+      });
+    }
+
+    if (btnCancelMove) {
+      btnCancelMove.addEventListener('click', function() {
+        if (moveMediaModal) {
           moveMediaModal.classList.remove('visible');
-          selectedMediaIds.clear();
-          selectedMediaMap = {};
-          lastClickedMediaIndex = null;
-          loadMedia(currentAlbumId); // Reload current album
-        })
-        .catch(function(err) {
-          alert('Error moving media: ' + err.message);
-          console.error('Error moving media:', err);
+        }
+      });
+    }
+
+    if (btnCloseMoveModal) {
+      btnCloseMoveModal.addEventListener('click', function() {
+        if (moveMediaModal) {
+          moveMediaModal.classList.remove('visible');
+        }
+      });
+    }
+
+    if (btnConfirmMove) {
+      btnConfirmMove.addEventListener('click', function() {
+        var targetAlbumId = moveTargetAlbum ? moveTargetAlbum.value : '';
+        if (!targetAlbumId) {
+          alert('Please select a target album.');
+          return;
+        }
+
+        var movePromises = [];
+        selectedMediaIds.forEach(function(mediaId) {
+          movePromises.push(window.XenoSupabase.moveMedia(mediaId, targetAlbumId));
         });
-    });
+
+        Promise.all(movePromises)
+          .then(function() {
+            showToast('Moved ' + movePromises.length + ' media items.');
+            if (moveMediaModal) {
+              moveMediaModal.classList.remove('visible');
+            }
+            selectedMediaIds.clear();
+            selectedMediaMap = {};
+            lastClickedMediaIndex = null;
+            loadMedia(currentAlbumId); // Reload current album
+          })
+          .catch(function(err) {
+            alert('Error moving media: ' + err.message);
+            console.error('Error moving media:', err);
+          });
+      });
+    }
 
     function loadAlbums() {
       if (!window.XenoSupabase) {
@@ -1779,7 +1829,7 @@
     return svg.replace(/width="24"/g, 'width="' + size + '"').replace(/height="24"/g, 'height="' + size + '"');
   };
 
-})();
+
 
   // Initialize pill buttons from saved settings
   var autorotateBtn = Array.prototype.find.call(pillTools, function(btn) {

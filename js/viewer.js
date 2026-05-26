@@ -65,7 +65,6 @@
     var viewer = new Xeno.Viewer(panoElement, viewerOpts);
     window.xenoViewer = viewer;
 
-
     // Source builder
     function buildSource(sceneData) {
       if (sceneData.type === 'video') {
@@ -102,21 +101,13 @@
         : Xeno.RectilinearView.limit.traditional(faceSize, 140 * Math.PI / 180, fovLimit);
 
       var view = new Xeno.RectilinearView(sceneData.initialViewParameters, limiter);
-
       var scene = viewer.createScene({
-        source: source,
-        geometry: geometry,
-        view: view,
-        pinFirstLevel: true
+        source: source, geometry: geometry, view: view, pinFirstLevel: true
       });
 
-      var sceneContext = {
-        data: sceneData,
-        scene: scene,
-        view: view
-      };
+      var sceneContext = { data: sceneData, scene: scene, view: view };
 
-      // Hotspot creation (uses HotspotFactory if loaded)
+      // Hotspot creation
       if (window.HotspotFactory) {
         if (sceneData.hotspots) {
           sceneData.hotspots.forEach(function (hs) {
@@ -124,35 +115,32 @@
           });
         }
         if (sceneData.linkHotspots) {
-          sceneData.linkHotspots.forEach(function (hs) { HotspotFactory.create(scene, hs, 'link', switchScene, findSceneById); });
+          sceneData.linkHotspots.forEach(function (hs) {
+            HotspotFactory.create(scene, hs, 'link', switchScene, findSceneById);
+          });
         }
         if (sceneData.infoHotspots) {
-          sceneData.infoHotspots.forEach(function (hs) { HotspotFactory.create(scene, hs, 'info', switchScene, findSceneById); });
+          sceneData.infoHotspots.forEach(function (hs) {
+            HotspotFactory.create(scene, hs, 'info', switchScene, findSceneById);
+          });
         }
         if (sceneData.mediaHotspots) {
-          sceneData.mediaHotspots.forEach(function (hs) { HotspotFactory.create(scene, hs, 'media', switchScene, findSceneById); });
+          sceneData.mediaHotspots.forEach(function (hs) {
+            HotspotFactory.create(scene, hs, 'media', switchScene, findSceneById);
+          });
         }
       }
 
-      // Apply color effects
-      if (window.colorEffects) {
-        applyColorEffects(sceneContext);
-      }
+      if (window.colorEffects) applyColorEffects(sceneContext);
 
       return sceneContext;
     });
 
     window.xenoScenes = scenes;
 
-
-
-    // Initialize UI modules after scenes are loaded to avoid race condition
-    if (window.initSceneList) {
-      window.initSceneList();
-    }
-    if (window.initMinimap) {
-      window.initMinimap();
-    }
+    // Initialize UI modules after scenes are loaded
+    if (window.initSceneList) window.initSceneList();
+    if (window.initMinimap) window.initMinimap();
 
     function applyColorEffects(sceneCtx) {
       if (Xeno.colorEffects && sceneCtx.data.colorEffects) {
@@ -161,18 +149,21 @@
         effect = Xeno.colorEffects.brightness(ce.brightness - 1, effect);
         effect = Xeno.colorEffects.contrast(ce.contrast, effect);
         effect = Xeno.colorEffects.saturation(ce.saturation, effect);
-        sceneCtx.scene.layer().setEffects({ colorMatrix: effect.colorMatrix, colorOffset: effect.colorOffset });
+        sceneCtx.scene.layer().setEffects({
+          colorMatrix: effect.colorMatrix,
+          colorOffset: effect.colorOffset
+        });
       }
     }
 
-    // Set up autorotate, if enabled.
+    // Autorotate
     var autorotate = Xeno.autorotate({
       yawSpeed: data.settings.autorotateSpeed || 0.03,
       targetPitch: 0,
       targetFov: Math.PI / 2
     });
 
-    // Intro Screen
+    // Intro screen
     var introScreen = document.getElementById('intro-screen');
     var startTourBtn = document.getElementById('btn-start-tour');
     var introTitle = document.getElementById('intro-title');
@@ -189,9 +180,7 @@
     if (startTourBtn && introScreen) {
       startTourBtn.addEventListener('click', function () {
         introScreen.classList.add('hidden');
-        if (data.settings.autorotateEnabled) {
-          startAutorotate();
-        }
+        if (data.settings.autorotateEnabled) startAutorotate();
       });
     } else if (data.settings.autorotateEnabled) {
       startAutorotate();
@@ -199,7 +188,7 @@
 
     autorotateToggleElement.addEventListener('click', toggleAutorotate);
 
-    // Set up fullscreen mode, if supported.
+    // Fullscreen
     if (screenfull.enabled && data.settings.fullscreenButton) {
       document.body.classList.add('fullscreen-enabled');
       fullscreenToggleElement.addEventListener('click', function () {
@@ -216,22 +205,19 @@
       document.body.classList.add('fullscreen-disabled');
     }
 
-    // Set handler for scene list toggle.
+    // Scene list toggle
     if (sceneListToggleElement) {
       sceneListToggleElement.addEventListener('click', toggleSceneList);
     }
-
-    // Start with the scene list open on desktop.
     if (!document.body.classList.contains('mobile') && sceneListToggleElement) {
       showSceneList();
     }
 
-    // DOM elements for view controls.
+    // View controls (directional pan)
     var viewUpElement = document.querySelector('#viewUp');
     var viewDownElement = document.querySelector('#viewDown');
     var viewLeftElement = document.querySelector('#viewLeft');
     var viewRightElement = document.querySelector('#viewRight');
-
     var velocity = 0.7;
     var friction = 3;
 
@@ -243,39 +229,37 @@
 
     function linear(t) { return t; }
 
+    // ── switchScene (internal) ───────────────────────────────────
     function switchScene(sceneCtx, transOpts) {
       stopAutorotate();
       sceneCtx.view.setParameters(sceneCtx.data.initialViewParameters);
 
-      // When switching to a scene, if it has a saved defaultFov, apply it
       if (sceneCtx.data.defaultFov) {
         sceneCtx.view.setParameters({ fov: sceneCtx.data.defaultFov });
       }
 
-      // Hotspot-level overrides (transOpts) take priority over scene-level, then global defaults
       transOpts = transOpts || {};
       var transType = transOpts.transition || sceneCtx.data.transition || data.settings.defaultTransition || 'opacity';
       var transTime = transOpts.transitionDuration || sceneCtx.data.transitionDuration || data.settings.defaultTransitionDuration || 1000;
       var easeName = data.settings.defaultTransitionEasing || 'easeInOut';
       var ease = window.XenoTransitions ? (XenoTransitions.easings[easeName] || linear) : linear;
-      var transUpdate = (transType === 'none' || !window.XenoTransitions) ? null : (XenoTransitions.functions[transType] ? XenoTransitions.functions[transType](ease) : null);
+      var transUpdate = (transType === 'none' || !window.XenoTransitions) ? null
+        : (XenoTransitions.functions[transType] ? XenoTransitions.functions[transType](ease) : null);
 
       sceneCtx.scene.switchTo({ transitionDuration: transTime, transitionUpdate: transUpdate }, function () {
         startAutorotate();
       });
 
-      if (window.colorEffects) {
-        applyColorEffects(sceneCtx);
-      }
-
+      if (window.colorEffects) applyColorEffects(sceneCtx);
       updateSceneName(sceneCtx);
-      if (window.updateSceneList) updateSceneList(sceneCtx); // from SceneList.js
-      if (window.updateMinimap) updateMinimap(sceneCtx);     // from Minimap.js
+      if (window.updateSceneList) updateSceneList(sceneCtx);
+      if (window.updateMinimap) updateMinimap(sceneCtx);
     }
 
+    // ── xenoSwitchScene — public API + VR sync ───────────────────
     window.xenoSwitchScene = function (sceneCtx, transOpts) {
       switchScene(sceneCtx, transOpts);
-      /* Keep VR sky in sync if VR is active */
+      // Keep VR sky in sync when navigating via Marzipano hotspots
       if (window.XenoVR && sceneCtx && sceneCtx.data) {
         window.XenoVR.syncScene(sceneCtx.data.id);
       }
@@ -283,9 +267,8 @@
 
     function updateSceneName(sceneCtx) {
       if (sceneNameElement) {
-        var name = sceneCtx.data.name || '';
-        var cleanName = name.replace(/\.[^/.]+$/, "");
-        sceneNameElement.textContent = cleanName;
+        var name = (sceneCtx.data.name || '').replace(/\.[^/.]+$/, "");
+        sceneNameElement.textContent = name;
       }
     }
 
@@ -293,12 +276,10 @@
       if (sceneListElement) sceneListElement.classList.add('enabled');
       if (sceneListToggleElement) sceneListToggleElement.classList.add('enabled');
     }
-
     function hideSceneList() {
       if (sceneListElement) sceneListElement.classList.remove('enabled');
       if (sceneListToggleElement) sceneListToggleElement.classList.remove('enabled');
     }
-
     function toggleSceneList() {
       if (sceneListElement) sceneListElement.classList.toggle('enabled');
       if (sceneListToggleElement) sceneListToggleElement.classList.toggle('enabled');
@@ -309,12 +290,10 @@
       viewer.startMovement(autorotate);
       viewer.setIdleMovement(data.settings.autorotateInactivityDelay || 3000, autorotate);
     }
-
     function stopAutorotate() {
       viewer.stopMovement();
       viewer.setIdleMovement(Infinity);
     }
-
     function toggleAutorotate() {
       if (autorotateToggleElement.classList.contains('enabled')) {
         autorotateToggleElement.classList.remove('enabled');
@@ -339,7 +318,7 @@
       return null;
     }
 
-    // Toggles (Gyro, VR, Anaglyph, Minimap, ViewControls)
+    // ── Button references ────────────────────────────────────────
     var gyroToggle = document.querySelector('#gyroToggle');
     var vrToggle = document.querySelector('#vrToggle');
     var minimapToggle = document.querySelector('#minimapToggle');
@@ -347,8 +326,9 @@
     var viewModeToggle = document.querySelector('#viewModeToggle');
     var viewModeMenu = document.querySelector('#viewModeMenu');
 
+    // ── View Mode Menu ───────────────────────────────────────────
     if (viewModeToggle && viewModeMenu) {
-      // Position menu dynamically next to the button using getBoundingClientRect
+
       function positionViewModeMenu() {
         var rect = viewModeToggle.getBoundingClientRect();
         viewModeMenu.style.position = 'fixed';
@@ -360,10 +340,7 @@
 
       viewModeToggle.addEventListener('click', function (e) {
         e.stopPropagation();
-        var isVisible = viewModeMenu.classList.contains('visible');
-        if (!isVisible) {
-          positionViewModeMenu();
-        }
+        if (!viewModeMenu.classList.contains('visible')) positionViewModeMenu();
         viewModeMenu.classList.toggle('visible');
       });
 
@@ -371,7 +348,6 @@
         viewModeMenu.classList.remove('visible');
       });
 
-      // Mark active mode item
       function updateActiveModeItem(mode) {
         viewModeMenu.querySelectorAll('.view-mode-item').forEach(function (el) {
           el.classList.toggle('active', el.getAttribute('data-mode') === mode);
@@ -388,7 +364,6 @@
         });
       });
 
-      // Default active state
       updateActiveModeItem('normal');
     }
 
@@ -396,20 +371,14 @@
       if (!viewer) return;
       var view = viewer.view();
       if (!view) return;
-
       var params = {};
-      if (mode === 'normal') {
-        params = { yaw: view.yaw(), pitch: 0, fov: Math.PI / 2 };
-      } else if (mode === 'mirror-ball') {
-        params = { yaw: view.yaw(), pitch: Math.PI / 2, fov: 140 * Math.PI / 180 };
-      } else if (mode === 'little-planet') {
-        params = { yaw: view.yaw(), pitch: -Math.PI / 2, fov: 140 * Math.PI / 180 };
-      }
-
+      if (mode === 'normal') params = { yaw: view.yaw(), pitch: 0, fov: Math.PI / 2 };
+      else if (mode === 'mirror-ball') params = { yaw: view.yaw(), pitch: Math.PI / 2, fov: 140 * Math.PI / 180 };
+      else if (mode === 'little-planet') params = { yaw: view.yaw(), pitch: -Math.PI / 2, fov: 140 * Math.PI / 180 };
       view.setParameters(params);
     }
 
-    // Set up Device Orientation (Gyroscope)
+    // ── Gyroscope ────────────────────────────────────────────────
     var deviceOrientationControlMethod = null;
     if (window.DeviceOrientationControlMethod) {
       deviceOrientationControlMethod = new DeviceOrientationControlMethod();
@@ -420,7 +389,6 @@
       gyroToggle.addEventListener('click', function () {
         var self = this;
         if (!deviceOrientationControlMethod) return;
-
         if (self.classList.contains('active')) {
           controls.disableMethod('deviceOrientation');
           self.classList.remove('active');
@@ -442,23 +410,24 @@
       });
     }
 
+    // ── VR Toggle — powered by XenoVR (js/vr/XenoVR.js) ────────
     if (vrToggle) {
-      /* ── XenoVR — full WebXR immersive mode ── */
       if (window.XenoVR && window.XenoVR.isSupported()) {
         vrToggle.title = 'Enter VR Mode';
       } else {
-        vrToggle.title = 'VR (requires WebXR browser)';
+        vrToggle.title = 'VR (requires WebXR browser + HTTPS)';
         vrToggle.style.opacity = '0.45';
       }
       vrToggle.addEventListener('click', function () {
         if (window.XenoVR) {
           window.XenoVR.toggle();
         } else {
-          showToast('VR engine not loaded yet. Try again in a moment.');
+          showToast('VR engine not loaded. Check js/vr/XenoVR.js path.');
         }
       });
     }
 
+    // ── Minimap ──────────────────────────────────────────────────
     if (minimapToggle) {
       minimapToggle.addEventListener('click', function () {
         this.classList.toggle('active');
@@ -469,24 +438,41 @@
       });
     }
 
+    // ── Pan Controls ─────────────────────────────────────────────
     if (viewControlsToggle) {
       viewControlsToggle.addEventListener('click', function () {
         this.classList.toggle('active');
         var viewControlsEl = document.querySelector('#viewControls');
-        if (viewControlsEl) {
-          viewControlsEl.classList.toggle('visible');
-        }
+        if (viewControlsEl) viewControlsEl.classList.toggle('visible');
       });
     }
 
-    // Initial Scene Load
-    if (scenes.length > 0) {
-      var firstVisibleScene = scenes.find(function (s) { return !s.data.hidden; }) || scenes[0];
-      switchScene(firstVisibleScene);
+    // ── Toast helper ─────────────────────────────────────────────
+    function showToast(msg) {
+      if (window.showToast) { window.showToast(msg); return; }
+      var t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = [
+        'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);',
+        'background:rgba(20,20,20,0.95);color:#fff;',
+        'padding:9px 18px;border-radius:20px;font-size:12px;',
+        'z-index:999999;pointer-events:none;',
+        'font-family:"Roboto Mono",monospace;letter-spacing:0.04em;',
+        'border:1px solid rgba(255,255,255,0.1);'
+      ].join('');
+      document.body.appendChild(t);
+      setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 3500);
     }
-  }
 
-  // Startup logic
+    // ── Initial scene load ───────────────────────────────────────
+    if (scenes.length > 0) {
+      var firstVisible = scenes.find(function (s) { return !s.data.hidden; }) || scenes[0];
+      switchScene(firstVisible);
+    }
+
+  } // end initViewer()
+
+  // ── Startup ──────────────────────────────────────────────────
   if (!window.isExported) {
     var previewSlug = new URLSearchParams(window.location.search).get('project') || 'sample-tour';
     (window.XenoSupabase ? window.XenoSupabase.loadTour(previewSlug) : Promise.resolve(null))
