@@ -6,20 +6,33 @@
 
 /* ─── CSS Custom Properties ──────────────────────────────── */
 :root {
-  /* Inherit from tokens.css or use defaults if not available */
-  --accent: var(--accent, #e11d48);
-  --accent-glow: var(--accent-glow, rgba(225, 29, 72, 0.3));
-  --font: var(--font-family-base, 'Roboto Mono', 'Courier New', monospace);
+  --accent: var(--accent, #e62e5a);
+  --accent-glow: var(--accent-glow, rgba(230, 46, 90, 0.3));
+  --bg-panel: var(--bg-glass);
+  --bg-panel-solid: var(--bg-panel-solid);
+  --bg-hover: var(--bg-hover);
+  --border-glass: var(--border-glass);
+  --text-primary: var(--text-primary);
+  --text-secondary: var(--text-secondary);
+  --radius: var(--radius-md);
+  --radius-sm: var(--radius-sm);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-sm: var(--shadow-sm);
+  --transition: var(--transition);
+  --font: 'Roboto Mono', 'Courier New', monospace;
 }
 
 /* ─── Reset & Base ───────────────────────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -35,7 +48,8 @@ html, body {
 /* ─── Panorama Container ─────────────────────────────────── */
 #pano {
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   z-index: 0;
@@ -44,12 +58,14 @@ html, body {
 /* ─── Title Bar ──────────────────────────────────────────── */
 #titleBar {
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 56px;
   display: flex;
   align-items: center;
   padding: 0 20px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
   z-index: 20;
   pointer-events: none;
 }
@@ -59,7 +75,7 @@ html, body {
   font-weight: var(--weight-semibold);
   letter-spacing: 0.02em;
   color: var(--text-primary);
-  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -68,7 +84,8 @@ html, body {
 /* ─── Scene List (Sidebar Mode) ──────────────────────────── */
 #sceneList {
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 260px;
   height: 100%;
   padding: 64px 0 80px;
@@ -97,7 +114,7 @@ html, body {
 }
 
 #sceneList::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
 }
 
@@ -116,7 +133,7 @@ html, body {
 }
 
 #sceneList .scene.current {
-  background: rgba(230,46,90, 0.08);
+  background: rgba(230, 46, 90, 0.08);
   border-left-color: var(--accent);
 }
 
@@ -217,13 +234,13 @@ html, body {
 
 #controls .ctrl-btn:hover {
   background: var(--bg-hover);
-  border-color: rgba(255,255,255,0.2);
+  border-color: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
 }
 
 #controls .ctrl-btn.active,
 #controls .ctrl-btn.enabled {
-  background: rgba(230,46,90, 0.15);
+  background: rgba(230, 46, 90, 0.15);
   border-color: var(--accent);
   color: var(--accent);
   box-shadow: 0 0 12px var(--accent-glow);
@@ -232,13 +249,16 @@ html, body {
 .ctrl-btn .icon.on {
   display: block;
 }
+
 .ctrl-btn .icon.off {
   display: none;
 }
+
 .ctrl-btn.active .icon.on,
 .ctrl-btn.enabled .icon.on {
   display: none;
 }
+
 .ctrl-btn.active .icon.off,
 .ctrl-btn.enabled .icon.off {
   display: block;
@@ -259,10 +279,10 @@ html, body {
 .view-mode-menu {
   /* position/top/right set by JS via getBoundingClientRect */
   position: fixed;
-  background: rgba(24,24,24,0.96);
+  background: rgba(24, 24, 24, 0.96);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   padding: 5px;
   display: flex;
@@ -274,9 +294,9 @@ html, body {
   transform: translateX(8px) scale(0.97);
   transform-origin: center right;
   transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   min-width: 172px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 .view-mode-menu.visible {
@@ -291,7 +311,7 @@ html, body {
   display: block;
   font-size: 9px;
   font-family: 'Roboto Mono', monospace;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255, 255, 255, 0.3);
   letter-spacing: 0.12em;
   font-weight: 500;
   padding: 6px 12px 2px;
@@ -304,7 +324,7 @@ html, body {
   padding: 10px 12px;
   border-radius: 7px;
   cursor: pointer;
-  color: rgba(255,255,255,0.55);
+  color: rgba(255, 255, 255, 0.55);
   transition: background 0.12s, color 0.12s;
   user-select: none;
   white-space: nowrap;
@@ -312,14 +332,14 @@ html, body {
 }
 
 .view-mode-item:hover {
-  background: rgba(255,255,255,0.07);
-  color: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .view-mode-item.active {
-  background: rgba(230,46,90,0.12);
-  border-color: rgba(230,46,90,0.3);
-  color: rgba(255,130,155,0.95);
+  background: rgba(230, 46, 90, 0.12);
+  border-color: rgba(230, 46, 90, 0.3);
+  color: rgba(255, 130, 155, 0.95);
 }
 
 .view-mode-item svg {
@@ -346,7 +366,7 @@ html, body {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(230,46,90,0.8);
+  background: rgba(230, 46, 90, 0.8);
   margin-left: auto;
   flex-shrink: 0;
 }
@@ -415,7 +435,8 @@ html, body {
 /* ─── Intro Screen ───────────────────────────────────────── */
 #intro-screen {
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   z-index: 100;
@@ -473,7 +494,8 @@ html, body {
 /* ─── Transition Overlay ─────────────────────────────────── */
 #transition-overlay {
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   z-index: 10;
@@ -524,7 +546,10 @@ body.fullscreen-disabled #fullscreenToggle {
 /* ─── Intro Screen ─────────────────────────────────────────── */
 #intro-screen {
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(10px);
   z-index: 9999;
@@ -534,10 +559,12 @@ body.fullscreen-disabled #fullscreenToggle {
   text-align: center;
   transition: opacity 0.5s ease;
 }
+
 #intro-screen.hidden {
   opacity: 0;
   pointer-events: none;
 }
+
 .intro-content {
   background: var(--bg-panel);
   padding: 40px;
@@ -546,14 +573,17 @@ body.fullscreen-disabled #fullscreenToggle {
   box-shadow: var(--shadow-lg);
   max-width: 400px;
 }
+
 .intro-content h1 {
   margin-top: 0;
   font-size: var(--type-3xl);
 }
+
 .intro-content p {
   color: #ccc;
   margin-bottom: 30px;
 }
+
 #btn-start-tour {
   background: var(--accent);
   color: #fff;
@@ -565,21 +595,96 @@ body.fullscreen-disabled #fullscreenToggle {
   font-weight: var(--weight-semibold);
   transition: background 0.2s;
 }
+
 #btn-start-tour:hover {
   background: var(--accent-glow);
 }
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Animations ─────────────────────────────────────────── */
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
-  50%      { box-shadow: 0 0 16px 4px var(--accent-glow); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--accent-glow);
+  }
+
+  50% {
+    box-shadow: 0 0 16px 4px var(--accent-glow);
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   Xeno VR — Button states & support indicator
+══════════════════════════════════════════════════════════ */
+
+/* VR button — glowing accent when active */
+#vrToggle.active {
+  background: rgba(230, 46, 90, 0.18) !important;
+  border-color: rgba(230, 46, 90, 0.5) !important;
+  color: #ff6b8a !important;
+  box-shadow: 0 0 16px rgba(230, 46, 90, 0.35);
+}
+
+#vrToggle.active svg {
+  stroke: #ff6b8a;
+}
+
+/* Subtle pulse animation on active VR button */
+@keyframes vrPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(230, 46, 90, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 22px rgba(230, 46, 90, 0.6);
+  }
+}
+
+#vrToggle.active {
+  animation: vrPulse 2s ease-in-out infinite;
+}
+
+/* Unsupported state */
+#vrToggle[style*="opacity: 0.45"] {
+  cursor: not-allowed;
+}
+
+#vrToggle[style*="opacity: 0.45"]:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ── VR overlay fade (body class driven) ── */
+body.xeno-vr-active {
+  overflow: hidden;
+}
+
+/* ── ctrl-btn hover lift for VR button ── */
+#vrToggle:not([style*="opacity"]):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
