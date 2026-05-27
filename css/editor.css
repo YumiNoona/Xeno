@@ -127,6 +127,7 @@ input::placeholder, textarea::placeholder {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
+  font-weight: var(--weight-semibold);
 }
 
 .btn-primary:hover {
@@ -2356,12 +2357,12 @@ input[type="number"] {
   color: var(--text-primary) !important;
 }
 
-[data-theme="light"] .btn,
+[data-theme="light"] .btn:not(.btn-primary):not(.btn-publish):not(.btn-danger),
 [data-theme="light"] .btn-icon {
   color: var(--text-primary) !important;
 }
 
-[data-theme="light"] .btn svg,
+[data-theme="light"] .btn:not(.btn-primary):not(.btn-publish):not(.btn-danger) svg,
 [data-theme="light"] .btn-icon svg {
   color: var(--text-primary) !important;
   stroke: currentColor !important;
@@ -2381,13 +2382,46 @@ input[type="number"] {
   color: var(--text-muted);
 }
 
-[data-theme="light"] .logo {
+[data-theme="light"] .logo,
+[data-theme="light"] .logo span {
   color: var(--text-primary) !important;
 }
 
-[data-theme="light"] #btn-save-view {
-  background: var(--accent) !important;
-  color: #fff !important;
+[data-theme="light"] .logo span {
+  color: var(--accent) !important;
+}
+
+[data-theme="light"] #btn-save-view,
+[data-theme="light"] #btn-new-project,
+[data-theme="light"] .btn-primary {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1.5px solid #000000 !important;
+  font-weight: var(--weight-bold) !important;
+}
+
+[data-theme="light"] #btn-save-view:hover,
+[data-theme="light"] #btn-new-project:hover,
+[data-theme="light"] .btn-primary:hover {
+  background: #f0f0f0 !important;
+  border-color: #000000 !important;
+}
+
+[data-theme="light"] #btn-save-view svg,
+[data-theme="light"] #btn-new-project svg,
+[data-theme="light"] .btn-primary svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+[data-theme="light"] .project-card-title {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .project-card-date,
+[data-theme="light"] .toolbar-stats,
+[data-theme="light"] #project-count {
+  color: var(--text-secondary) !important;
 }
 
 [data-theme="light"] .search-box svg.search-icon {

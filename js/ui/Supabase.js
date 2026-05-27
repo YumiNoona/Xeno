@@ -341,7 +341,7 @@
     localStorage.setItem(LOCAL_STORAGE_PREFIX + slug, JSON.stringify(payload));
     
     if (isConfigured()) {
-      restGet('/rest/v1/tours?slug=eq.' + encodeURIComponent(slug) + '&select=id')
+      return restGet('/rest/v1/tours?slug=eq.' + encodeURIComponent(slug) + '&select=id')
         .then(function(rows) {
           var dbPayload = {
             slug: slug,
@@ -356,8 +356,10 @@
           }
         }).catch(function(err) {
           console.warn('Supabase saveTour failed', err);
+          throw err;
         });
     }
+    return Promise.resolve();
   }
 
   /**
@@ -366,11 +368,13 @@
   function deleteTour(slug) {
     localStorage.removeItem(LOCAL_STORAGE_PREFIX + slug);
     if (isConfigured()) {
-      restDelete('/rest/v1/tours?slug=eq.' + encodeURIComponent(slug))
+      return restDelete('/rest/v1/tours?slug=eq.' + encodeURIComponent(slug))
         .catch(function(err) {
           console.warn('Supabase deleteTour failed', err);
+          throw err;
         });
     }
+    return Promise.resolve();
   }
 
   /**

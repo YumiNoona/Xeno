@@ -140,42 +140,6 @@
   --r-lg: 14px;
 }
 
-/* ── 8. THEME: LIGHT ──────────────────────────────────────── */
-[data-theme="light"] {
-  --bg-base: #ffffff;
-  --bg-panel: #fafafa;
-  --bg-raised: #f5f5f5;
-  --bg-elevated: #e5e5e5;
-  --bg-hover: rgba(0, 0, 0, 0.04);
-  --bg-active: rgba(0, 0, 0, 0.08);
-  --bg-ash: #fdfdfd;
-  --bg-ash-grey: #f0f0f0;
-  --bg-glass: rgba(255, 255, 255, 0.85);
-
-  --border: #e5e5e5;
-  --border-subtle: #f0f0f0;
-  --border-hover: #d4d4d4;
-  --border-focus: var(--accent);
-
-  --text-primary: #000000;
-  --text-secondary: #262626;
-  --text-muted: #525252;
-  --text-disabled: #737373;
-  --text-inverse: #ffffff;
-
-  --accent: #e11d48;
-  --accent-dim: rgba(225, 29, 72, 0.1);
-  --accent-glow: rgba(225, 29, 72, 0.2);
-  --accent-hover: #fb7185;
-  --accent-active: #be123c;
-  --accent-text: #e11d48;
-
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-}
-
 :root {
   /* ── 9. NAMED TEXT ROLES ──────────────────────────────────── */
   --text-display: var(--type-4xl) / var(--weight-bold) / var(--leading-tight);
@@ -377,4 +341,40 @@ h6 {
   line-height: var(--leading-tight);
   color: var(--text-primary);
   margin: 0;
+}
+
+/* ── 8. THEME: LIGHT ──────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-base: #ffffff;
+  --bg-panel: #fafafa;
+  --bg-raised: #f5f5f5;
+  --bg-elevated: #e5e5e5;
+  --bg-hover: rgba(0, 0, 0, 0.04);
+  --bg-active: rgba(0, 0, 0, 0.08);
+  --bg-ash: #fdfdfd;
+  --bg-ash-grey: #f0f0f0;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+
+  --border: #e5e5e5;
+  --border-subtle: #f0f0f0;
+  --border-hover: #d4d4d4;
+  --border-focus: var(--accent);
+
+  --text-primary: #000000;
+  --text-secondary: #262626;
+  --text-muted: #525252;
+  --text-disabled: #737373;
+  --text-inverse: #ffffff;
+
+  --accent: #e11d48;
+  --accent-dim: rgba(225, 29, 72, 0.1);
+  --accent-glow: rgba(225, 29, 72, 0.2);
+  --accent-hover: #fb7185;
+  --accent-active: #be123c;
+  --accent-text: #e11d48;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }

@@ -86,7 +86,7 @@
     function buildGeometry(sceneData) {
       if (sceneData.type === 'video') return new Xeno.EquirectGeometry([{ width: 1 }]);
       if (sceneData.levels) return new Xeno.CubeGeometry(sceneData.levels);
-      return new Xeno.EquirectGeometry([{ width: 1 }]);
+      return new Xeno.EquirectGeometry([{ width: 4000 }]);
     }
 
     // Create scenes.

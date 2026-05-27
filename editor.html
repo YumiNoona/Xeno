@@ -18,6 +18,8 @@
     rel="stylesheet">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/editor.css">
+  <!-- Early xIcon stub so inline document.write calls don't throw -->
+  <script>window.xIcon = window.xIcon || function(){ return ''; }</script>
   <!-- Critical: inline font lock — fires before external CSS, kills Times New Roman -->
   <style>
     html, body, * { font-family: 'Roboto Mono', 'Courier New', monospace !important; }
@@ -76,7 +78,7 @@
       <div class="logo">✦ <span>Xeno</span> Tour Studio</div>
       <div class="header-right">
         <button class="btn-icon" id="dashboard-theme-toggle" title="Toggle Theme"></button>
-        <button class="btn-new-project btn-primary" id="btn-new-project">
+        <button class="btn btn-new-project btn-primary" id="btn-new-project">
           <script>document.write(xIcon('plus', 14))</script>
           New Project
         </button>
@@ -808,35 +810,19 @@
   <script src="js/ui/Minimap.js"></script>
   <script src="js/ui/Supabase.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Editor modules -->
+  <script src="js/editor/state.js"></script>
+  <script src="js/editor/tools.js"></script>
+  <script src="js/editor/hotspot-manager.js"></script>
+  <script src="js/editor/hotspot-props-panel.js"></script>
+  <script src="js/editor/hotspot-props-types.js"></script>
+  <script src="js/editor/scene-manager.js"></script>
+  <script src="js/editor/scene-settings.js"></script>
+  <script src="js/editor/media-manager.js"></script>
+  <script src="js/editor/dashboard.js"></script>
+  <script src="js/editor/export.js"></script>
+  <script src="js/editor/ui.js"></script>
   <script src="js/editor.js"></script>
-  <script>
-    (function() {
-      const dashboardToggle = document.getElementById('dashboard-theme-toggle');
-      const topbarToggle = document.getElementById('topbar-theme-toggle');
-      
-      function updateThemeIcons(theme) {
-        const iconFn = (typeof xIcon === 'function') ? xIcon : (window.xIcon || function(){ return ''; });
-        const icon = theme === 'dark' ? iconFn('moon', 16) : iconFn('sun', 16);
-        if (dashboardToggle) dashboardToggle.innerHTML = icon;
-        if (topbarToggle) topbarToggle.innerHTML = icon;
-      }
-
-      function toggleTheme() {
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateThemeIcons(newTheme);
-      }
-
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      updateThemeIcons(savedTheme);
-
-      if (dashboardToggle) dashboardToggle.addEventListener('click', toggleTheme);
-      if (topbarToggle) topbarToggle.addEventListener('click', toggleTheme);
-    })();
-  </script>
 </body>
 
 </html>
