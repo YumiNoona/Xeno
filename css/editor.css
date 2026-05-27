@@ -2014,7 +2014,7 @@ input[type="number"] {
 .btn-new-project {
   background: var(--accent);
   border: none;
-  color: #fff;
+  color: #000000;
   padding: 8px 18px;
   border-radius: var(--r-sm);
   font-size: var(--size-sm);
@@ -2394,23 +2394,23 @@ input[type="number"] {
 [data-theme="light"] #btn-save-view,
 [data-theme="light"] #btn-new-project,
 [data-theme="light"] .btn-primary {
-  background: var(--accent) !important;
-  color: #fff !important;
-  border: 1.5px solid var(--accent) !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1.5px solid #000000 !important;
 }
 
 [data-theme="light"] #btn-save-view:hover,
 [data-theme="light"] #btn-new-project:hover,
 [data-theme="light"] .btn-primary:hover {
-  background: var(--accent-hover) !important;
-  border-color: var(--accent-hover) !important;
+  background: #f5f5f5 !important;
+  border-color: #000000 !important;
 }
 
 [data-theme="light"] #btn-save-view svg,
 [data-theme="light"] #btn-new-project svg,
 [data-theme="light"] .btn-primary svg {
-  color: #fff !important;
-  stroke: #fff !important;
+  color: #000000 !important;
+  stroke: #000000 !important;
 }
 
 [data-theme="light"] .project-card-title {
