@@ -156,9 +156,10 @@
           </div>
         </div>
         <div id="scene-grid"></div>
-        <div class="collapse-btn" id="sidebar-collapse-btn">
-          <script>document.write(xIcon('chevron-left', 14))</script>
-        </div>
+      </div>
+      <!-- Sidebar collapse btn lives OUTSIDE sidebar so it survives overflow:hidden -->
+      <div class="collapse-btn" id="sidebar-collapse-btn">
+        <script>document.write(xIcon('chevron-left', 14))</script>
       </div>
 
       <div class="resizer left-resizer" id="left-resizer"></div>
@@ -232,17 +233,8 @@
         <div class="resizer right-resizer" id="right-resizer"></div>
 
         <!-- Properties Panel -->
-        <button id="props-reopen-btn" title="Open Properties" style="display:none; position:absolute; right:0; top:50%; transform:translateY(-50%); 
-                 z-index:100; background:var(--bg-panel); border:1px solid var(--border); 
-                 border-right:none; border-radius:6px 0 0 6px; 
-                 padding:12px 6px; cursor:pointer; color:var(--text-secondary);">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <path d="M15 3v18" />
-          </svg>
-        </button>
         <div id="properties-panel">
+          <!-- Props collapse btn is inside panel so it always visible on panel edge -->
           <div class="collapse-btn" id="props-collapse-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -257,6 +249,7 @@
           </div>
           <div class="panel-body">
 
+            <div id="fields-hotspot-properties">
             <div class="form-group">
               <label>Type</label>
               <select id="prop-type">
@@ -294,12 +287,24 @@
               <select id="prop-icon-style">
                 <option value="default">Default (+)</option>
                 <option value="dot">Dot</option>
-                <option value="arrow">Arrow</option>
+                <option value="arrow">Arrow →</option>
                 <option value="eye">Eye (View)</option>
                 <option value="pin">Map Pin</option>
                 <option value="star">Star</option>
                 <option value="play">Play Button</option>
                 <option value="question">Question Mark</option>
+                <option value="info">Info Circle</option>
+                <option value="home">Home</option>
+                <option value="camera">Camera</option>
+                <option value="map">Map</option>
+                <option value="compass">Compass</option>
+                <option value="stairs">Stairs / Level Up</option>
+                <option value="door">Door</option>
+                <option value="exit">Exit / Out</option>
+                <option value="warning">Warning ⚠</option>
+                <option value="tag">Tag / Label</option>
+                <option value="expand">Expand / Fullscreen</option>
+                <option value="360">360° View</option>
                 <option value="custom">Custom Image</option>
               </select>
             </div>
@@ -327,6 +332,22 @@
                 <button class="btn btn-secondary" id="btn-reset-ring-color"
                   style="font-size:var(--type-xs);padding:4px 8px;">Reset</button>
               </div>
+            </div>
+            <div class="form-group">
+              <label>Ring Thickness <span id="prop-ring-size-label">2px</span></label>
+              <input type="range" id="prop-ring-size" min="1" max="8" value="2" step="1">
+            </div>
+            <div class="form-group">
+              <label>Number of Rings</label>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-secondary ring-count-btn active" data-count="1" style="flex:1;padding:4px 0;font-size:var(--type-xs);">1</button>
+                <button class="btn btn-secondary ring-count-btn" data-count="2" style="flex:1;padding:4px 0;font-size:var(--type-xs);">2</button>
+                <button class="btn btn-secondary ring-count-btn" data-count="3" style="flex:1;padding:4px 0;font-size:var(--type-xs);">3</button>
+              </div>
+            </div>
+            <div class="form-group" id="group-ring-gap">
+              <label>Ring Gap <span id="prop-ring-gap-label">6px</span></label>
+              <input type="range" id="prop-ring-gap" min="2" max="20" value="6" step="1">
             </div>
             <div class="form-group">
               <label>Icon Size <span id="prop-size-label">44px</span></label>
@@ -566,6 +587,8 @@
               </div>
             </div>
 
+            </div><!-- /#fields-hotspot-properties -->
+
             <!-- Scene settings -->
             <div class="type-fields" id="fields-scene-settings" style="display:none;">
               <div class="form-group">
@@ -654,6 +677,13 @@
               <span>pitch: <span id="pos-pitch">0.00</span></span>
             </div>
           </div>
+        </div>
+        <!-- Props reopen tab — always visible when panel is collapsed -->
+        <div id="props-reopen-btn" title="Open Properties Panel" style="display:none;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
         </div>
 
       </div><!-- /pano-wrapper -->

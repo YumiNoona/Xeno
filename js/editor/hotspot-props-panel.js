@@ -23,6 +23,20 @@
       D.propIconColor.value = hsData.iconColor || '#ffffff';
       D.propRingColor.value = hsData.ringColor || '#ffffff';
 
+      var rSize = hsData.ringSize || 2;
+      D.propRingSize.value = rSize;
+      D.propRingSizeLabel.textContent = rSize + 'px';
+
+      var rGap = hsData.ringGap || 6;
+      D.propRingGap.value = rGap;
+      D.propRingGapLabel.textContent = rGap + 'px';
+
+      var rCount = hsData.ringCount || 1;
+      document.querySelectorAll('.ring-count-btn').forEach(function(btn) {
+        btn.classList.toggle('active', parseInt(btn.getAttribute('data-count')) === rCount);
+      });
+      D.groupRingGap.style.display = rCount > 1 ? 'block' : 'none';
+
       var size = hsData.iconSize || 44;
       D.propIconSize.value = size;
       D.propSizeLabel.textContent = size + 'px';
@@ -36,15 +50,14 @@
       showTypeFields(hsData.type);
 
       D.propsPanel.classList.add('visible');
-      D.propsReopenBtn.style.display = 'none';
-      setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
+      D.propsReopenBtn.style.display = 'none';      setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
       E.startViewReadLoop();
     };
 
     E.closePropertiesPanel = function() {
       S.selectedHotspotData = null;
       D.propsPanel.classList.remove('visible');
-      D.propsReopenBtn.style.display = 'block';
+      D.propsReopenBtn.style.display = 'flex';
       setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
     };
 
@@ -211,7 +224,39 @@
         if (ringTarget) ringTarget.classList.toggle('has-ring', this.checked);
         else S.selectedHotspotElement.classList.toggle('has-ring', this.checked);
       }
+      E.renderSceneHotspots();
       E.debouncedSave();
+    });
+
+    D.propRingSize.addEventListener('input', function() {
+      var v = parseInt(this.value);
+      D.propRingSizeLabel.textContent = v + 'px';
+      if (!S.selectedHotspotData) return;
+      S.selectedHotspotData.ringSize = v;
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
+
+    D.propRingGap.addEventListener('input', function() {
+      var v = parseInt(this.value);
+      D.propRingGapLabel.textContent = v + 'px';
+      if (!S.selectedHotspotData) return;
+      S.selectedHotspotData.ringGap = v;
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
+
+    document.querySelectorAll('.ring-count-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.ring-count-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        var count = parseInt(btn.getAttribute('data-count'));
+        D.groupRingGap.style.display = count > 1 ? 'block' : 'none';
+        if (!S.selectedHotspotData) return;
+        S.selectedHotspotData.ringCount = count;
+        E.renderSceneHotspots();
+        E.debouncedSave();
+      });
     });
 
     D.propIconSize.addEventListener('input', function() {
@@ -237,6 +282,10 @@
       S.selectedHotspotData.ringEnabled = D.propRingEnabled.checked;
       S.selectedHotspotData.iconColor = D.propIconColor.value;
       S.selectedHotspotData.ringColor = D.propRingColor.value;
+      S.selectedHotspotData.ringSize = parseInt(D.propRingSize.value);
+      S.selectedHotspotData.ringGap = parseInt(D.propRingGap.value);
+      var activeCountBtn = document.querySelector('.ring-count-btn.active');
+      S.selectedHotspotData.ringCount = activeCountBtn ? parseInt(activeCountBtn.getAttribute('data-count')) : 1;
       S.selectedHotspotData.iconSize = parseInt(D.propIconSize.value);
 
       if (S.selectedHotspotData.type === 'navigate') {

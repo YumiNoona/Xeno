@@ -14,25 +14,41 @@
     var propsCollapse = document.getElementById('props-collapse-btn');
 
     if (sidebarCollapse) {
+      function updateSidebarCollapseIcon() {
+        var collapsed = document.body.classList.contains('sidebar-collapsed');
+        sidebarCollapse.innerHTML = collapsed
+          ? window.xIcon('chevron-right', 14)
+          : window.xIcon('chevron-left', 14);
+        sidebarCollapse.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+      }
+      function syncCollapseButtonPos() {
+        var collapsed = document.body.classList.contains('sidebar-collapsed');
+        sidebarCollapse.style.left = collapsed ? '0px' : (sidebar.offsetWidth) + 'px';
+      }
       sidebarCollapse.addEventListener('click', function() {
         document.body.classList.toggle('sidebar-collapsed');
+        updateSidebarCollapseIcon();
+        syncCollapseButtonPos();
         setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
       });
+      // Keep button in sync when sidebar is resized by drag
+      var resizeObs = new MutationObserver(syncCollapseButtonPos);
+      resizeObs.observe(sidebar, { attributes: true, attributeFilter: ['style'] });
+      updateSidebarCollapseIcon();
+      syncCollapseButtonPos();
     }
 
     if (propsCollapse) {
       propsCollapse.addEventListener('click', function() {
         props.classList.remove('visible');
-        D.propsReopenBtn.style.display = 'block';
+        D.propsReopenBtn.style.display = 'flex';
         setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
       });
     }
 
     if (D.propsReopenBtn) {
       D.propsReopenBtn.addEventListener('click', function() {
-        if (S.selectedHotspotData || D.fieldsSceneSettings.style.display === 'block') {
-          props.classList.add('visible');
-        }
+        props.classList.add('visible');
         this.style.display = 'none';
         setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
       });
@@ -44,7 +60,15 @@
         leftResizer.classList.add('dragging');
         function onMove(e2) {
           var w = e2.clientX;
-          if (w > 150 && w < 500) { sidebar.style.transition = 'none'; sidebar.style.width = w + 'px'; sidebar.style.minWidth = w + 'px'; if (S.viewer) S.viewer.updateSize(); }
+          if (w > 150 && w < 500) {
+            sidebar.style.transition = 'none';
+            sidebar.style.width = w + 'px';
+            sidebar.style.minWidth = w + 'px';
+            // Keep collapse btn aligned with sidebar right edge
+            var colBtn = document.getElementById('sidebar-collapse-btn');
+            if (colBtn) colBtn.style.left = w + 'px';
+            if (S.viewer) S.viewer.updateSize();
+          }
         }
         function onUp() {
           sidebar.style.transition = ''; leftResizer.classList.remove('dragging');

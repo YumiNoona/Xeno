@@ -739,3 +739,11 @@
 .xeno-hotspot-dot:hover .hs-icon {
   transform: rotate(10deg);
 }
+/* ─── Extra Rings (multi-ring support) ───────────────────── */
+.xeno-extra-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  box-sizing: border-box;
+  transition: opacity 0.2s;
+}

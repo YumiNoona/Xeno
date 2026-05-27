@@ -86,13 +86,19 @@
       E.debouncedSave();
     });
 
-    // Drag to reposition hotspots
+    // Drag to reposition hotspots (with click-to-select detection)
+    var dragStartX = 0, dragStartY = 0, hasMoved = false;
+    var DRAG_THRESHOLD = 5; // pixels before we consider it a drag
+
     D.panoWrapper.addEventListener('mousedown', function(e) {
       if (S.editorState.placeMode) return;
       var target = e.target;
       while (target && target !== D.panoWrapper) {
         if (target.__marzipanoHotspot) {
-          S.isDragging = true;
+          S.isDragging = false; // not yet — wait for movement
+          hasMoved = false;
+          dragStartX = e.clientX;
+          dragStartY = e.clientY;
           S.dragHsElement = target;
           S.dragHsData = target.__hsData;
           e.preventDefault();
@@ -101,10 +107,19 @@
         }
         target = target.parentElement;
       }
+      // Clicked on empty pano — deselect
+      if (S.dragHsElement === null && !S.editorState.placeMode) {
+        // Do nothing on background click (don't close panel)
+      }
     }, true);
 
     window.addEventListener('mousemove', function(e) {
-      if (!S.isDragging || !S.dragHsElement || !S.dragHsElement.__marzipanoHotspot) return;
+      if (!S.dragHsElement || !S.dragHsElement.__marzipanoHotspot) return;
+      var dx = e.clientX - dragStartX;
+      var dy = e.clientY - dragStartY;
+      if (!hasMoved && Math.sqrt(dx*dx + dy*dy) < DRAG_THRESHOLD) return;
+      hasMoved = true;
+      S.isDragging = true;
       var rect = D.panoEl.getBoundingClientRect();
       var coords = S.currentSceneCtx.view.screenToCoordinates({
         x: e.clientX - rect.left, y: e.clientY - rect.top
@@ -121,11 +136,21 @@
     });
 
     window.addEventListener('mouseup', function() {
-      if (S.isDragging) {
+      if (S.dragHsElement) {
+        if (!hasMoved) {
+          // It was a click — open properties
+          var hsData = S.dragHsData;
+          if (hsData) {
+            S.selectedHotspotElement = S.dragHsElement;
+            E.openPropertiesPanel(hsData);
+          }
+        } else if (S.isDragging) {
+          E.debouncedSave();
+        }
         S.isDragging = false;
         S.dragHsElement = null;
         S.dragHsData = null;
-        E.debouncedSave();
+        hasMoved = false;
       }
     });
   };
@@ -218,6 +243,30 @@
       var iconSize = Math.round(size * 0.55);
       inner.style.width  = iconSize + 'px';
       inner.style.height = iconSize + 'px';
+    }
+    // Reposition tooltip/tip labels based on actual hotspot size
+    var tooltip = element.querySelector('.link-tooltip');
+    if (tooltip) {
+      var topOffset = Math.round((size - 28) / 2); // vertically center relative to icon
+      tooltip.style.top = topOffset + 'px';
+      tooltip.style.left = (size + 4) + 'px';
+      tooltip.style.marginLeft = '0';
+    }
+    var tip = element.querySelector('.tip');
+    if (tip) {
+      tip.style.left = (size + 16) + 'px';
+      tip.style.top = Math.round(size * 0.15) + 'px';
+    }
+    var content = element.querySelector('.content');
+    if (content) {
+      content.style.left = (size + 16) + 'px';
+      content.style.top = Math.round(size * 0.15) + 'px';
+    }
+    // Also size the icon wrapper to match
+    var iconWrapper = element.querySelector('.link-icon-wrapper, .icon_wrapper, .out');
+    if (iconWrapper && !iconWrapper.classList.contains('tip') && !iconWrapper.classList.contains('content')) {
+      iconWrapper.style.width = size + 'px';
+      iconWrapper.style.height = size + 'px';
     }
   };
 })();

@@ -123,6 +123,11 @@
   D.btnResetIconColor = $('btn-reset-icon-color');
   D.propRingColor    = $('prop-ring-color');
   D.btnResetRingColor = $('btn-reset-ring-color');
+  D.propRingSize     = $('prop-ring-size');
+  D.propRingSizeLabel = $('prop-ring-size-label');
+  D.propRingGap      = $('prop-ring-gap');
+  D.propRingGapLabel = $('prop-ring-gap-label');
+  D.groupRingGap     = $('group-ring-gap');
   D.propIconSize     = $('prop-icon-size');
   D.propSizeLabel    = $('prop-size-label');
   D.groupCustomIcon  = $('group-custom-icon');
