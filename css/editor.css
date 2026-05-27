@@ -616,7 +616,7 @@ input::placeholder, textarea::placeholder {
 
 .resizer:hover,
 .resizer.dragging {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-hover);
 }
 
 .resizer::after {
@@ -645,7 +645,7 @@ input::placeholder, textarea::placeholder {
 #pano-wrapper {
   flex: 1;
   position: relative;
-  background: #0c0c0c;
+  background: var(--bg-base);
 }
 
 #pano {
@@ -2292,7 +2292,7 @@ input[type="number"] {
   font-size: var(--size-sm);
   color: var(--text-muted);
   transition: all 0.12s;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border: 1px dashed var(--border);
   letter-spacing: 0.03em;
   font-family: var(--font);
   background: transparent;
@@ -2302,8 +2302,8 @@ input[type="number"] {
 
 .media-add-album-btn:hover {
   color: var(--text-secondary);
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--border-hover);
+  background: var(--bg-hover);
 }
 
 .media-add-album-btn svg {
@@ -2394,24 +2394,23 @@ input[type="number"] {
 [data-theme="light"] #btn-save-view,
 [data-theme="light"] #btn-new-project,
 [data-theme="light"] .btn-primary {
-  background: #ffffff !important;
-  color: #000000 !important;
-  border: 1.5px solid #000000 !important;
-  font-weight: var(--weight-bold) !important;
+  background: var(--accent) !important;
+  color: #fff !important;
+  border: 1.5px solid var(--accent) !important;
 }
 
 [data-theme="light"] #btn-save-view:hover,
 [data-theme="light"] #btn-new-project:hover,
 [data-theme="light"] .btn-primary:hover {
-  background: #f0f0f0 !important;
-  border-color: #000000 !important;
+  background: var(--accent-hover) !important;
+  border-color: var(--accent-hover) !important;
 }
 
 [data-theme="light"] #btn-save-view svg,
 [data-theme="light"] #btn-new-project svg,
 [data-theme="light"] .btn-primary svg {
-  color: #000000 !important;
-  stroke: #000000 !important;
+  color: #fff !important;
+  stroke: #fff !important;
 }
 
 [data-theme="light"] .project-card-title {
@@ -2427,4 +2426,31 @@ input[type="number"] {
 [data-theme="light"] .search-box svg.search-icon {
   color: var(--text-muted) !important;
   stroke: currentColor !important;
+}
+
+[data-theme="light"] .scene-card-overlay {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, transparent 100%);
+}
+
+[data-theme="light"] .scene-card-eye {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .scene-card-eye:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .btn-delete-project {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .project-card-scenes-badge {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
 }
