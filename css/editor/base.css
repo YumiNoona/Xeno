@@ -1,0 +1,76 @@
+/* ── Typography — global overrides ────────────────────────── */
+html, body,
+input, textarea, select, button, label,
+.btn, .pill-tool, .sidebar-label, .scene-card-label,
+.album-item, .ctx-item, .form-group label,
+.panel-header h3, .topbar-project-name,
+.media-header-title, .upload-title, .upload-sub,
+.view-control-field span, .view-control-field input {
+  font-family: var(--font-family-base) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family-base) !important;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  line-height: var(--leading-normal);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+}
+
+p {
+  color: var(--text-secondary);
+}
+
+label {
+  color: var(--text-secondary);
+  font-size: var(--type-sm);
+  font-weight: var(--weight-medium);
+  margin-bottom: 4px;
+}
+
+input, textarea, select {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  font-size: var(--type-sm);
+  transition: all 0.2s;
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-hover);
+  border-radius: 4px;
+}

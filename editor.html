@@ -17,13 +17,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="css/editor.css">
+  <!-- Editor CSS — split by feature -->
+  <link rel="stylesheet" href="css/editor/base.css">
+  <link rel="stylesheet" href="css/editor/buttons.css">
+  <link rel="stylesheet" href="css/editor/topbar.css">
+  <link rel="stylesheet" href="css/editor/sidebar.css">
+  <link rel="stylesheet" href="css/editor/viewport.css">
+  <link rel="stylesheet" href="css/editor/panels.css">
+  <link rel="stylesheet" href="css/editor/menus.css">
+  <link rel="stylesheet" href="css/editor/media.css">
+  <link rel="stylesheet" href="css/editor/dashboard.css">
+  <link rel="stylesheet" href="css/editor/theme.css">
   <!-- Critical: inline font lock — fires before external CSS, kills Times New Roman -->
   <style>
     html, body, * { font-family: 'Roboto Mono', 'Courier New', monospace !important; }
   </style>
-  <link rel="stylesheet" href="css/viewer.css">
-  <link rel="stylesheet" href="css/hotspots.css">
+  <!-- Viewer CSS — split -->
+  <link rel="stylesheet" href="css/viewer/layout.css">
+  <link rel="stylesheet" href="css/viewer/components.css">
+  <!-- Hotspots CSS — split -->
+  <link rel="stylesheet" href="css/hotspots/types.css">
+  <link rel="stylesheet" href="css/hotspots/animations.css">
+  <link rel="stylesheet" href="css/hotspots/dots.css">
   <!-- Inline SVG icon system — zero CDN dependency -->
   <script>
     // xIcon(name) returns an SVG string for a Tabler-style icon
@@ -65,74 +80,29 @@
       const paths = XICONS[name] || '';
       return `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
     }
+
+    // Modern replacement for document.write icon injection
+    class XenoIcon extends HTMLElement {
+      connectedCallback() {
+        const name = this.getAttribute('name');
+        const size = this.getAttribute('size') || 16;
+        this.innerHTML = xIcon(name, size);
+      }
+    }
+    customElements.define('x-icon', XenoIcon);
   </script>
 </head>
 
 <body>
 
-  <!-- ══ Dashboard ══════════════════════════════════════════ -->
-  <div id="dashboard-view">
-    <div class="dashboard-header">
-      <div class="logo">✦ <span>Xeno</span> Tour Studio</div>
-      <div class="header-right">
-        <button class="btn-icon" id="dashboard-theme-toggle" title="Toggle Theme"></button>
-        <button class="btn btn-new-project btn-primary" id="btn-new-project">
-          <script>document.write(xIcon('plus', 14))</script>
-          New Project
-        </button>
-      </div>
-    </div>
-
-
-    <div class="dashboard-toolbar">
-      <div class="search-box">
-        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
-        <input type="text" id="project-search" placeholder="Search tours…">
-      </div>
-      <div class="toolbar-stats">
-        Projects: <span id="project-count">0</span>
-      </div>
-    </div>
-
-    <div id="project-grid" class="project-grid"></div>
-  </div>
+  <!-- ══ Partial: Dashboard ═══════════════════════════════ -->
+  <script src="partials/dashboard.js"></script>
 
   <!-- ══ Workspace ══════════════════════════════════════════ -->
   <div id="workspace-view" style="display:none;">
 
-    <!-- Top Bar -->
-    <div id="editor-topbar">
-      <div class="logo" id="logo-back">
-        <script>document.write(xIcon('chevron-left', 16))</script>
-        Dashboard
-      </div>
-      <div class="topbar-center">
-        <span class="topbar-project-name" id="topbar-project-name" contenteditable="true" spellcheck="false">Untitled Tour</span>
-      </div>
-      <div class="topbar-actions">
-        <button class="btn-icon" id="topbar-theme-toggle" title="Toggle Theme"></button>
-        <div class="topbar-sep"></div>
-        <!-- Media Manager — film strip icon -->
-        <button class="btn" id="btn-media-manager">
-          <script>document.write(xIcon('folder', 16))</script>
-          Media
-        </button>
-        <!-- Preview — play circle icon -->
-        <button class="btn" id="btn-preview-tour">
-          <script>document.write(xIcon('eye', 16))</script>
-          Preview
-        </button>
-        <div class="topbar-sep"></div>
-        <!-- Export — archive/box icon -->
-        <button class="btn btn-publish" id="btn-export">
-          <script>document.write(xIcon('download', 16))</script>
-          Export Zip
-        </button>
-      </div>
-    </div>
+    <!-- ══ Partial: Topbar ══════════════════════════════════ -->
+    <script src="partials/workspace-topbar.js"></script>
 
     <div id="editor-main">
 
@@ -141,689 +111,41 @@
         <div class="sidebar-header">
           <span class="sidebar-label">Scenes</span>
           <button class="add-item-btn" id="btn-add-scene">
-            <script>document.write(xIcon('plus', 14))</script>
+            <x-icon name="plus" size="14"></x-icon>
             Add Scene
           </button>
           <div id="scene-multi-toolbar" style="display: none;">
             <span id="scene-sel-count">0 selected</span>
             <button id="btn-delete-scenes" class="btn btn-danger">
-              <script>document.write(xIcon('trash', 14))</script>
+              <x-icon name="trash" size="14"></x-icon>
               Delete
             </button>
             <button id="btn-clear-scene-sel" class="btn btn-secondary">
-              <script>document.write(xIcon('x', 14))</script>
+              <x-icon name="x" size="14"></x-icon>
             </button>
           </div>
         </div>
         <div id="scene-grid"></div>
       </div>
-      <!-- Sidebar collapse btn lives OUTSIDE sidebar so it survives overflow:hidden -->
       <div class="collapse-btn" id="sidebar-collapse-btn">
-        <script>document.write(xIcon('chevron-left', 14))</script>
+        <x-icon name="chevron-left" size="14"></x-icon>
       </div>
-
       <div class="resizer left-resizer" id="left-resizer"></div>
 
-      <!-- Pano Workspace -->
-      <div id="pano-wrapper">
-        <div id="pano"></div>
+      <!-- ══ Partial: Viewport ══════════════════════════════ -->
+      <script src="partials/viewport.js"></script>
 
-        <div id="xeno-minimap" class="xeno-minimap"></div>
+      <!-- ══ Partial: Properties Panel ══════════════════════ -->
+      <script src="partials/properties-panel.js"></script>
 
-        <div id="mode-badge">Select</div>
-
-        <div id="view-controls-bar">
-          <div class="view-control-field">
-            <span>Yaw</span>
-            <input type="number" id="bottom-view-yaw" step="1">
-          </div>
-          <div class="view-control-field">
-            <span>Pitch</span>
-            <input type="number" id="bottom-view-pitch" step="1">
-          </div>
-          <div class="view-control-field">
-            <span>FOV</span>
-            <input type="number" id="bottom-view-fov" step="1" min="60" max="120">
-          </div>
-          <button id="btn-save-view">
-            <script>document.write(xIcon('camera', 14))</script>
-            Save Default View
-          </button>
-        </div>
-
-        <!-- Tools Pill — inline SVG icons, no CDN -->
-        <div id="tools-pill">
-          <div class="pill-tool active" data-tool="select" title="Select">
-            <script>document.write(xIcon('cursor', 16))</script>
-          </div>
-          <div class="pill-sep"></div>
-          <div class="pill-tool" data-tool="navigate" title="Navigate">
-            <script>document.write(xIcon('arrow-right', 16))</script>
-          </div>
-          <div class="pill-tool" data-tool="info" title="Info card">
-            <script>document.write(xIcon('info', 16))</script>
-          </div>
-          <div class="pill-tool" data-tool="url" title="URL link">
-            <script>document.write(xIcon('link', 16))</script>
-          </div>
-          <div class="pill-tool" data-tool="image" title="Image">
-            <script>document.write(xIcon('photo', 16))</script>
-          </div>
-          <div class="pill-tool" data-tool="video" title="Video">
-            <script>document.write(xIcon('video', 16))</script>
-          </div>
-          <div class="pill-tool" data-tool="audio" title="Audio">
-            <script>document.write(xIcon('volume', 16))</script>
-          </div>
-          <div class="pill-tool" data-tool="move" title="Move Hotspot">
-            <script>document.write(xIcon('move', 16))</script>
-          </div>
-          <div class="pill-sep"></div>
-          <div class="pill-tool" data-tool="autorotate" title="Autorotate">
-            <script>document.write(xIcon('rotate-cw', 16))</script>
-          </div>
-          <div class="pill-tool" data-tool="minimap" title="Minimap">
-            <script>document.write(xIcon('map', 16))</script>
-          </div>
-          <div class="pill-tool" data-tool="scene-settings" title="Scene settings">
-            <script>document.write(xIcon('settings', 16))</script>
-          </div>
-        </div>
-
-        <div class="resizer right-resizer" id="right-resizer"></div>
-
-        <!-- Properties Panel -->
-        <div id="properties-panel">
-          <!-- Props collapse btn is inside panel so it always visible on panel edge -->
-          <div class="collapse-btn" id="props-collapse-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
-          <div class="panel-header">
-            <h3 id="panel-title">Hotspot Properties</h3>
-            <button class="close-panel" id="btn-close-properties">
-              <script>document.write(xIcon('x', 16))</script>
-            </button>
-          </div>
-          <div class="panel-body">
-
-            <div id="fields-hotspot-properties">
-            <div class="form-group">
-              <label>Type</label>
-              <select id="prop-type">
-                <option value="navigate">Navigate</option>
-                <option value="info">Info Card</option>
-                <option value="url">URL Link</option>
-                <option value="image">Image</option>
-                <option value="video">Video</option>
-                <option value="audio">Audio</option>
-                <option value="embed">Embedded (YouTube/Maps)</option>
-                <option value="quad">Surface (4-Point)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Label / Title</label>
-              <input type="text" id="prop-title" placeholder="Hotspot title">
-            </div>
-            <div class="form-group">
-              <label>Animation</label>
-              <select id="prop-animation">
-                <option value="none">None</option>
-                <option value="pulse">Pulse</option>
-                <option value="bounce">Bounce</option>
-                <option value="spin">Spin</option>
-                <option value="float">Float</option>
-                <option value="heartbeat">Heartbeat</option>
-                <option value="wiggle">Wiggle</option>
-                <option value="breathe">Breathe</option>
-                <option value="flicker">Flicker</option>
-                <option value="orbit">Orbit Ring</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Icon Style</label>
-              <select id="prop-icon-style">
-                <option value="default">Default (+)</option>
-                <option value="dot">Dot</option>
-                <option value="arrow">Arrow →</option>
-                <option value="eye">Eye (View)</option>
-                <option value="pin">Map Pin</option>
-                <option value="star">Star</option>
-                <option value="play">Play Button</option>
-                <option value="question">Question Mark</option>
-                <option value="info">Info Circle</option>
-                <option value="home">Home</option>
-                <option value="camera">Camera</option>
-                <option value="map">Map</option>
-                <option value="compass">Compass</option>
-                <option value="stairs">Stairs / Level Up</option>
-                <option value="door">Door</option>
-                <option value="exit">Exit / Out</option>
-                <option value="warning">Warning ⚠</option>
-                <option value="tag">Tag / Label</option>
-                <option value="expand">Expand / Fullscreen</option>
-                <option value="360">360° View</option>
-                <option value="custom">Custom Image</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Outer Ring</label>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="checkbox" id="prop-ring-enabled" checked>
-                <span>Show outer ring</span>
-              </label>
-            </div>
-            <div class="form-group">
-              <label>Icon Color</label>
-              <div style="display:flex;gap:8px;align-items:center;">
-                <input type="color" id="prop-icon-color" value="#ffffff"
-                  style="width:40px;height:32px;border-radius:6px;border:1px solid var(--border);cursor:pointer;padding:2px;">
-                <button class="btn btn-secondary" id="btn-reset-icon-color"
-                  style="font-size:var(--type-xs);padding:4px 8px;">Reset</button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Ring Color</label>
-              <div style="display:flex;gap:8px;align-items:center;">
-                <input type="color" id="prop-ring-color" value="#ffffff"
-                  style="width:40px;height:32px;border-radius:6px;border:1px solid var(--border);cursor:pointer;padding:2px;">
-                <button class="btn btn-secondary" id="btn-reset-ring-color"
-                  style="font-size:var(--type-xs);padding:4px 8px;">Reset</button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Ring Thickness <span id="prop-ring-size-label">2px</span></label>
-              <input type="range" id="prop-ring-size" min="1" max="8" value="2" step="1">
-            </div>
-            <div class="form-group">
-              <label>Number of Rings</label>
-              <div style="display:flex;gap:6px;">
-                <button class="btn btn-secondary ring-count-btn active" data-count="1" style="flex:1;padding:4px 0;font-size:var(--type-xs);">1</button>
-                <button class="btn btn-secondary ring-count-btn" data-count="2" style="flex:1;padding:4px 0;font-size:var(--type-xs);">2</button>
-                <button class="btn btn-secondary ring-count-btn" data-count="3" style="flex:1;padding:4px 0;font-size:var(--type-xs);">3</button>
-              </div>
-            </div>
-            <div class="form-group" id="group-ring-gap">
-              <label>Ring Gap <span id="prop-ring-gap-label">6px</span></label>
-              <input type="range" id="prop-ring-gap" min="2" max="20" value="6" step="1">
-            </div>
-            <div class="form-group">
-              <label>Icon Size <span id="prop-size-label">44px</span></label>
-              <input type="range" id="prop-icon-size" min="24" max="96" value="44" step="2">
-            </div>
-            <div class="form-group" id="group-custom-icon" style="display:none;">
-              <label>Custom Icon</label>
-              <div style="display:flex;gap:8px;">
-                <input type="text" id="prop-custom-icon-url" placeholder="Paste URL or pick…" style="flex:1;">
-                <button class="btn btn-secondary" id="btn-pick-custom-icon"
-                      style="padding:0 10px;border-radius:var(--radius-sm);">
-                      <script>document.write(xIcon('folder', 14))</script>
-                    </button>
-              </div>
-            </div>
-
-            <!-- Navigate fields -->
-            <div class="type-fields" id="fields-navigate">
-              <div class="form-group">
-                <label>Target Scene</label>
-                <select id="prop-target-scene"></select>
-              </div>
-              <div class="form-group">
-                <label>Transition</label>
-                <select id="prop-transition">
-                  <option value="opacity">Opacity</option>
-                  <option value="fromRight">From Right</option>
-                  <option value="throughBlack">Through Black</option>
-                  <option value="fromCenter">From Center</option>
-                  <option value="fromWhite">From White</option>
-                  <option value="fromLeft">From Left</option>
-                  <option value="iris">Iris</option>
-                  <option value="throughWhite">Through White</option>
-                  <option value="curtain">Curtain</option>
-                  <option value="fromCorner">From Corner</option>
-                  <option value="splitHorizontal">Split</option>
-                  <option value="zoomOut">Zoom Out</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Duration <span id="prop-trans-dur-label">800ms</span></label>
-                <input type="range" id="prop-trans-duration" min="300" max="2000" value="800" step="100">
-              </div>
-            </div>
-
-            <!-- Info fields -->
-            <div class="type-fields" id="fields-info" style="display:none;">
-              <div class="form-group">
-                <label>Body Text</label>
-                <textarea id="prop-body-text" rows="3" placeholder="Description…"></textarea>
-              </div>
-              <div class="form-group">
-                <label>Link URL (optional)</label>
-                <input type="text" id="prop-link-url" placeholder="https://…">
-              </div>
-              <div class="form-group">
-                <label>Link opens in</label>
-                <div class="radio-group">
-                  <label class="radio-label"><input type="radio" name="prop-link-type" value="external" checked>
-                    External tab</label>
-                  <label class="radio-label"><input type="radio" name="prop-link-type" value="scene"> Scene</label>
-                </div>
-              </div>
-              <div class="form-group" id="info-scene-target-group" style="display:none;">
-                <label>Target Scene</label>
-                <select id="prop-info-target-scene"></select>
-              </div>
-              <div class="form-group">
-                <label>Button Label</label>
-                <input type="text" id="prop-link-label" placeholder="Open link">
-              </div>
-            </div>
-
-            <!-- URL fields -->
-            <div class="type-fields" id="fields-url" style="display:none;">
-              <div class="form-group">
-                <label>URL</label>
-                <input type="text" id="prop-url-href" placeholder="https://…">
-              </div>
-              <div class="form-group">
-                <label>Button Label</label>
-                <input type="text" id="prop-url-label" placeholder="Open link">
-              </div>
-              <div class="form-group">
-                <label>Open in</label>
-                <select id="prop-url-open-in">
-                  <option value="newtab">New Tab</option>
-                  <option value="popup">Popup Overlay</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Image fields -->
-            <div class="type-fields" id="fields-image" style="display:none;">
-              <div class="form-group">
-                <label>Image File / URL</label>
-                <div style="display:flex;gap:8px;">
-                  <input type="text" id="prop-image-url" placeholder="Paste URL or pick…" style="flex:1;">
-                  <button class="btn btn-secondary" id="btn-pick-image"
-                    style="padding:0 10px;border-radius:var(--r-sm);">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Caption</label>
-                <input type="text" id="prop-image-caption" placeholder="Optional caption">
-              </div>
-              <div class="form-group">
-                <label>Link URL (optional)</label>
-                <input type="text" id="prop-image-link" placeholder="https://…">
-              </div>
-            </div>
-
-            <!-- Video fields -->
-            <div class="type-fields" id="fields-video" style="display:none;">
-              <div class="form-group">
-                <label>Video File / URL</label>
-                <div style="display:flex;gap:8px;">
-                  <input type="text" id="prop-video-url" placeholder="Paste URL or pick…" style="flex:1;">
-                  <button class="btn btn-secondary" id="btn-pick-video"
-                    style="padding:0 10px;border-radius:var(--r-sm);">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div class="form-group toggle-group">
-                <label>Autoplay</label>
-                <input type="checkbox" id="prop-video-autoplay">
-              </div>
-              <div class="form-group toggle-group">
-                <label>Loop</label>
-                <input type="checkbox" id="prop-video-loop" checked>
-              </div>
-              <div class="form-group toggle-group">
-                <label>Muted</label>
-                <input type="checkbox" id="prop-video-muted" checked>
-              </div>
-            </div>
-
-            <!-- Audio fields -->
-            <div class="type-fields" id="fields-audio" style="display:none;">
-              <div class="form-group">
-                <label>Audio File / URL</label>
-                <div style="display:flex;gap:8px;">
-                  <input type="text" id="prop-audio-url" placeholder="Paste URL or pick…" style="flex:1;">
-                  <button class="btn btn-secondary" id="btn-pick-audio"
-                    style="padding:0 10px;border-radius:var(--r-sm);">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div class="form-group toggle-group">
-                <label>Autoplay</label>
-                <input type="checkbox" id="prop-audio-autoplay">
-              </div>
-              <div class="form-group toggle-group">
-                <label>Show Player Label</label>
-                <input type="checkbox" id="prop-audio-label" checked>
-              </div>
-            </div>
-
-            <!-- Embed fields -->
-            <div class="type-fields" id="fields-embed" style="display:none;">
-              <div class="form-group">
-                <label>Iframe URL / Embed Code</label>
-                <textarea id="prop-embed-code" placeholder="https://www.youtube.com/embed/... or <iframe> code" rows="3"></textarea>
-                <div style="font-size:var(--type-2xs);color:var(--text-muted);margin-top:4px;">
-                  Supports YouTube, Vimeo, Google Maps, etc.
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Width (px)</label>
-                <input type="number" id="prop-embed-width" value="480">
-              </div>
-              <div class="form-group">
-                <label>Height (px)</label>
-                <input type="number" id="prop-embed-height" value="270">
-              </div>
-              
-              <div class="ctx-sep" style="margin: 12px 0;"></div>
-              
-              <div class="form-group toggle-group">
-                <label>Perspective Mode</label>
-                <input type="checkbox" id="prop-embed-perspective">
-              </div>
-              <div id="perspective-options" style="display:none;">
-                <div class="form-group">
-                  <label>Radius (Depth)</label>
-                  <input type="number" id="prop-embed-radius" value="1000" step="10">
-                </div>
-                <div class="form-group">
-                  <label>Extra Transforms</label>
-                  <input type="text" id="prop-embed-transform" placeholder="e.g. rotateX(5deg) scale(1.2)">
-                </div>
-              </div>
-            </div>
-
-            <!-- Quad fields -->
-            <div class="type-fields" id="fields-quad" style="display:none;">
-              <div class="form-group">
-                <label>Iframe URL / Embed Code</label>
-                <textarea id="prop-quad-code" placeholder="https://www.youtube.com/embed/... or <iframe> code" rows="3"></textarea>
-                <div style="font-size:var(--type-2xs);color:var(--text-muted);margin-top:4px;">
-                  Supports YouTube, Vimeo, Google Maps, etc.
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Source Width (px)</label>
-                <input type="number" id="prop-quad-src-width" value="480">
-              </div>
-              <div class="form-group">
-                <label>Source Height (px)</label>
-                <input type="number" id="prop-quad-src-height" value="270">
-              </div>
-              <div class="ctx-sep" style="margin: 12px 0;"></div>
-              <div class="form-group">
-                <label>Corner Points (Yaw, Pitch)</label>
-                <div id="quad-points-list"></div>
-                <button class="btn btn-secondary" id="btn-add-quad-point">
-                  <script>document.write(xIcon('plus', 14))</script>
-                  Add Point
-                </button>
-                <button class="btn btn-danger" id="btn-clear-quad-points" style="display:none;">
-                  <script>document.write(xIcon('trash', 14))</script>
-                  Clear Points
-                </button>
-              </div>
-            </div>
-
-            </div><!-- /#fields-hotspot-properties -->
-
-            <!-- Scene settings -->
-            <div class="type-fields" id="fields-scene-settings" style="display:none;">
-              <div class="form-group">
-                <label>Scene Name</label>
-                <input type="text" id="prop-scene-name" placeholder="Scene name">
-              </div>
-              <div class="form-group">
-                <label>
-                  Field of View
-                  <span id="scene-fov-label" style="color:var(--accent);font-weight:var(--weight-semibold);">90°</span>
-                </label>
-                <input type="range" id="prop-scene-fov" min="40" max="130" value="90" step="1">
-                <div style="display:flex;justify-content:space-between;margin-top:4px;">
-                  <span style="font-size:var(--type-xs);color:var(--text-muted);">Zoomed in</span>
-                  <span style="font-size:var(--type-xs);color:var(--text-muted);">Wide angle</span>
-                </div>
-              </div>
-              <button class="btn btn-secondary" id="btn-apply-fov" style="width:100%;margin-top:4px;">
-                Apply FOV to This Scene
-              </button>
-
-              <div class="form-group" style="margin-top:12px;">
-                <label>Viewer Position</label>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
-                  <div>
-                    <div style="font-size:var(--type-xs);color:var(--text-muted);margin-bottom:3px;">Yaw (°)</div>
-                    <input type="number" id="prop-view-yaw" step="1" min="-180" max="180"
-                      style="width:100%;font-size:var(--type-sm);">
-                  </div>
-                  <div>
-                    <div style="font-size:var(--type-xs);color:var(--text-muted);margin-bottom:3px;">Pitch (°)</div>
-                    <input type="number" id="prop-view-pitch" step="1" min="-90" max="90"
-                      style="width:100%;font-size:var(--type-sm);">
-                  </div>
-                  <div>
-                    <div style="font-size:var(--type-xs);color:var(--text-muted);margin-bottom:3px;">FOV (°)</div>
-                    <input type="number" id="prop-view-fov" step="1" min="40" max="130"
-                      style="width:100%;font-size:var(--type-sm);">
-                  </div>
-                </div>
-                <button class="btn btn-secondary" id="btn-read-view"
-                  style="width:100%;margin-top:6px;font-size:var(--type-xs);">
-                  Read Current View
-                </button>
-                <button class="btn btn-primary" id="btn-apply-view"
-                  style="width:100%;margin-top:4px;font-size:var(--type-xs);">
-                  Set as Default View
-                </button>
-              </div>
-
-              <div style="margin-top:20px; padding-top:15px; border-top:1px solid var(--border);">
-                <label
-                  style="font-size:var(--type-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:var(--weight-semibold); margin-bottom:8px; display:block;">Floorplan
-                  Settings</label>
-                <div class="form-group toggle-group">
-                  <label>Enable Minimap</label>
-                  <input type="checkbox" id="prop-floorplan-enabled">
-                </div>
-                <div class="form-group">
-                  <label>Floorplan Image</label>
-                  <div style="display:flex;gap:8px;">
-                    <input type="text" id="prop-floorplan-url" placeholder="Paste URL or pick…" style="flex:1;">
-                    <button class="btn btn-secondary" id="btn-pick-floorplan"
-                      style="padding:0 10px;border-radius:var(--radius-sm);">
-                      <script>document.write(xIcon('folder', 14))</script>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="panel-actions" id="panel-actions-hotspot">
-              <button class="btn btn-primary" id="btn-save-properties">
-                <script>document.write(xIcon('check', 14))</script>
-                Save
-              </button>
-              <button class="btn btn-danger" id="btn-delete-hotspot">
-                <script>document.write(xIcon('trash', 14))</script>
-                Delete
-              </button>
-            </div>
-
-            <div class="panel-position" id="panel-position">
-              <span>yaw: <span id="pos-yaw">0.00</span></span>
-              <span>pitch: <span id="pos-pitch">0.00</span></span>
-            </div>
-          </div>
-        </div>
-        <!-- Props reopen tab — always visible when panel is collapsed -->
-        <div id="props-reopen-btn" title="Open Properties Panel" style="display:none;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </div>
-
-      </div><!-- /pano-wrapper -->
-    </div><!-- /editor-main -->
-  </div><!-- /workspace-view -->
-
-  <!-- Context Menus -->
-  <div id="context-menu">
-    <div class="ctx-item" data-action="rename">
-      <script>document.write(xIcon('edit', 14))</script>
-      Rename
-    </div>
-    <div class="ctx-item" data-action="set-default">
-      <script>document.write(xIcon('star', 14))</script>
-      Set as Default
-    </div>
-    <div class="ctx-item" data-action="duplicate">
-      <script>document.write(xIcon('copy', 14))</script>
-      Duplicate
-    </div>
-    <div class="ctx-sep"></div>
-    <div class="ctx-item ctx-danger" data-action="delete">
-      <script>document.write(xIcon('trash', 14))</script>
-      Delete Scene
     </div>
   </div>
 
-  <div id="media-folder-ctx" class="xeno-ctx-menu">
-    <div class="ctx-item" data-action="rename-folder">
-      <script>document.write(xIcon('edit', 14))</script>
-      Rename Album
-    </div>
-    <div class="ctx-sep"></div>
-    <div class="ctx-item ctx-danger" data-action="delete-folder">
-      <script>document.write(xIcon('trash', 14))</script>
-      Delete Album
-    </div>
-  </div>
+  <!-- ══ Partial: Context Menus & Move Modal ══════════════ -->
+  <script src="partials/context-menus.js"></script>
 
-  <div id="media-item-ctx" class="xeno-ctx-menu">
-    <div class="ctx-item" data-action="rename-media">
-      <script>document.write(xIcon('edit', 14))</script>
-      Rename
-    </div>
-    <div class="ctx-item" data-action="move-media">
-      <script>document.write(xIcon('move', 14))</script>
-      Move to Album
-    </div>
-    <div class="ctx-item" data-action="download-media">
-      <script>document.write(xIcon('download', 14))</script>
-      Download
-    </div>
-    <div class="ctx-sep"></div>
-    <div class="ctx-item ctx-danger" data-action="delete-media">
-      <script>document.write(xIcon('trash', 14))</script>
-      Delete
-    </div>
-  </div>
-
-  <!-- Move Media Modal -->
-  <div id="move-media-modal" class="move-modal-overlay">
-    <div class="move-modal-content">
-      <div class="move-modal-header">
-        <h3>Move Media</h3>
-        <button class="close-move-modal" id="btn-close-move-modal">×</button>
-      </div>
-      <div class="move-modal-body">
-        <div class="form-group">
-          <label>Target Album</label>
-          <select id="move-target-album"></select>
-        </div>
-      </div>
-      <div class="move-modal-actions">
-        <button class="btn" id="btn-cancel-move">Cancel</button>
-        <button class="btn btn-primary" id="btn-confirm-move">Move</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Media Manager Modal -->
-  <div id="media-modal">
-    <div class="media-header">
-      <div class="media-header-title">
-        <script>document.write(xIcon('folder', 16))</script>
-        Media Library
-      </div>
-      <div class="media-header-actions">
-        <button class="btn" id="btn-close-media">
-          <script>document.write(xIcon('x', 14))</script>
-          Close
-        </button>
-      </div>
-    </div>
-    <div class="media-body">
-      <div class="media-sidebar">
-        <button class="media-add-album-btn" id="btn-add-album">
-          <script>document.write(xIcon('plus', 14))</script>
-          New Album
-        </button>
-        <div class="media-sidebar-label">Albums</div>
-        <div class="album-list"></div>
-      </div>
-      <div class="media-content">
-        <div class="media-content-inner">
-          <div class="media-upload-area" id="media-upload-area">
-            <div class="upload-icon-wrap">
-              <script>document.write(xIcon('download', 24))</script>
-            </div>
-            <div class="upload-title">Drop files here or click to browse</div>
-            <div class="upload-sub">Upload images, video, or audio to your library</div>
-            <div class="upload-types">
-              <span class="upload-type-badge">JPG</span>
-              <span class="upload-type-badge">PNG</span>
-              <span class="upload-type-badge">MP4</span>
-              <span class="upload-type-badge">WebM</span>
-              <span class="upload-type-badge">MP3</span>
-            </div>
-            <input type="file" id="media-file-input" style="display:none" accept="image/*,video/*,audio/*" multiple>
-          </div>
-          <div class="media-grid" id="media-grid"></div>
-        </div>
-        <div id="media-action-bar" style="display: none;">
-          <span id="media-sel-count">0 selected</span>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <button id="btn-add-selected" class="btn btn-primary">
-              <script>document.write(xIcon('plus', 14))</script>
-              Use in Scene
-            </button>
-            <button id="btn-delete-selected" class="btn btn-danger">
-              <script>document.write(xIcon('trash', 14))</script>
-              Delete
-            </button>
-            <button id="btn-clear-media-sel" class="btn btn-secondary">
-              <script>document.write(xIcon('x', 14))</script>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- ══ Partial: Media Manager Modal ═════════════════════ -->
+  <script src="partials/media-modal.js"></script>
 
   <!-- Scripts -->
   <script src="config.js"></script>
@@ -834,7 +156,10 @@
   <script src="js/core/DeviceOrientation.js"></script>
   <script src="js/core/colorEffects.js"></script>
   <script src="js/core/homography.js"></script>
+  <!-- HotspotFactory — split into core + builders -->
   <script src="js/hotspots/HotspotFactory.js"></script>
+  <script src="js/hotspots/Builders-Nav.js"></script>
+  <script src="js/hotspots/Builders-Content.js"></script>
   <script src="js/ui/Minimap.js"></script>
   <script src="js/ui/Supabase.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>

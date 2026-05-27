@@ -1,0 +1,264 @@
+/* ── Dashboard Header (workspace) ────────────────────────── */
+.dashboard-header {
+  height: 72px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-base);
+}
+
+.dashboard-header .logo {
+  font-size: var(--type-xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+}
+
+.dashboard-header .logo span {
+  color: var(--accent);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── Workspace ───────────────────────────────────────────── */
+#workspace-view {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+#editor-main {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Left Sidebar ────────────────────────────────────────── */
+#editor-sidebar {
+  width: 214px;
+  min-width: 214px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  transition: width 0.2s ease-out;
+}
+
+.sidebar-header {
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-label {
+  font-size: var(--size-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: var(--weight-medium);
+  padding: 0 2px;
+}
+
+.add-item-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text-secondary);
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  font-family: var(--font);
+  font-size: var(--size-sm);
+  font-weight: var(--weight-regular);
+  cursor: pointer;
+  transition: all 0.14s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  letter-spacing: 0.04em;
+}
+
+.add-item-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.add-item-btn svg {
+  width: 13px;
+  height: 13px;
+  opacity: 0.7;
+}
+
+#scene-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Scene cards */
+.scene-card {
+  position: relative;
+  height: 72px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: border-color 0.14s, transform 0.14s;
+  flex-shrink: 0;
+  background: var(--bg-raised);
+}
+
+.scene-card:hover:not(.active) {
+  border-color: var(--border-hover);
+  transform: scale(1.015);
+}
+
+.scene-card.active {
+  border-color: var(--accent);
+}
+
+.scene-card-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.scene-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, transparent 100%);
+  padding: 16px 8px 5px;
+}
+
+.scene-card-label {
+  font-size: 10px;
+  font-weight: var(--weight-regular);
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.03em;
+}
+
+.scene-card-eye {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.14s;
+  z-index: 4;
+}
+
+.scene-card-eye svg {
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+  flex-shrink: 0;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.scene-card-eye:hover {
+  background: rgba(0, 0, 0, 0.85);
+  border-color: rgba(255,255,255,0.2);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.scene-card.hidden-scene {
+  opacity: 0.45;
+}
+
+.scene-card.dragging {
+  opacity: 0.25;
+  border: 1.5px dashed var(--accent) !important;
+}
+
+.scene-card.drag-over {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 12px rgba(230, 46, 90, 0.25);
+}
+
+/* Scene multi toolbar */
+#scene-multi-toolbar {
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+#scene-multi-toolbar #scene-sel-count {
+  font-size: var(--size-xs);
+  color: var(--text-secondary);
+  font-weight: var(--weight-regular);
+  letter-spacing: 0.04em;
+}
+
+#scene-multi-toolbar .btn {
+  padding: 5px 10px;
+  font-size: var(--size-xs);
+}
+
+#scene-multi-toolbar .btn-secondary {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+}
+
+#scene-multi-toolbar .btn-secondary:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.scene-card.scene-selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.scene-card.scene-selected::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 16px;
+  height: 16px;
+  background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/10px no-repeat;
+  border-radius: 50%;
+  z-index: 3;
+}

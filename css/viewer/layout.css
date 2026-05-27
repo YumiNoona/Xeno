@@ -1,0 +1,289 @@
+/*
+ * Xeno — Viewer CSS: Layout & Base
+ * Core layout: reset, panorama container, title bar, scene list, controls, VR.
+ */
+
+/* ─── CSS Custom Properties ──────────────────────────────── */
+:root {
+  --accent: var(--accent, #e11d48);
+  --accent-glow: var(--accent-glow, rgba(225, 29, 72, 0.3));
+  --font: var(--font-family-base, 'Roboto Mono', 'Courier New', monospace);
+}
+
+/* ─── Reset & Base ───────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Roboto Mono', 'Courier New', monospace !important;
+  font-size: var(--type-md);
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: #000;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Panorama Container ─────────────────────────────────── */
+#pano {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* ─── Title Bar ──────────────────────────────────────────── */
+#titleBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
+  z-index: 20;
+  pointer-events: none;
+}
+
+#titleBar .sceneName {
+  font-size: var(--type-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Scene List (Sidebar) ───────────────────────────────── */
+#sceneList {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100%;
+  padding: 64px 0 80px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-lg);
+  z-index: 15;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transform: translateX(-100%);
+  transition: transform var(--transition);
+}
+
+#sceneList.enabled {
+  transform: translateX(0);
+}
+
+#sceneList::-webkit-scrollbar {
+  width: 4px;
+}
+
+#sceneList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#sceneList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+#sceneList .scene {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background var(--transition);
+  border-left: 3px solid transparent;
+}
+
+#sceneList .scene:hover {
+  background: var(--bg-hover);
+}
+
+#sceneList .scene.current {
+  background: rgba(230, 46, 90, 0.08);
+  border-left-color: var(--accent);
+}
+
+#sceneList .scene .scene-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-glass);
+}
+
+#sceneList .scene .scene-name {
+  font-size: var(--type-base);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+/* Scene List (Bottom Strip) */
+#sceneList.bottom-strip {
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100px;
+  padding: 10px 16px;
+  transform: translateY(100%);
+  border-right: none;
+  border-top: 1px solid var(--border-glass);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+#sceneList.bottom-strip.enabled {
+  transform: translateY(0);
+}
+
+#sceneList.bottom-strip .scene {
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  min-width: 80px;
+  border-left: none;
+  border-bottom: 3px solid transparent;
+}
+
+#sceneList.bottom-strip .scene.current {
+  border-bottom-color: var(--accent);
+  border-left-color: transparent;
+}
+
+#sceneList.bottom-strip .scene .scene-thumb {
+  width: 60px;
+  height: 40px;
+  border-radius: 6px;
+}
+
+#sceneList.bottom-strip .scene .scene-name {
+  font-size: var(--type-xs);
+  text-align: center;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Controls Bar ───────────────────────────────────────── */
+#controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 20;
+}
+
+#controls .ctrl-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-panel);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text-primary);
+}
+
+#controls .ctrl-btn:hover {
+  background: var(--bg-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+#controls .ctrl-btn.active,
+#controls .ctrl-btn.enabled {
+  background: rgba(230, 46, 90, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.ctrl-btn .icon.on {
+  display: block;
+}
+
+.ctrl-btn .icon.off {
+  display: none;
+}
+
+.ctrl-btn.active .icon.on,
+.ctrl-btn.enabled .icon.on {
+  display: none;
+}
+
+.ctrl-btn.active .icon.off,
+.ctrl-btn.enabled .icon.off {
+  display: block;
+}
+
+#controls .ctrl-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ─── VR Button ──────────────────────────────────────────── */
+#vrToggle.active {
+  background: rgba(230, 46, 90, 0.18) !important;
+  border-color: rgba(230, 46, 90, 0.55) !important;
+  color: #ff6b8a !important;
+  animation: vrPulse 2s ease-in-out infinite;
+}
+
+#vrToggle.active svg {
+  stroke: #ff6b8a;
+}
+
+@keyframes vrPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(230, 46, 90, 0.3); }
+  50% { box-shadow: 0 0 22px rgba(230, 46, 90, 0.6); }
+}
+
+#vrToggle[style*="opacity: 0.45"] {
+  cursor: not-allowed;
+}
+
+#vrToggle[style*="opacity: 0.45"]:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}

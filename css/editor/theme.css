@@ -1,0 +1,232 @@
+/* ── Spin animation ──────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+/* ── Upload animation for new media items ────────────────── */
+@keyframes shimmer {
+  0% { background-position: -300px 0; }
+  100% { background-position: 300px 0; }
+}
+
+.media-item-skeleton {
+  background: var(--bg-raised);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  height: 110px;
+  background-image: linear-gradient(90deg, var(--bg-raised) 0%, var(--bg-elevated) 50%, var(--bg-raised) 100%);
+  background-size: 300px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ── Add album btn in media sidebar ─────────────────────── */
+.media-add-album-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  font-size: var(--size-sm);
+  color: var(--text-muted);
+  transition: all 0.12s;
+  border: 1px dashed var(--border);
+  letter-spacing: 0.03em;
+  font-family: var(--font);
+  background: transparent;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.media-add-album-btn:hover {
+  color: var(--text-secondary);
+  border-color: var(--border-hover);
+  background: var(--bg-hover);
+}
+
+.media-add-album-btn svg {
+  width: 12px;
+  height: 12px;
+  opacity: 0.6;
+}
+
+/* ── Reopen props button ─────────────────────────────────── */
+#props-reopen-btn {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 5px 0 0 5px;
+  padding: 10px 5px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.14s;
+}
+
+#props-reopen-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+/* ── Dark/Light Mode Visibility Fixes ────────────────────── */
+[data-theme="light"] .btn:not(.btn-primary):not(.btn-publish):not(.btn-danger) {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .btn:not(.btn-primary):not(.btn-publish):not(.btn-danger) svg {
+  color: var(--text-primary);
+  stroke: currentColor;
+}
+
+[data-theme="light"] .pill-tool {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .pill-tool.active {
+  color: var(--accent-text) !important;
+}
+
+[data-theme="light"] .topbar-project-name {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .btn:not(.btn-primary):not(.btn-publish):not(.btn-danger),
+[data-theme="light"] .btn-icon {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .btn:not(.btn-primary):not(.btn-publish):not(.btn-danger) svg,
+[data-theme="light"] .btn-icon svg {
+  color: var(--text-primary) !important;
+  stroke: currentColor !important;
+}
+
+[data-theme="light"] .view-control-field span {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .view-control-field input {
+  color: var(--text-primary);
+  background: var(--bg-base);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .sidebar-label {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .logo,
+[data-theme="light"] .logo span {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .logo span {
+  color: var(--accent) !important;
+}
+
+[data-theme="light"] #btn-save-view,
+[data-theme="light"] #btn-new-project,
+[data-theme="light"] .btn-primary {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1.5px solid #000000 !important;
+}
+
+[data-theme="light"] #btn-save-view:hover,
+[data-theme="light"] #btn-new-project:hover,
+[data-theme="light"] .btn-primary:hover {
+  background: #f5f5f5 !important;
+  border-color: #000000 !important;
+}
+
+[data-theme="light"] #btn-save-view svg,
+[data-theme="light"] #btn-new-project svg,
+[data-theme="light"] .btn-primary svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+[data-theme="light"] .project-card-title {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .project-card-date,
+[data-theme="light"] .toolbar-stats,
+[data-theme="light"] #project-count {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .search-box svg.search-icon {
+  color: var(--text-muted) !important;
+  stroke: currentColor !important;
+}
+
+[data-theme="light"] .scene-card-overlay {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, transparent 100%);
+}
+
+[data-theme="light"] .scene-card-eye {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .scene-card-eye:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .btn-delete-project {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .project-card-scenes-badge {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+
+/* ─── Ring Count Buttons ─────────────────────────────────── */
+.ring-count-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ─── Props Reopen Tab ───────────────────────────────────── */
+#props-reopen-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 38px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 5px 0 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 200;
+  color: var(--text-muted);
+  transition: color 0.14s, background 0.14s;
+}
+
+#props-reopen-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}

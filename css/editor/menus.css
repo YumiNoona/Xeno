@@ -1,0 +1,103 @@
+/* ── Context Menu ────────────────────────────────────────── */
+#context-menu,
+.xeno-ctx-menu,
+.media-item-ctx,
+.media-folder-ctx {
+  position: fixed;
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  z-index: 1000;
+  display: none;
+  min-width: 180px;
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  animation: ctx-fade-in 0.15s ease-out;
+}
+
+@keyframes ctx-fade-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.ctx-item {
+  padding: 8px 12px;
+  font-size: var(--type-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.01em;
+  user-select: none;
+}
+
+.ctx-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  transform: translateX(2px);
+}
+
+.ctx-item:active {
+  background: var(--bg-active);
+  transform: scale(0.98);
+}
+
+.ctx-item svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+}
+
+.ctx-sep {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 4px;
+}
+
+.ctx-danger {
+  color: var(--danger);
+}
+
+.ctx-danger:hover {
+  background: var(--danger-dim);
+  color: var(--danger);
+}
+
+/* ── Toast ───────────────────────────────────────────────── */
+.xeno-toast {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translate(-50%, 16px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 9px 18px;
+  border-radius: var(--r-full);
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.7);
+  font-size: var(--size-sm);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.xeno-toast.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.xeno-toast svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}

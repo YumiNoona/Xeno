@@ -1,0 +1,99 @@
+/*
+ * Xeno — Hotspots CSS: Animations & Ring Styles
+ * Shared ring styles, hotspot animation keyframes and classes.
+ */
+
+/* ─── 9. Hotspot Animations ──────────────────────────────── */
+.xeno-hotspot-link .link-icon-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.link-icon-wrapper.has-ring,
+ .icon_wrapper.has-ring,
+ .out.has-ring {
+   border: 2px solid rgba(255,255,255,0.7);
+   border-radius: 50%;
+   padding: 4px;
+   box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
+ }
+
+@keyframes hs-pulse {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.22); }
+  45% { transform: scale(1.08); }
+  60% { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+@keyframes hs-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes hs-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes hs-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.05); }
+}
+
+.hs-anim-pulse { animation: hs-pulse 1.4s ease-in-out infinite; }
+.hs-anim-bounce { animation: hs-bounce 1s ease-in-out infinite; }
+.hs-anim-spin { animation: hs-spin 3s linear infinite; }
+.hs-anim-float { animation: hs-float 2.5s ease-in-out infinite; }
+
+/* Heartbeat — double-thump */
+@keyframes hs-heartbeat {
+  0%, 100% { transform: scale(1); }
+  14%       { transform: scale(1.25); }
+  28%       { transform: scale(1); }
+  42%       { transform: scale(1.2); }
+  56%       { transform: scale(1); }
+}
+.hs-anim-heartbeat { animation: hs-heartbeat 1.6s ease-in-out infinite; }
+
+/* Wiggle — side to side shake */
+@keyframes hs-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  20%       { transform: rotate(-15deg); }
+  40%       { transform: rotate(12deg); }
+  60%       { transform: rotate(-8deg); }
+  80%       { transform: rotate(5deg); }
+}
+.hs-anim-wiggle { animation: hs-wiggle 1.2s ease-in-out infinite; }
+
+/* Breathe — slow scale up/down */
+@keyframes hs-breathe {
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%       { transform: scale(1.18); opacity: 1; }
+}
+.hs-anim-breathe { animation: hs-breathe 3s ease-in-out infinite; }
+
+/* Flicker — attention-grabbing random blink */
+@keyframes hs-flicker {
+  0%,100%        { opacity: 1; }
+  8%,10%,22%,24% { opacity: 0.2; }
+  9%,23%         { opacity: 0.8; }
+  50%            { opacity: 0.9; }
+}
+.hs-anim-flicker { animation: hs-flicker 2.5s linear infinite; }
+
+/* Orbit ring — pseudo-element revolves around icon */
+@keyframes hs-orbit {
+  from { transform: rotate(0deg) translateX(20px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
+}
+.hs-anim-orbit::after {
+  content: '';
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  top: 50%; left: 50%;
+  margin: -3px 0 0 -3px;
+  animation: hs-orbit 2s linear infinite;
+}
