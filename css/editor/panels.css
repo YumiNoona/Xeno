@@ -102,6 +102,7 @@ input[type="number"] {
   border-left: 1px solid var(--border);
   z-index: 50;
   overflow-y: auto;
+  transition: width 0.2s ease-out, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   transform: translateX(100%);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -168,7 +169,20 @@ input[type="number"] {
 .form-group input[type="text"],
 .form-group input[type="url"],
 .form-group input[type="number"],
-.form-group select,
+.form-group select {
+  width: 100%;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
+  font-family: var(--font);
+  font-size: var(--size-sm);
+  box-sizing: border-box;
+  transition: border-color 0.14s, box-shadow 0.14s;
+  outline: none;
+}
+
 .form-group textarea {
   width: 100%;
   background: var(--bg-raised);
@@ -181,6 +195,9 @@ input[type="number"] {
   box-sizing: border-box;
   transition: border-color 0.14s, box-shadow 0.14s;
   outline: none;
+  resize: vertical;
+  min-height: 68px;
+  line-height: 1.5;
 }
 
 .form-group input:focus,
@@ -202,12 +219,6 @@ input[type="number"] {
 .form-group input[type="range"] {
   width: 100%;
   accent-color: var(--accent);
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 68px;
-  line-height: 1.5;
 }
 
 /* Radio group */

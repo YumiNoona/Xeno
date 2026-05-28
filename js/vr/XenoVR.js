@@ -1,10 +1,8 @@
 /*
  * Xeno VR — WebXR + A-Frame Immersive Mode
  * ─────────────────────────────────────────
- * Drops a full A-Frame scene over the existing Marzipano viewer.
- * Reads window.xenoScenes / window.xenoSwitchScene / window.data
- * so it works without touching viewer.js at all.
- *
+
+ 
  * Features:
  *  • WebXR immersive-vr (Quest 2/3, Pico, any OpenXR browser)
  *  • Fallback stereo CSS split for non-XR phones (Google Cardboard)

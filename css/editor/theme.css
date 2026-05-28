@@ -55,29 +55,6 @@
   opacity: 0.6;
 }
 
-/* ── Reopen props button ─────────────────────────────────── */
-#props-reopen-btn {
-  display: none;
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 100;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-right: none;
-  border-radius: 5px 0 0 5px;
-  padding: 10px 5px;
-  cursor: pointer;
-  color: var(--text-muted);
-  transition: all 0.14s;
-}
-
-#props-reopen-btn:hover {
-  color: var(--text-primary);
-  background: var(--bg-elevated);
-}
-
 /* ── Dark/Light Mode Visibility Fixes ────────────────────── */
 [data-theme="light"] .btn:not(.btn-primary):not(.btn-publish):not(.btn-danger) {
   color: var(--text-primary);
