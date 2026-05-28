@@ -16,4 +16,10 @@ jsdoc-conf.json
 jsdoc.md
 testem.json
 test.js
+
+# Local config (contains production keys)
 config.js
+
+# Exported tours
+export/
+*.zip
