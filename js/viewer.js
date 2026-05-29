@@ -94,11 +94,22 @@
       var source = buildSource(sceneData);
       var geometry = buildGeometry(sceneData);
 
-      var faceSize = sceneData.faceSize || 2048;
-      var fovLimit = sceneData.type === 'video' ? (90 * Math.PI / 180) : (140 * Math.PI / 180);
-      var limiter = sceneData.type === 'video'
-        ? Xeno.RectilinearView.limit.vfov(fovLimit, fovLimit)
-        : Xeno.RectilinearView.limit.traditional(faceSize, 140 * Math.PI / 180, fovLimit);
+      var minFov = 60 * Math.PI / 180;
+      var maxFov = 120 * Math.PI / 180;
+      var limiter;
+      if (sceneData.type === 'video') {
+        limiter = Xeno.RectilinearView.limit.vfov(minFov, maxFov);
+      } else {
+        var resLimit = Xeno.RectilinearView.limit.resolution(sceneData.faceSize || 2048);
+        var fovLimit = Xeno.RectilinearView.limit.vfov(minFov, maxFov);
+        var pitchLimit = Xeno.RectilinearView.limit.pitch(-Math.PI/2, Math.PI/2);
+        limiter = function(params) {
+          params = resLimit(params);
+          params = fovLimit(params);
+          params = pitchLimit(params);
+          return params;
+        };
+      }
 
       var view = new Xeno.RectilinearView(sceneData.initialViewParameters, limiter);
       var scene = viewer.createScene({
@@ -233,10 +244,6 @@
     function switchScene(sceneCtx, transOpts) {
       stopAutorotate();
       sceneCtx.view.setParameters(sceneCtx.data.initialViewParameters);
-
-      if (sceneCtx.data.defaultFov) {
-        sceneCtx.view.setParameters({ fov: sceneCtx.data.defaultFov });
-      }
 
       transOpts = transOpts || {};
       var transType = transOpts.transition || sceneCtx.data.transition || data.settings.defaultTransition || 'opacity';

@@ -289,11 +289,11 @@
         asset.setVideo(sData.mediaUrl, sData.videoOptions);
         source = new window.Xeno.SingleAssetSource(asset);
         geometry = new window.Xeno.EquirectGeometry([{ width: 1 }]);
-        limiter = window.Xeno.RectilinearView.limit.vfov(90 * Math.PI / 180, 90 * Math.PI / 180);
+        limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
       } else {
         source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
         geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
-        limiter = window.Xeno.RectilinearView.limit.traditional(1024, 140 * Math.PI / 180);
+        limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
       }
       view = new window.Xeno.RectilinearView(sData.initialViewParameters, limiter);
       var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
@@ -318,7 +318,7 @@
       asset.setVideo(sData.mediaUrl, sData.videoOptions);
       var source = new window.Xeno.SingleAssetSource(asset);
       var geometry = new window.Xeno.EquirectGeometry([{ width: 1 }]);
-      var limiter = window.Xeno.RectilinearView.limit.vfov(90 * Math.PI / 180, 90 * Math.PI / 180);
+      var limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
       var view = new window.Xeno.RectilinearView(sData.initialViewParameters, limiter);
       var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
       S.scenes.push({ data: sData, scene: scene, view: view });

@@ -45,6 +45,12 @@
         <option value="breathe">Breathe</option>
         <option value="flicker">Flicker</option>
         <option value="orbit">Orbit Ring</option>
+        <option value="shake">Shake</option>
+        <option value="swing">Swing</option>
+        <option value="glow">Glow</option>
+        <option value="ripple">Ripple</option>
+        <option value="pop">Pop</option>
+        <option value="wobble">Wobble</option>
       </select>
     </div>
     <div class="form-group">
