@@ -45,6 +45,9 @@
       parking: p('M6 3h8a6 6 0 010 12H6z') + p('M10 15v6'),
       food: p('M12 13v9') + p('M6 4v8a6 6 0 0012 0V4'),
       shop: p('M6 8h12l-1.5 14h-9L6 8z') + p('M9 8V6a3 3 0 016 0v2'),
+      link: p('M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71') + p('M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71'),
+      photo: p('M2 4h20v16H2z') + p('M2 16l5-5 3 3 4-4 6 6') + '<circle cx="8.5" cy="8.5" r="1.5" ' + c + '/>',
+      volume: p('M8 8h3l5-5v18l-5-5H8z') + p('M14 11v4M17 8v8M20 5v14') + '<line x1="8" y1="8" x2="8" y2="16" ' + s + ' ' + sw + ' ' + lc + '/>',
     };
     return icons[style] || icons.default;
   }
@@ -121,14 +124,14 @@
       var element = builder(hotspotData, switchSceneFn, findSceneByIdFn);
       stopTouchAndScrollEventPropagation(element);
 
-      if (hotspotData.iconSize && hotspotData.iconSize !== 44) {
+      if (hotspotData.iconSize && hotspotData.iconSize >= 24) {
         var size = hotspotData.iconSize;
         var half = size / 2;
         element.style.width  = size + 'px';
         element.style.height = size + 'px';
         element.style.marginLeft = '-' + half + 'px';
         element.style.marginTop  = '-' + half + 'px';
-        var inner = element.querySelector('svg') || element.querySelector('img.link-icon');
+        var inner = element.querySelector('svg') || element.querySelector('img.link-icon') || element.querySelector('.image');
         if (inner) {
           var iconSize = Math.round(size * 0.55);
           inner.style.width  = iconSize + 'px';
@@ -154,6 +157,11 @@
         if (iconWrapper && !iconWrapper.classList.contains('tip') && !iconWrapper.classList.contains('content')) {
           iconWrapper.style.width = size + 'px';
           iconWrapper.style.height = size + 'px';
+        }
+        var innerIcon = element.querySelector('.in');
+        if (innerIcon) {
+          innerIcon.style.width = '';
+          innerIcon.style.height = '';
         }
       }
 

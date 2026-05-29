@@ -464,7 +464,7 @@
         'background:rgba(20,20,20,0.95);color:#fff;',
         'padding:9px 18px;border-radius:20px;font-size:12px;',
         'z-index:999999;pointer-events:none;',
-        'font-family:"Roboto Mono",monospace;letter-spacing:0.04em;',
+        'font-family:"JetBrains Mono",monospace;letter-spacing:0.04em;',
         'border:1px solid rgba(255,255,255,0.1);'
       ].join('');
       document.body.appendChild(t);

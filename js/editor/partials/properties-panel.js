@@ -66,6 +66,9 @@
         <option value="exit">Exit</option>
         <option value="tag">Tag / Label</option>
         <option value="play">Play Button</option>
+        <option value="link">Link / URL</option>
+        <option value="photo">Photo / Image</option>
+        <option value="volume">Volume / Audio</option>
         <option value="pin">Map Pin</option>
         <option value="info">Info Circle</option>
         <option value="map">Map</option>

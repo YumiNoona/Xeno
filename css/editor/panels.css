@@ -9,7 +9,7 @@
   backdrop-filter: blur(20px);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  padding: 4px 5px 4px 14px;
+  padding: 7px 5px 7px 14px;
   display: flex;
   align-items: center;
   gap: 10px;

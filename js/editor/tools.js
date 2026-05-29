@@ -67,7 +67,7 @@
         style: S.editorState.activeTool,
         yaw: coords.yaw, pitch: coords.pitch,
         title: 'New ' + S.editorState.activeTool, text: '',
-        animation: 'none', iconStyle: 'default',
+        animation: 'none', iconStyle: {navigate:'arrow',info:'info',image:'photo',video:'camera',audio:'volume',url:'link'}[S.editorState.activeTool] || 'default', iconSize: 44,
         target: null, transition: 'opacity', transitionDuration: 800,
         linkUrl: '', linkType: 'external', linkTarget: null, linkLabel: '',
         urlHref: '', urlLabel: 'Open link', urlOpenIn: 'newtab',
@@ -238,7 +238,7 @@
     element.style.height = size + 'px';
     element.style.marginLeft = '-' + half + 'px';
     element.style.marginTop  = '-' + half + 'px';
-    var inner = element.querySelector('svg') || element.querySelector('img.link-icon');
+    var inner = element.querySelector('svg') || element.querySelector('img.link-icon') || element.querySelector('.image');
     if (inner) {
       var iconSize = Math.round(size * 0.55);
       inner.style.width  = iconSize + 'px';
@@ -267,6 +267,11 @@
     if (iconWrapper && !iconWrapper.classList.contains('tip') && !iconWrapper.classList.contains('content')) {
       iconWrapper.style.width = size + 'px';
       iconWrapper.style.height = size + 'px';
+    }
+    var innerIcon = element.querySelector('.in');
+    if (innerIcon) {
+      innerIcon.style.width = '';
+      innerIcon.style.height = '';
     }
   };
 })();

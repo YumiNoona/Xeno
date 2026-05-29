@@ -521,7 +521,7 @@
     hud.style.cssText = [
       'position:absolute;top:0;left:0;right:0;bottom:0;',
       'pointer-events:none;z-index:10;',
-      'font-family:"Roboto Mono","Courier New",monospace;'
+      'font-family:"JetBrains Mono","Courier New",monospace;'
     ].join('');
 
     /* Exit button */
@@ -792,7 +792,7 @@
       'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);',
       'background:#222;color:#fff;padding:10px 20px;',
       'border-radius:20px;font-size:13px;z-index:999999;',
-      'pointer-events:none;font-family:"Roboto Mono",monospace;'
+      'pointer-events:none;font-family:"JetBrains Mono",monospace;'
     ].join('');
     document.body.appendChild(t);
     setTimeout(function () { t.parentNode && t.parentNode.removeChild(t); }, 3000);

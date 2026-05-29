@@ -36,7 +36,7 @@
   content: "VIEW MODE";
   display: block;
   font-size: 9px;
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   color: rgba(255, 255, 255, 0.3);
   letter-spacing: 0.12em;
   font-weight: 500;
@@ -81,7 +81,7 @@
 
 .view-mode-item span {
   font-size: 12px;
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-weight: 400;
   letter-spacing: 0.04em;
 }
@@ -221,7 +221,7 @@
   border-radius: 4px;
   cursor: pointer;
   font-weight: var(--weight-semibold);
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   transition: background 0.2s;
 }
 

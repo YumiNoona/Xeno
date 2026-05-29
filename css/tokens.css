@@ -12,7 +12,7 @@
      Step 1 — Update the Google Fonts URL in index.html, editor.html, preview.html
      Step 2 — Update --font-family-base below
    
-   Current font: Roboto Mono (variable, wght 100–700)
+    Current font: JetBrains Mono
    Google Fonts URL pattern:
      https://fonts.googleapis.com/css2?family=FAMILY_NAME:ital,wght@WEIGHTS&display=swap
    
@@ -26,8 +26,8 @@
 
 :root {
   /* ── 2. FONT FAMILY ──────────────────────────────────────── */
-  --font-family-base: 'Roboto Mono', 'Courier New', monospace;
-  --font-family-mono: 'Roboto Mono', 'Courier New', monospace;
+  --font-family-base: 'JetBrains Mono', 'Courier New', monospace;
+  --font-family-mono: 'JetBrains Mono', 'Courier New', monospace;
 
   /* Aliases */
   --font: var(--font-family-base);

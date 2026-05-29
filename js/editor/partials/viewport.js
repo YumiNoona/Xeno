@@ -49,10 +49,6 @@
     <div class="pill-tool" data-tool="audio" title="Audio">
       ${xIcon('volume', 16)}
     </div>
-    <div class="pill-tool" data-tool="move" title="Move Hotspot">
-      ${xIcon('move', 16)}
-    </div>
-    <div class="pill-sep"></div>
     <div class="pill-tool" data-tool="autorotate" title="Autorotate">
       ${xIcon('rotate-cw', 16)}
     </div>

@@ -143,6 +143,11 @@
       if (!S.selectedHotspotData) return;
       S.selectedHotspotData.type = this.value;
       S.selectedHotspotData.style = this.value;
+      var defaultIcon = {navigate:'arrow',info:'info',image:'photo',video:'camera',audio:'volume',url:'link'}[this.value];
+      if (defaultIcon) {
+        S.selectedHotspotData.iconStyle = defaultIcon;
+        D.propIconStyle.value = defaultIcon;
+      }
       showTypeFields(this.value);
     });
 

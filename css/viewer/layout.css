@@ -7,7 +7,7 @@
 :root {
   --accent: var(--accent, #e11d48);
   --accent-glow: var(--accent-glow, rgba(225, 29, 72, 0.3));
-  --font: var(--font-family-base, 'Roboto Mono', 'Courier New', monospace);
+  --font: var(--font-family-base, 'JetBrains Mono', 'Courier New', monospace);
 }
 
 /* ─── Reset & Base ───────────────────────────────────────── */
@@ -24,7 +24,7 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: 'Roboto Mono', 'Courier New', monospace !important;
+  font-family: 'JetBrains Mono', 'Courier New', monospace !important;
   font-size: var(--type-md);
   line-height: 1.5;
   color: var(--text-primary);
