@@ -81,27 +81,6 @@
       D.sceneFovLabel.textContent = this.value + '\u00B0';
     });
 
-    D.btnApplyFov.addEventListener('click', function() {
-      if (!S.currentSceneCtx) return;
-      var fovRad = parseInt(D.propSceneFov.value) * Math.PI / 180;
-      S.currentSceneCtx.view.setParameters({ fov: fovRad });
-      S.currentSceneCtx.data.defaultFov = fovRad;
-      if (!S.currentSceneCtx.data.initialViewParameters) S.currentSceneCtx.data.initialViewParameters = { yaw: 0, pitch: 0 };
-      S.currentSceneCtx.data.initialViewParameters.fov = fovRad;
-      E.debouncedSave();
-    });
-
-    // ─── Initial View ────────────────────────────────────
-    D.btnReadView.addEventListener('click', function() {
-      if (!S.currentSceneCtx) return;
-      var v = S.currentSceneCtx.view;
-      D.propViewYaw.value = (v.yaw() * 180 / Math.PI).toFixed(0);
-      D.propViewPitch.value = (v.pitch() * 180 / Math.PI).toFixed(0);
-      D.propViewFov.value = (v.fov() * 180 / Math.PI).toFixed(0);
-      D.propSceneFov.value = D.propViewFov.value;
-      D.sceneFovLabel.textContent = D.propViewFov.value + '\u00B0';
-    });
-
     D.btnApplyView.addEventListener('click', function() {
       if (!S.currentSceneCtx) return;
       var params = {

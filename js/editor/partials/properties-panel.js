@@ -375,12 +375,8 @@
           <span style="font-size:var(--type-xs);color:var(--text-muted);">Wide angle</span>
         </div>
       </div>
-      <button class="btn btn-secondary" id="btn-apply-fov" style="width:100%;margin-top:4px;">
-        Apply FOV to This Scene
-      </button>
-
       <div class="form-group" style="margin-top:12px;">
-        <label>Viewer Position</label>
+        <label>Default View</label>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
           <div>
             <div style="font-size:var(--type-xs);color:var(--text-muted);margin-bottom:3px;">Yaw (\u00B0)</div>
@@ -398,10 +394,6 @@
               style="width:100%;font-size:var(--type-sm);">
           </div>
         </div>
-        <button class="btn btn-secondary" id="btn-read-view"
-          style="width:100%;margin-top:6px;font-size:var(--type-xs);">
-          Read Current View
-        </button>
         <button class="btn btn-primary" id="btn-apply-view"
           style="width:100%;margin-top:4px;font-size:var(--type-xs);">
           Set as Default View

@@ -109,11 +109,9 @@
   D.btnPickFloorplan = $('btn-pick-floorplan');
   D.propSceneFov     = $('prop-scene-fov');
   D.sceneFovLabel    = $('scene-fov-label');
-  D.btnApplyFov      = $('btn-apply-fov');
   D.propViewYaw      = $('prop-view-yaw');
   D.propViewPitch    = $('prop-view-pitch');
   D.propViewFov      = $('prop-view-fov');
-  D.btnReadView      = $('btn-read-view');
   D.btnApplyView     = $('btn-apply-view');
   D.bottomViewYaw    = $('bottom-view-yaw');
   D.bottomViewPitch  = $('bottom-view-pitch');
