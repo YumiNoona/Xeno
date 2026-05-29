@@ -52,24 +52,30 @@
       <select id="prop-icon-style">
         <option value="default">Default (+)</option>
         <option value="dot">Dot</option>
-        <option value="arrow">Arrow \u2192</option>
+        <option value="arrow">Arrow</option>
         <option value="eye">Eye (View)</option>
-        <option value="pin">Map Pin</option>
-        <option value="star">Star</option>
-        <option value="play">Play Button</option>
-        <option value="question">Question Mark</option>
-        <option value="info">Info Circle</option>
         <option value="home">Home</option>
         <option value="camera">Camera</option>
+        <option value="door">Door</option>
+        <option value="exit">Exit</option>
+        <option value="tag">Tag / Label</option>
+        <option value="play">Play Button</option>
+        <option value="pin">Map Pin</option>
+        <option value="info">Info Circle</option>
         <option value="map">Map</option>
         <option value="compass">Compass</option>
-        <option value="stairs">Stairs / Level Up</option>
-        <option value="door">Door</option>
-        <option value="exit">Exit / Out</option>
-        <option value="warning">Warning \u26A0</option>
-        <option value="tag">Tag / Label</option>
-        <option value="expand">Expand / Fullscreen</option>
+        <option value="star">Star</option>
+        <option value="question">Question</option>
+        <option value="warning">Warning</option>
+        <option value="stairs">Stairs</option>
+        <option value="expand">Expand</option>
         <option value="360">360\u00B0 View</option>
+        <option value="restroom">Restroom</option>
+        <option value="elevator">Elevator</option>
+        <option value="escalator">Escalator</option>
+        <option value="parking">Parking</option>
+        <option value="food">Food / Dining</option>
+        <option value="shop">Shop</option>
         <option value="custom">Custom Image</option>
       </select>
     </div>
@@ -360,47 +366,7 @@
 
     <!-- Scene settings -->
     <div class="type-fields" id="fields-scene-settings" style="display:none;">
-      <div class="form-group">
-        <label>Scene Name</label>
-        <input type="text" id="prop-scene-name" placeholder="Scene name">
-      </div>
-      <div class="form-group">
-        <label>
-          Field of View
-          <span id="scene-fov-label" style="color:var(--accent);font-weight:var(--weight-semibold);">90\u00B0</span>
-        </label>
-        <input type="range" id="prop-scene-fov" min="40" max="130" value="90" step="1">
-        <div style="display:flex;justify-content:space-between;margin-top:4px;">
-          <span style="font-size:var(--type-xs);color:var(--text-muted);">Zoomed in</span>
-          <span style="font-size:var(--type-xs);color:var(--text-muted);">Wide angle</span>
-        </div>
-      </div>
-      <div class="form-group" style="margin-top:12px;">
-        <label>Default View</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
-          <div>
-            <div style="font-size:var(--type-xs);color:var(--text-muted);margin-bottom:3px;">Yaw (\u00B0)</div>
-            <input type="number" id="prop-view-yaw" step="1" min="-180" max="180"
-              style="width:100%;font-size:var(--type-sm);">
-          </div>
-          <div>
-            <div style="font-size:var(--type-xs);color:var(--text-muted);margin-bottom:3px;">Pitch (\u00B0)</div>
-            <input type="number" id="prop-view-pitch" step="1" min="-90" max="90"
-              style="width:100%;font-size:var(--type-sm);">
-          </div>
-          <div>
-            <div style="font-size:var(--type-xs);color:var(--text-muted);margin-bottom:3px;">FOV (\u00B0)</div>
-            <input type="number" id="prop-view-fov" step="1" min="40" max="130"
-              style="width:100%;font-size:var(--type-sm);">
-          </div>
-        </div>
-        <button class="btn btn-primary" id="btn-apply-view"
-          style="width:100%;margin-top:4px;font-size:var(--type-xs);">
-          Set as Default View
-        </button>
-      </div>
-
-      <div style="margin-top:20px; padding-top:15px; border-top:1px solid var(--border);">
+      <div style="margin-top:0; padding-top:0; border-top:none;">
         <label
           style="font-size:var(--type-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:var(--weight-semibold); margin-bottom:8px; display:block;">Floorplan
           Settings</label>

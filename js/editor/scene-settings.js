@@ -16,16 +16,6 @@
       document.querySelectorAll('.type-fields').forEach(function(f) { f.style.display = 'none'; });
       D.fieldsSceneSettings.style.display = 'block';
 
-      if (S.currentSceneCtx) {
-        D.propSceneName.value = S.currentSceneCtx.data.name || '';
-        var savedFov = S.currentSceneCtx.data.defaultFov ||
-          (S.currentSceneCtx.data.initialViewParameters && S.currentSceneCtx.data.initialViewParameters.fov) ||
-          (Math.PI / 2);
-        var savedFovDeg = Math.round(savedFov * 180 / Math.PI);
-        D.propSceneFov.value = savedFovDeg;
-        D.sceneFovLabel.textContent = savedFovDeg + '\u00B0';
-      }
-
       if (window.data.floorplan) {
         D.propFloorplanEnabled.checked = window.data.floorplan.enabled !== false;
         D.propFloorplanUrl.value = window.data.floorplan.imageUrl || '';
@@ -35,15 +25,6 @@
       D.propsReopenBtn.style.display = 'none';
       setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
     };
-
-    // ─── Scene Name ──────────────────────────────────────
-    D.propSceneName.addEventListener('change', function() {
-      if (S.currentSceneCtx) {
-        S.currentSceneCtx.data.name = this.value;
-        E.renderSceneGrid();
-        E.debouncedSave();
-      }
-    });
 
     // ─── Floorplan ───────────────────────────────────────
     D.propFloorplanEnabled.addEventListener('change', function() {
@@ -76,28 +57,6 @@
       E.debouncedSave();
     });
 
-    // ─── FOV ─────────────────────────────────────────────
-    D.propSceneFov.addEventListener('input', function() {
-      D.sceneFovLabel.textContent = this.value + '\u00B0';
-    });
-
-    D.btnApplyView.addEventListener('click', function() {
-      if (!S.currentSceneCtx) return;
-      var params = {
-        yaw: (parseFloat(D.propViewYaw.value) || 0) * Math.PI / 180,
-        pitch: (parseFloat(D.propViewPitch.value) || 0) * Math.PI / 180,
-        fov: (parseFloat(D.propViewFov.value) || 90) * Math.PI / 180
-      };
-      S.currentSceneCtx.view.setParameters(params);
-      S.currentSceneCtx.data.initialViewParameters = params;
-      S.currentSceneCtx.data.defaultFov = params.fov;
-      E.debouncedSave();
-      var orig = this.innerHTML;
-      this.textContent = '\u2713 Saved';
-      var self = this;
-      setTimeout(function() { self.innerHTML = orig; }, 1500);
-    });
-
     document.getElementById('btn-save-view').addEventListener('click', function() {
       if (!S.currentSceneCtx) return;
       S.currentSceneCtx.data.initialViewParameters = {
@@ -124,11 +83,6 @@
         if (document.activeElement !== D.bottomViewPitch) D.bottomViewPitch.value = p;
         if (document.activeElement !== D.bottomViewFov) D.bottomViewFov.value = f;
 
-        if (D.fieldsSceneSettings.style.display !== 'none') {
-          if (document.activeElement !== D.propViewYaw) D.propViewYaw.value = y;
-          if (document.activeElement !== D.propViewPitch) D.propViewPitch.value = p;
-          if (document.activeElement !== D.propViewFov) D.propViewFov.value = f;
-        }
         S.viewReadLoop = requestAnimationFrame(tick);
       }
       S.viewReadLoop = requestAnimationFrame(tick);
