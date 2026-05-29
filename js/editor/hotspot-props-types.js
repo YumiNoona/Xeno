@@ -156,6 +156,11 @@
       S.selectedHotspotData.showPlayerLabel = this.checked;
       E.debouncedSave();
     });
+    D.propAudioNarration.addEventListener('change', function() {
+      if (!S.selectedHotspotData) return;
+      S.selectedHotspotData.narration = this.checked;
+      E.debouncedSave();
+    });
 
     // ─── Embed fields ────────────────────────────────────
     D.propEmbedCode.addEventListener('input', function() {

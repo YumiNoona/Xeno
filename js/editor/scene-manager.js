@@ -211,6 +211,34 @@
       });
     });
 
+    // ─── Scene search filter + keyboard shortcut ─────────
+    var searchInput = document.getElementById('scene-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        var q = this.value.toLowerCase().trim();
+        D.sceneGridEl.querySelectorAll('.scene-card').forEach(function(card) {
+          var label = card.querySelector('.scene-card-label');
+          var name = label ? label.textContent.toLowerCase() : '';
+          card.style.display = (!q || name.indexOf(q) !== -1) ? '' : 'none';
+        });
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+          var tag = (e.target || {}).tagName || '';
+          if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+          }
+        }
+        if (e.key === 'Escape' && document.activeElement === searchInput) {
+          searchInput.value = '';
+          searchInput.dispatchEvent(new Event('input'));
+          searchInput.blur();
+        }
+      });
+    }
+
     // ─── Add Scene from media button ─────────────────────
     document.getElementById('btn-add-scene').addEventListener('click', function() {
       D.mediaModal.classList.add('visible');

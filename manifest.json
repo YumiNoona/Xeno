@@ -1,0 +1,17 @@
+{
+  "name": "Xeno Tour Studio",
+  "short_name": "Xeno",
+  "description": "Professional 360\u00B0 Virtual Tour Platform",
+  "start_url": "/editor.html",
+  "display": "standalone",
+  "background_color": "#111115",
+  "theme_color": "#111115",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "/img/logo.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

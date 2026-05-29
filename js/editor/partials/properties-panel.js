@@ -282,6 +282,10 @@
         <label>Show Player Label</label>
         <input type="checkbox" id="prop-audio-label" checked>
       </div>
+      <div class="form-group toggle-group">
+        <label>Narration (auto-play on enter)</label>
+        <input type="checkbox" id="prop-audio-narration">
+      </div>
     </div>
 
     <!-- Embed fields -->

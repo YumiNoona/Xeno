@@ -19,11 +19,15 @@
       var zip = new window.JSZip();
 
       var filesToBundle = [
-        'css/tokens.css', 'css/viewer.css', 'css/hotspots.css', 'css/minimap.css', 'css/hint.css',
-        'js/vendor/screenfull.js', 'js/vendor/webvr-polyfill.js', 'js/core/xeno.js',
-        'js/core/transitions.js', 'js/core/VideoAsset.js', 'js/core/DeviceOrientation.js',
-        'js/core/colorEffects.js', 'js/hotspots/HotspotFactory.js', 'js/ui/Minimap.js',
-        'js/ui/SceneList.js', 'js/ui/Supabase.js', 'js/viewer.js', 'config.example.js'
+        'css/tokens.css', 'css/viewer/layout.css', 'css/viewer/components.css',
+        'css/hotspots/types.css', 'css/hotspots/animations.css', 'css/hotspots/dots.css',
+        'css/lib/minimap.css', 'css/lib/hint.css',
+        'js/lib/screenfull.js', 'js/lib/webvr-polyfill.js', 'js/engine/xeno.js',
+        'js/engine/transitions.js', 'js/engine/VideoAsset.js', 'js/engine/DeviceOrientation.js',
+        'js/engine/colorEffects.js', 'js/hotspots/HotspotFactory.js',
+        'js/hotspots/Builders-Nav.js', 'js/hotspots/Builders-Content.js',
+        'js/ui/Minimap.js', 'js/ui/SceneList.js', 'js/ui/Supabase.js', 'js/vr/XenoVR.js',
+        'js/viewer.js', 'config.js'
       ];
 
       var imagesToBundle = [
@@ -71,7 +75,7 @@
       var fetchPromises = filesToBundle.map(function(path) {
         return fetch(path)
           .then(function(res) { if (!res.ok) throw new Error('Failed to fetch ' + path); return res.text(); })
-          .then(function(content) { zip.file(path === 'config.example.js' ? 'config.js' : path, content); });
+          .then(function(content) { zip.file(path, content); });
       });
 
       var imagePromises = imagesToBundle.map(function(path) {

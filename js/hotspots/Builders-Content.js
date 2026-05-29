@@ -399,14 +399,11 @@
     var audio = null;
     var isPlaying = false;
 
-    wrapper.addEventListener('click', function() {
-      if (_.isEditor) return;
-      var src = hotspot.content && hotspot.content.src;
-      if (!src) {
-        alert('No audio file selected.');
-        return;
-      }
+    function getSrc() { return hotspot.content && hotspot.content.src; }
 
+    function playAudio() {
+      var src = getSrc();
+      if (!src) return;
       if (!audio) {
         audio = new Audio(src);
         audio.loop = hotspot.loop === true;
@@ -415,20 +412,35 @@
           wrapper.querySelector('.in').style.background = '';
         });
       }
+      audio.play().then(function() {
+        isPlaying = true;
+        wrapper.querySelector('.in').style.background = '#006fff';
+      }).catch(function() {});
+    }
 
-      if (isPlaying) {
-        audio.pause();
-        isPlaying = false;
-        wrapper.querySelector('.in').style.background = '';
-      } else {
-        audio.play().then(function() {
-          isPlaying = true;
-          wrapper.querySelector('.in').style.background = '#006fff';
-        }).catch(function(err) {
-          alert('Playback failed: ' + err.message);
-        });
-      }
+    function pauseAudio() {
+      if (!audio) return;
+      audio.pause();
+      isPlaying = false;
+      wrapper.querySelector('.in').style.background = '';
+    }
+
+    wrapper.addEventListener('click', function() {
+      if (_.isEditor) return;
+      if (!getSrc()) { alert('No audio file selected.'); return; }
+      if (!audio) { playAudio(); return; }
+      if (isPlaying) { pauseAudio(); } else { playAudio(); }
     });
+
+    if (!_.isEditor && hotspot.narration && getSrc()) {
+      var narrationTimer = setTimeout(function() {
+        playAudio();
+      }, 600);
+      wrapper.addEventListener('click', function() {
+        clearTimeout(narrationTimer);
+      }, { once: true });
+    }
+
     return wrapper;
   };
 

@@ -159,6 +159,7 @@
   D.propVideoMuted   = $('prop-video-muted');
   D.propAudioAutoplay = $('prop-audio-autoplay');
   D.propAudioLabel   = $('prop-audio-label');
+  D.propAudioNarration = $('prop-audio-narration');
 
   // Editor panels
   D.propsReopenBtn   = $('props-reopen-btn');

@@ -7,6 +7,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
   <link rel="icon" type="image/x-icon" href="img/logo.ico">
+  <link rel="manifest" href="manifest.json">
 
   <!-- Font: Roboto Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -226,6 +227,8 @@
   <script src="js/engine/DeviceOrientation.js"></script>
   <script src="js/engine/colorEffects.js"></script>
   <script src="js/hotspots/HotspotFactory.js"></script>
+  <script src="js/hotspots/Builders-Nav.js"></script>
+  <script src="js/hotspots/Builders-Content.js"></script>
   <script src="js/ui/Minimap.js"></script>
   <script src="js/ui/SceneList.js"></script>
 
@@ -234,6 +237,7 @@
 
   <!-- App Entry -->
   <script src="js/viewer.js"></script>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}</script>
 
   <!-- View Mode Menu -->
   <div id="viewModeMenu" class="view-mode-menu">

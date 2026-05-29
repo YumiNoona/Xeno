@@ -59,7 +59,6 @@
       method: 'GET',
       headers: supabaseHeaders()
     }).then(function (r) {
-      if (!r.ok) throw new Error('HTTP error! status: ' + r.status);
       return parseJsonOrText(r).then(function(payload) {
         if (!r.ok) throw requestError(r, payload);
         return payload;
@@ -73,7 +72,6 @@
       headers: supabaseHeaders(),
       body: JSON.stringify(body)
     }).then(function (r) {
-      if (!r.ok) throw new Error('HTTP error! status: ' + r.status);
       return parseJsonOrText(r).then(function(payload) {
         if (!r.ok) throw requestError(r, payload);
         return payload;
@@ -89,7 +87,6 @@
       headers: h,
       body: JSON.stringify(body)
     }).then(function (r) {
-      if (!r.ok) throw new Error('HTTP error! status: ' + r.status);
       return parseJsonOrText(r).then(function(payload) {
         if (!r.ok) throw requestError(r, payload);
         return payload;

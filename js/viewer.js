@@ -186,7 +186,7 @@
       startAutorotate();
     }
 
-    autorotateToggleElement.addEventListener('click', toggleAutorotate);
+    if (autorotateToggleElement) autorotateToggleElement.addEventListener('click', toggleAutorotate);
 
     // Fullscreen
     if (screenfull.enabled && data.settings.fullscreenButton) {

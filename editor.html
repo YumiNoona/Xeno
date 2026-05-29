@@ -7,6 +7,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
   <link rel="icon" type="image/x-icon" href="img/logo.ico">
+  <link rel="manifest" href="manifest.json">
 
   <!-- Font: Roboto Mono — clean, technical, distinctive -->
   <!-- NO external icon CDN — all icons are inline SVG via JS helpers -->
@@ -125,6 +126,11 @@
             </button>
           </div>
         </div>
+        <div class="scene-search-wrap">
+          <svg class="scene-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="scene-search" class="scene-search" placeholder="Search scenes\u2026" spellcheck="false">
+          <span class="scene-search-hint">/</span>
+        </div>
         <div id="scene-grid"></div>
       </div>
       <div class="collapse-btn" id="sidebar-collapse-btn">
@@ -176,6 +182,7 @@
   <script src="js/editor/export.js"></script>
   <script src="js/editor/ui.js"></script>
   <script src="js/editor/editor.js"></script>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}</script>
 </body>
 
 </html>
