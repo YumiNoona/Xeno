@@ -8,10 +8,6 @@
   var Xeno = window.Xeno;
   var screenfull = window.screenfull;
 
-  if (window.XenoSupabase) {
-    window.XenoSupabase.init();
-  }
-
   var data = window.data;
 
   function initViewer(tourData) {
@@ -313,9 +309,6 @@
         startAutorotate();
         if (data.settings) data.settings.autorotateEnabled = true;
       }
-      if (window.XenoSupabase && previewSlug) {
-        window.XenoSupabase.saveTour(previewSlug, data);
-      }
     }
 
     function findSceneById(id) {
@@ -482,7 +475,7 @@
   // ── Startup ──────────────────────────────────────────────────
   if (!window.isExported) {
     var previewSlug = new URLSearchParams(window.location.search).get('project') || 'sample-tour';
-    (window.XenoSupabase ? window.XenoSupabase.loadTour(previewSlug) : Promise.resolve(null))
+    window.XenoSupabase.loadTour(previewSlug)
       .then(function (savedData) {
         initViewer(savedData || window.data);
       });

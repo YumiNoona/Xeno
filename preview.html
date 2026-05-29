@@ -8,6 +8,7 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
   <link rel="icon" type="image/x-icon" href="img/logo.ico">
   <link rel="manifest" href="manifest.json">
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}</script>
 
   <!-- Font: JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -213,7 +214,6 @@
 
   <!-- Dependencies -->
   <script src="js/lib/screenfull.js"></script>
-  <script src="config.js"></script>
   <script src="js/engine/xeno.js"></script>
   <script src="js/lib/webvr-polyfill.js"></script>
 
@@ -237,7 +237,6 @@
 
   <!-- App Entry -->
   <script src="js/viewer.js"></script>
-  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}</script>
 
   <!-- View Mode Menu -->
   <div id="viewModeMenu" class="view-mode-menu">

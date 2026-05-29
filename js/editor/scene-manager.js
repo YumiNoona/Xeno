@@ -270,10 +270,10 @@
     });
 
     // ─── Add Scene Helpers ───────────────────────────────
-    E.addSceneFromUrl = function(url, name) {
+    function createSceneFromUrl(url, name, forceVideo) {
       var newId = 'scene_' + Date.now();
       var cleanName = (name || 'Untitled').replace(/\.[^/.]+$/, '');
-      var isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || (name && name.toLowerCase().match(/\.(mp4|webm|ogg)$/));
+      var isVideo = forceVideo || url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || (name && name.toLowerCase().match(/\.(mp4|webm|ogg)$/));
       var sData = {
         id: newId, name: cleanName, type: isVideo ? 'video' : 'image',
         mediaUrl: url, thumbnailUrl: isVideo ? 'img/photo.png' : url,
@@ -282,49 +282,35 @@
       };
       if (isVideo) sData.videoOptions = { autoplay: true, loop: true, muted: true };
 
-      window.data.scenes.push(sData);
-      var source, geometry, view, limiter;
-      if (isVideo) {
-        var asset = new window.XenoVideoAsset();
-        asset.setVideo(sData.mediaUrl, sData.videoOptions);
-        source = new window.Xeno.SingleAssetSource(asset);
-        geometry = new window.Xeno.EquirectGeometry([{ width: 1 }]);
-        limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
-      } else {
-        source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
-        geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
-        limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
-      }
-      view = new window.Xeno.RectilinearView(sData.initialViewParameters, limiter);
-      var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
-      S.scenes.push({ data: sData, scene: scene, view: view });
-      E.renderSceneGrid();
-      E.switchSceneById(newId);
-      E.debouncedSave();
-    };
+      // Wait for SW to be ready before creating Marzipano scene
+      // (needed for /xeno-media/ URLs on first visit)
+      var readyPromise = (url.indexOf('/xeno-media/') === 0 && window.XenoSupabase)
+        ? window.XenoSupabase.swReady() : Promise.resolve();
 
-    E.addVideoSceneFromUrl = function(url, name) {
-      var newId = 'scene_' + Date.now();
-      var cleanName = (name || 'Untitled Video').replace(/\.[^/.]+$/, '');
-      var sData = {
-        id: newId, name: cleanName, type: 'video',
-        mediaUrl: url, thumbnailUrl: 'img/photo.png',
-        initialViewParameters: { yaw: 0, pitch: 0, fov: 1.57 },
-        videoOptions: { autoplay: true, loop: true, muted: true },
-        hotspots: []
-      };
-      window.data.scenes.push(sData);
-      var asset = new window.XenoVideoAsset();
-      asset.setVideo(sData.mediaUrl, sData.videoOptions);
-      var source = new window.Xeno.SingleAssetSource(asset);
-      var geometry = new window.Xeno.EquirectGeometry([{ width: 1 }]);
-      var limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
-      var view = new window.Xeno.RectilinearView(sData.initialViewParameters, limiter);
-      var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
-      S.scenes.push({ data: sData, scene: scene, view: view });
-      E.renderSceneGrid();
-      E.switchSceneById(newId);
-      E.debouncedSave();
-    };
+      readyPromise.then(function() {
+        window.data.scenes.push(sData);
+        var source, geometry, view, limiter;
+        if (isVideo) {
+          var asset = new window.XenoVideoAsset();
+          asset.setVideo(sData.mediaUrl, sData.videoOptions);
+          source = new window.Xeno.SingleAssetSource(asset);
+          geometry = new window.Xeno.EquirectGeometry([{ width: 1 }]);
+          limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+        } else {
+          source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
+          geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
+          limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+        }
+        view = new window.Xeno.RectilinearView(sData.initialViewParameters, limiter);
+        var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
+        S.scenes.push({ data: sData, scene: scene, view: view });
+        E.renderSceneGrid();
+        E.switchSceneById(newId);
+        E.debouncedSave();
+      });
+    }
+
+    E.addSceneFromUrl = function(url, name) { createSceneFromUrl(url, name, false); };
+    E.addVideoSceneFromUrl = function(url, name) { createSceneFromUrl(url, name, true); };
   };
 })();

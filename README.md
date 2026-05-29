@@ -9,8 +9,8 @@
   <img src="https://img.shields.io/badge/WebGL-2.0-990000?style=flat-square&logo=webgl&logoColor=white" alt="WebGL" />
   <img src="https://img.shields.io/badge/Vanilla_JS-ES6-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="JavaScript" />
   <img src="https://img.shields.io/badge/CSS_3-1572B6?style=flat-square&logo=css3&logoColor=white" alt="CSS3" />
-  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" />
   <img src="https://img.shields.io/badge/Marzipano-555555?style=flat-square" alt="Marzipano" />
+  <img src="https://img.shields.io/badge/Service_Worker-FF6B35?style=flat-square" alt="Service Worker" />
   <img src="https://img.shields.io/badge/JSZip-3.10-FF6B35?style=flat-square" alt="JSZip" />
   <img src="https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square" alt="License" />
 </p>

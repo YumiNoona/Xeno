@@ -78,7 +78,7 @@
         item.__mediaIndex = index;
         item.__mediaData = media;
 
-        var thumb = (media.type && media.type.startsWith('video')) ? '' : media.url;
+        var thumb = (media.type && media.type.startsWith('video')) ? '' : (media._sessionUrl || media.url);
         var imgHtml;
         if (thumb) {
           imgHtml = '<img src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;media-thumb-placeholder&quot;>Broken</div>\'">';
@@ -278,6 +278,7 @@
         selectedIds.forEach(function(mid) {
           var m = selectedMap[mid];
           if (m) {
+            // Scene images go through Marzipano WebGL → use real path, not blob URL
             if (m.type && m.type.startsWith('video/')) E.addVideoSceneFromUrl(m.url, m.filename);
             else E.addSceneFromUrl(m.url, m.filename);
           }

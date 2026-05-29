@@ -8,6 +8,7 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
   <link rel="icon" type="image/x-icon" href="img/logo.ico">
   <link rel="manifest" href="manifest.json">
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}</script>
 
   <!-- Font: JetBrains Mono — clean, technical, distinctive -->
   <!-- NO external icon CDN — all icons are inline SVG via JS helpers -->
@@ -154,7 +155,6 @@
   <script src="js/editor/partials/media-modal.js"></script>
 
   <!-- Scripts -->
-  <script src="config.js"></script>
   <script src="js/engine/xeno.js"></script>
   <script src="data.js"></script>
   <script src="js/engine/transitions.js"></script>
@@ -182,7 +182,6 @@
   <script src="js/editor/export.js"></script>
   <script src="js/editor/ui.js"></script>
   <script src="js/editor/editor.js"></script>
-  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}</script>
 </body>
 
 </html>

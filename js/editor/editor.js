@@ -7,8 +7,6 @@
 'use strict';
 
 (function() {
-  if (window.XenoSupabase) window.XenoSupabase.init();
-
   var E = window.XenoEditor;
   var S = E.state;
   var D = E.dom;
@@ -27,11 +25,11 @@
   document.getElementById('workspace-view').style.display = 'flex';
   document.getElementById('dashboard-view').style.display = 'none';
 
-  (window.XenoSupabase ? window.XenoSupabase.loadTour(projectSlug) : Promise.resolve(null))
+  window.XenoSupabase.loadTour(projectSlug)
     .then(function(savedData) {
       if (projectSlug === 'sample-tour' && !savedData) {
         savedData = window.data;
-        if (window.XenoSupabase) window.XenoSupabase.saveTour('sample-tour', savedData);
+        window.XenoSupabase.saveTour('sample-tour', savedData);
       }
       if (!savedData) {
         savedData = {
@@ -48,7 +46,7 @@
           scenes: [],
           floorplan: { enabled: false, imageUrl: '', width: 800, height: 600 }
         };
-        if (window.XenoSupabase) window.XenoSupabase.saveTour(projectSlug, savedData);
+        window.XenoSupabase.saveTour(projectSlug, savedData);
       }
       startEditor(savedData);
     });
@@ -67,7 +65,7 @@
       });
       topbarName.addEventListener('blur', function() {
         if (!this.textContent.trim()) this.textContent = 'Untitled Tour';
-        if (projectSlug && window.XenoSupabase) window.XenoSupabase.saveTour(projectSlug, window.data);
+        if (projectSlug) window.XenoSupabase.saveTour(projectSlug, window.data);
       });
       topbarName.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); this.blur(); }

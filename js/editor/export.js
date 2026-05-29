@@ -27,7 +27,7 @@
         'js/engine/colorEffects.js', 'js/hotspots/HotspotFactory.js',
         'js/hotspots/Builders-Nav.js', 'js/hotspots/Builders-Content.js',
         'js/ui/Minimap.js', 'js/ui/SceneList.js', 'js/ui/Supabase.js', 'js/vr/XenoVR.js',
-        'js/viewer.js', 'config.js'
+        'js/viewer.js'
       ];
 
       var imagesToBundle = [
