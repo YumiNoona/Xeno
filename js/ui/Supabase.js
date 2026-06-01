@@ -183,22 +183,27 @@
       return true;
     });
     // Attach session URLs for cached media (SW fallback)
+    var cachePromises = [];
     list.forEach(function(m) {
       if (m.url && m.url.indexOf('/xeno-media/') === 0 && !m._sessionUrl) {
         var key = m.url.replace('/xeno-media/', '');
-        cacheGet(key).then(function(blob) {
-          if (blob) {
-            m._sessionUrl = URL.createObjectURL(blob);
-            m._sessionUrlKey = key;
-          }
-        });
+        cachePromises.push(
+          cacheGet(key).then(function(blob) {
+            if (blob) {
+              m._sessionUrl = URL.createObjectURL(blob);
+              m._sessionUrlKey = key;
+            }
+          })
+        );
       }
     });
-    var f = list.filter(function(m) {
-      return albumId ? m.album_id === albumId : m.album_id === null;
+    return Promise.all(cachePromises).then(function() {
+      var f = list.filter(function(m) {
+        return albumId ? m.album_id === albumId : m.album_id === null;
+      });
+      f.sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+      return f;
     });
-    f.sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
-    return Promise.resolve(f);
   }
 
   function uploadAndRecordMedia(file, albumId) {

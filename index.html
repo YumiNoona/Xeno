@@ -2,211 +2,722 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Xeno — 360° Tour Platform</title>
+  <title>XENO — 360° Tour Platform</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="img/logo.ico">
-  <!-- Font loading: preconnect first, then direct link for fastest render -->
+  <link rel="icon" type="image/x-icon" href="public/logo.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="public/logo 32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="public/logo 16x16.png">
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/tokens.css">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       BRUTAL RETRO — CRT + terminal + raw structure
+       ══════════════════════════════════════════════════════ */
+
     body {
-      background: var(--bg-base);
-      color: var(--text-secondary);
-      font-family: var(--font-family-base);
+      background: #0a0a0a;
+      color: var(--text-primary);
+      font-family: var(--font);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 48px;
-      padding: 40px;
+      padding: 40px 20px;
       -webkit-font-smoothing: antialiased;
+      position: relative;
+      overflow-x: hidden;
       transition: background 0.3s, color 0.3s;
     }
 
-    /* Subtle warm grain texture */
+    /* ── CRT SCAN LINES ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      background: repeating-linear-gradient(0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.06) 2px,
+          rgba(0, 0, 0, 0.06) 4px);
+    }
+
+    /* ── CRT VIGNETTE ── */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       pointer-events: none;
-      opacity: 0.4;
-      z-index: 0;
+      z-index: 998;
+      background: radial-gradient(ellipse at center,
+          transparent 60%,
+          rgba(0, 0, 0, 0.5) 100%);
     }
 
-    .hero { text-align: center; position: relative; z-index: 1; }
-    .logo {
-      font-size: var(--type-4xl);
-      font-weight: var(--weight-bold);
-      color: var(--text-primary);
-      letter-spacing: -0.04em;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
+    /* ── CONSTRUCTION GRID ── */
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.04;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+      background-size: 60px 60px;
     }
-    .logo span { color: var(--accent); }
-    .tagline {
-      font-size: var(--type-md);
-      color: var(--text-muted);
-      letter-spacing: 0.02em;
+
+    body[data-theme="light"] .grid-bg {
+      opacity: 0.06;
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.12) 1px, transparent 1px);
     }
+
+    body[data-theme="light"]::after {
+      background: repeating-linear-gradient(0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.03) 2px,
+          rgba(0, 0, 0, 0.03) 4px);
+    }
+
+    body[data-theme="light"]::before {
+      background: radial-gradient(ellipse at center,
+          transparent 60%,
+          rgba(0, 0, 0, 0.15) 100%);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       THEME TOGGLE
+       ══════════════════════════════════════════════════════ */
 
     .theme-toggle {
       position: fixed;
       top: 24px;
       right: 24px;
-      width: 40px;
-      height: 40px;
-      border-radius: var(--radius-full);
-      background: var(--bg-raised);
-      border: 1px solid var(--border);
+      width: 44px;
+      height: 44px;
+      background: var(--bg-base);
+      border: 2px solid var(--border);
       color: var(--text-primary);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 100;
-      transition: all 0.2s;
+      z-index: 1000;
+      transition: all 0.15s;
     }
     .theme-toggle:hover {
-      background: var(--bg-hover);
-      transform: scale(1.1);
+      border-color: var(--accent);
+      background: var(--bg-raised);
     }
     .theme-toggle:active {
-      transform: scale(0.9);
+      transform: translate(2px, 2px);
     }
 
-    .cards {
+    /* ══════════════════════════════════════════════════════
+       MARQUEE TICKER
+       ══════════════════════════════════════════════════════ */
+
+    .ticker-wrap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 28px;
+      background: var(--accent);
+      overflow: hidden;
+      z-index: 500;
       display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      justify-content: center;
+      align-items: center;
+    }
+    .ticker {
+      white-space: nowrap;
+      animation: ticker 20s linear infinite;
+      font-size: var(--type-2xs);
+      font-weight: var(--weight-bold);
+      color: #fff;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding-left: 100%;
+    }
+    @keyframes ticker {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════
+       MAIN CONTAINER
+       ══════════════════════════════════════════════════════ */
+
+    .main {
       position: relative;
       z-index: 1;
-      max-width: 800px;
+      max-width: 960px;
+      width: 100%;
+      margin-top: 40px;
     }
-    .card {
+
+    /* ── BRUTAL HEADER BAR ── */
+    .header-bar {
+      border: 3px solid var(--border);
+      border-bottom: none;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: var(--type-2xs);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
       background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 32px 24px;
-      width: 240px;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      text-decoration: none;
-      color: inherit;
+    }
+    .header-bar .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 0;
+      margin-right: 6px;
+    }
+    .dot.red {
+      background: var(--danger);
+      box-shadow: 0 0 6px var(--danger);
+    }
+    .dot.amber {
+      background: var(--warning);
+      box-shadow: 0 0 6px var(--warning);
+    }
+    .dot.green {
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    /* ── BRUTAL HERO ── */
+    .hero {
+      border: 3px solid var(--border);
+      border-bottom: none;
+      padding: 48px 32px 32px;
+      text-align: center;
+      background: var(--bg-base);
+      position: relative;
+    }
+    .hero-ornament {
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      width: 16px;
+      height: 16px;
+      background: var(--accent);
+    }
+    .hero-ornament.br {
+      top: auto;
+      left: auto;
+      bottom: -3px;
+      right: -3px;
+    }
+
+    .logo-stack {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-      gap: 16px;
-      box-shadow: var(--shadow);
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
     }
+    .logo-text {
+      font-size: 72px;
+      font-weight: var(--weight-bold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      line-height: 1;
+      color: var(--text-primary);
+      position: relative;
+      display: inline-block;
+    }
+    .logo-text .glitch {
+      display: inline-block;
+      position: relative;
+    }
+    .logo-text .glitch::before,
+    .logo-text .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+    }
+    .logo-text:hover .glitch::before {
+      animation: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+      color: #0ff;
+      opacity: 0.8;
+      clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+      transform: translate(-2px, -1px);
+    }
+    .logo-text:hover .glitch::after {
+      animation: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite reverse;
+      color: var(--accent);
+      opacity: 0.8;
+      clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+      transform: translate(2px, 1px);
+    }
+    @keyframes glitch {
+      0% {
+        transform: translate(0);
+      }
+      20% {
+        transform: translate(-3px, 2px);
+      }
+      40% {
+        transform: translate(3px, -1px);
+      }
+      60% {
+        transform: translate(-2px, -2px);
+      }
+      80% {
+        transform: translate(2px, 1px);
+      }
+      100% {
+        transform: translate(0);
+      }
+    }
+
+    .logo-x {
+      color: var(--accent);
+      font-size: 96px;
+      line-height: 0.7;
+      text-shadow: 0 0 40px var(--accent-glow);
+      animation: flicker 4s linear infinite;
+    }
+    @keyframes flicker {
+      0%,
+      19.999%,
+      22%,
+      62.999%,
+      64%,
+      64.999%,
+      70%,
+      100% {
+        opacity: 1;
+      }
+      20%,
+      21.999%,
+      63%,
+      63.999%,
+      65%,
+      69.999% {
+        opacity: 0.4;
+      }
+    }
+
+    .logo-sub {
+      font-size: var(--type-xl);
+      font-weight: var(--weight-light);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* ── TERMINAL LINE ── */
+    .terminal-line {
+      font-size: var(--type-sm);
+      color: var(--text-muted);
+      text-align: left;
+      max-width: 500px;
+      margin: 0 auto 24px;
+      padding: 12px 16px;
+      background: var(--bg-panel);
+      border-left: 3px solid var(--accent);
+      font-family: var(--font-mono);
+    }
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 15px;
+      background: var(--accent);
+      vertical-align: text-bottom;
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink {
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0;
+      }
+    }
+
+    .prompt {
+      color: var(--accent);
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 3px;
+      background: var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .divider::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 60px;
+      background: var(--accent);
+      animation: divider-scan 3s linear infinite;
+    }
+    @keyframes divider-scan {
+      0% {
+        left: -60px;
+      }
+      100% {
+        left: 100%;
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════
+       BRUTAL CARDS
+       ══════════════════════════════════════════════════════ */
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border: 3px solid var(--border);
+      border-top: none;
+    }
+    @media (max-width: 680px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      padding: 28px 20px;
+      text-decoration: none;
+      color: inherit;
+      background: var(--bg-panel);
+      border-right: 3px solid var(--border);
+      position: relative;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+    .card:last-child {
+      border-right: none;
+    }
+    @media (max-width: 680px) {
+      .card {
+        border-right: none;
+        border-bottom: 3px solid var(--border);
+      }
+      .card:last-child {
+        border-bottom: none;
+      }
+    }
+
     .card:hover {
+      background: var(--bg-raised);
+    }
+    .card:hover .card-corner {
       border-color: var(--accent);
-      transform: translateY(-8px);
-      box-shadow: var(--shadow-xl), 0 0 20px var(--accent-dim);
+    }
+    .card:hover .card-corner::after {
+      background: var(--accent);
+    }
+
+    /* corner accent */
+    .card-corner {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      width: 20px;
+      height: 20px;
+      border: 3px solid transparent;
+      border-left: none;
+      border-bottom: none;
+      transition: border-color 0.2s;
+    }
+    .card-corner::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 3px;
+      height: 3px;
+      background: var(--border);
+      transition: background 0.2s;
+    }
+
+    .card-num {
+      font-size: var(--type-2xs);
+      font-weight: var(--weight-bold);
+      color: var(--text-disabled);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 16px;
     }
     .card-icon {
-      width: 48px; height: 48px;
-      background: var(--accent-dim);
-      border: 1px solid var(--accent-glow);
-      border-radius: var(--radius-md);
-      display: flex; align-items: center; justify-content: center;
-      font-size: var(--type-2xl);
+      width: 40px;
+      height: 40px;
       color: var(--accent);
-      transition: all 0.3s;
-    }
-    .card:hover .card-icon {
-      transform: scale(1.1) rotate(5deg);
-      background: var(--accent);
-      color: #fff;
+      margin-bottom: 12px;
     }
     .card h3 {
       font-size: var(--type-lg);
       font-weight: var(--weight-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       color: var(--text-primary);
+      margin-bottom: 8px;
     }
-    .card p { font-size: var(--type-sm); color: var(--text-muted); line-height: 1.6; }
+    .card p {
+      font-size: var(--type-sm);
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .card-tag {
+      display: inline-block;
+      font-size: var(--type-2xs);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      color: var(--text-disabled);
+      align-self: flex-start;
+      margin-top: auto;
+    }
+    .card:hover .card-tag {
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       STATUS BAR
+       ══════════════════════════════════════════════════════ */
+
+    .status-bar {
+      border: 3px solid var(--border);
+      border-top: none;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: var(--type-2xs);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      background: var(--bg-panel);
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .status-bar .blink-text {
+      animation: blink 1s step-end infinite;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════ */
 
     .footer {
-      position: relative; z-index: 1;
-      font-size: var(--type-xs);
+      position: relative;
+      z-index: 1;
+      margin-top: 32px;
+      font-size: var(--type-2xs);
       color: var(--text-disabled);
-      letter-spacing: 0.08em;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
+      text-align: center;
+    }
+    .footer hr {
+      border: none;
+      height: 1px;
+      background: var(--border);
+      margin: 12px auto;
+      width: 200px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       LIGHT THEME OVERRIDES
+       ══════════════════════════════════════════════════════ */
+
+    body[data-theme="light"] {
+      background: #f5f5f0;
+    }
+    body[data-theme="light"] .header-bar,
+    body[data-theme="light"] .status-bar,
+    body[data-theme="light"] .card,
+    body[data-theme="light"] .hero {
+      background: #fafaf8;
     }
   </style>
 </head>
 <body>
-  <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">
-    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+
+  <!-- Construction grid -->
+  <div class="grid-bg"></div>
+
+  <!-- Marquee ticker -->
+  <div class="ticker-wrap">
+    <div class="ticker">
+      XENO TOUR PLATFORM v1.0 &nbsp;◆&nbsp; ZERO-BUILD VANILLA JS &nbsp;◆&nbsp; WEBGL PANORAMA ENGINE &nbsp;◆&nbsp; NO FRAMEWORKS REQUIRED &nbsp;◆&nbsp; LOCAL-FIRST DATA STORAGE &nbsp;◆&nbsp; OFFLINE CAPABLE PWA &nbsp;◆&nbsp; IMMERSIVE 360° VIRTUAL TOURS &nbsp;◆&nbsp;
+      XENO TOUR PLATFORM v1.0 &nbsp;◆&nbsp; ZERO-BUILD VANILLA JS &nbsp;◆&nbsp; WEBGL PANORAMA ENGINE &nbsp;◆&nbsp; NO FRAMEWORKS REQUIRED &nbsp;◆&nbsp; LOCAL-FIRST DATA STORAGE &nbsp;◆&nbsp; OFFLINE CAPABLE PWA &nbsp;◆&nbsp; IMMERSIVE 360° VIRTUAL TOURS &nbsp;◆&nbsp;
+    </div>
+  </div>
+
+  <!-- Theme toggle -->
+  <button class="theme-toggle" id="theme-toggle" title="TOGGLE THEME">
+    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
   </button>
 
-  <div class="hero">
-    <div class="logo">✦ <span>Xeno</span></div>
-    <p class="tagline">Build and share immersive 360° virtual tours</p>
+  <div class="main">
+
+    <!-- Header bar -->
+    <div class="header-bar">
+      <span>
+        <span class="dot red"></span>
+        <span class="dot amber"></span>
+        <span class="dot green"></span>
+      </span>
+      <span>xeno.exe — running</span>
+      <span>PORT :8080</span>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <span class="hero-ornament"></span>
+      <span class="hero-ornament br"></span>
+
+      <div class="logo-stack">
+        <div class="logo-x" aria-hidden="true">⨯</div>
+        <div class="logo-text">
+          <span class="glitch" data-text="XENO">XENO</span>
+        </div>
+        <div class="logo-sub">Tour Platform</div>
+      </div>
+
+      <div class="terminal-line">
+        <span class="prompt">$&gt;</span>&nbsp;build_immersive_360_tours --output web
+        <span class="cursor"></span>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- Cards -->
+    <div class="cards">
+      <a href="editor.html" class="card">
+        <span class="card-corner"></span>
+        <span class="card-num">[ 01 ]</span>
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+        </div>
+        <h3>Open Editor</h3>
+        <p>Create and manage 360° tours with scene tools and hotspot system</p>
+        <span class="card-tag">→ Launch</span>
+      </a>
+
+      <a href="preview.html" class="card">
+        <span class="card-corner"></span>
+        <span class="card-num">[ 02 ]</span>
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+        </div>
+        <h3>Preview Tour</h3>
+        <p>Experience your project in full 360° immersive mode with VR support</p>
+        <span class="card-tag">→ View</span>
+      </a>
+
+      <a href="https://www.marzipano.net/demos/sample-tour/" target="_blank" class="card">
+        <span class="card-corner"></span>
+        <span class="card-num">[ 03 ]</span>
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        </div>
+        <h3>Explore Demo</h3>
+        <p>See what's possible with the Marzipano WebGL panorama engine</p>
+        <span class="card-tag">→ Demo</span>
+      </a>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span>STATUS: <span class="blink-text" style="color:var(--success)">●&nbsp;READY</span></span>
+      <span>ENGINE: MARZIPANO v0.10.2</span>
+    </div>
+
   </div>
 
-  <div class="cards">
-    <a href="editor.html" class="card">
-      <div class="card-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      </div>
-      <h3>Open Editor</h3>
-      <p>Create and manage your 360° tours with powerful tools</p>
-    </a>
-    <a href="preview.html" class="card">
-      <div class="card-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      </div>
-      <h3>Preview Tour</h3>
-      <p>Experience your current project in full immersion</p>
-    </a>
-    <a href="https://www.marzipano.net/demos/sample-tour/" target="_blank" class="card">
-      <div class="card-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      </div>
-      <h3>Explore Demo</h3>
-      <p>See what's possible with the Marzipano engine</p>
-    </a>
+  <!-- Footer -->
+  <div class="footer">
+    <hr>
+    BUILT WITH LOVE BY VEIL — XENO TOUR
   </div>
-
-  <div class="footer">Made With Love by Veil ❤ Xeno Tour</div>
 
   <script>
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('sun-icon');
     const moonIcon = document.getElementById('moon-icon');
-    
-    // Check for saved theme preference
+
     const currentTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', currentTheme);
+    document.body.setAttribute('data-theme', currentTheme);
     updateIcons(currentTheme);
 
     themeToggle.addEventListener('click', () => {
       const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', theme);
+      document.body.setAttribute('data-theme', theme);
       localStorage.setItem('theme', theme);
       updateIcons(theme);
     });
 
     function updateIcons(theme) {
-      if (theme === 'dark') {
-        sunIcon.style.display = 'none';
-        moonIcon.style.display = 'block';
-      } else {
-        sunIcon.style.display = 'block';
-        moonIcon.style.display = 'none';
-      }
+      sunIcon.style.display = theme === 'dark' ? 'none' : 'block';
+      moonIcon.style.display = theme === 'dark' ? 'block' : 'none';
     }
   </script>
 </body>
-
 </html>

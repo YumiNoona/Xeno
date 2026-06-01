@@ -19,6 +19,7 @@
     document.getElementById('workspace-view').style.display = 'none';
     document.getElementById('dashboard-view').style.display = 'flex';
     E.initDashboard();
+    E.setupMediaManager();
     return;
   }
 

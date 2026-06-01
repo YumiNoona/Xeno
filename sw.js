@@ -24,7 +24,8 @@ var PRECACHE = [
   '/js/editor/partials/viewport.js', '/js/editor/partials/properties-panel.js',
   '/js/editor/partials/context-menus.js', '/js/editor/partials/media-modal.js',
   '/img/logo.ico', '/img/link.png', '/img/photo.png', '/img/info.png',
-  '/img/hotspot.png', '/img/tooltip.svg', '/manifest.json'
+  '/img/hotspot.png', '/img/tooltip.svg', '/manifest.json',
+  '/public/logo.ico', '/public/logo 16x16.png', '/public/logo 32x32.png'
 ];
 
 // Install: activate immediately without waiting for precache
@@ -65,14 +66,14 @@ self.addEventListener('fetch', function(e) {
   }
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then(function(cached) {
-      return cached || fetch(e.request).then(function(res) {
-        if (res && res.status === 200) {
-          var copy = res.clone();
-          caches.open(CACHE).then(function(cache) { cache.put(e.request, copy); });
-        }
-        return res;
-      }).catch(function() { return cached; });
+    fetch(e.request).then(function(res) {
+      if (res && res.status === 200) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function(cache) { cache.put(e.request, copy); });
+      }
+      return res;
+    }).catch(function() {
+      return caches.match(e.request);
     })
   );
 });

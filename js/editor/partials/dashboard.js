@@ -3,11 +3,15 @@
   <div class="dashboard-header">
     <div class="logo">\u2726 <span>Xeno</span> Tour Studio</div>
     <div class="header-right">
-      <button class="btn-icon" id="dashboard-theme-toggle" title="Toggle Theme"></button>
+      <button class="btn btn-media btn-secondary" id="btn-media-dashboard">
+        ${xIcon('folder', 14)}
+        Media
+      </button>
       <button class="btn btn-new-project btn-primary" id="btn-new-project" style="color: #ffffff;">
         ${xIcon('plus', 14)}
         New Project
       </button>
+      <button class="btn-icon" id="dashboard-theme-toggle" title="Toggle Theme"></button>
     </div>
   </div>
 

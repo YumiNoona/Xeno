@@ -1,13 +1,23 @@
 (function() {
   'use strict';
   var E = window.XenoEditor;
+  var D = E.dom;
 
   E.initDashboard = function() {
     var searchInput = document.getElementById('project-search');
     var btnNewProject = document.getElementById('btn-new-project');
+    var btnMediaDashboard = document.getElementById('btn-media-dashboard');
 
     if (searchInput) {
       searchInput.addEventListener('input', function() { loadDashboard(this.value); });
+    }
+
+    if (btnMediaDashboard) {
+      btnMediaDashboard.addEventListener('click', function() {
+        D.mediaModal.classList.add('visible');
+        E.loadAlbums();
+        E.loadMedia(null);
+      });
     }
 
     if (btnNewProject) {

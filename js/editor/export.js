@@ -31,7 +31,8 @@
       ];
 
       var imagesToBundle = [
-        'img/link.png', 'img/photo.png', 'img/info.png', 'img/hotspot.png', 'img/logo.ico', 'img/tooltip.svg'
+        'img/link.png', 'img/photo.png', 'img/info.png', 'img/hotspot.png', 'img/logo.ico', 'img/tooltip.svg',
+        'public/logo.ico', 'public/logo 16x16.png', 'public/logo 32x32.png'
       ];
 
       var exportedData = JSON.parse(JSON.stringify(window.data));

@@ -151,6 +151,10 @@
       }
 
       S.currentSceneCtx = sceneCtx;
+      var params = sceneCtx.view.parameters();
+      D.bottomViewYaw.value = (params.yaw * 180 / Math.PI).toFixed(0);
+      D.bottomViewPitch.value = (params.pitch * 180 / Math.PI).toFixed(0);
+      D.bottomViewFov.value = (params.fov * 180 / Math.PI).toFixed(0);
       sceneCtx.scene.switchTo({}, function() {
         if (S.autorotateEnabled) S.viewer.startMovement(S.autorotate);
       });
@@ -186,7 +190,7 @@
           }
         } else if (action === 'duplicate') {
           var clone = JSON.parse(JSON.stringify(S.contextTarget.data));
-          clone.id = 'scene_' + Date.now();
+          clone.id = 'scene_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
           clone.name = clone.name + ' (copy)';
           window.data.scenes.push(clone);
           var source = window.Xeno.ImageUrlSource.fromString(clone.mediaUrl);
@@ -271,7 +275,7 @@
 
     // ─── Add Scene Helpers ───────────────────────────────
     function createSceneFromUrl(url, name, forceVideo) {
-      var newId = 'scene_' + Date.now();
+      var newId = 'scene_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
       var cleanName = (name || 'Untitled').replace(/\.[^/.]+$/, '');
       var isVideo = forceVideo || url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || (name && name.toLowerCase().match(/\.(mp4|webm|ogg)$/));
       var sData = {
@@ -306,6 +310,7 @@
         S.scenes.push({ data: sData, scene: scene, view: view });
         E.renderSceneGrid();
         E.switchSceneById(newId);
+        E.startViewReadLoop();
         E.debouncedSave();
       });
     }

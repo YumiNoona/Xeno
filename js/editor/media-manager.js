@@ -211,6 +211,27 @@
       });
     }
 
+    // ─── Dismiss context menus on outside click ─────────
+    document.addEventListener('click', function(e) {
+      if (D.mediaFolderCtx && D.mediaFolderCtx.style.display !== 'none') {
+        if (!D.mediaFolderCtx.contains(e.target)) {
+          D.mediaFolderCtx.style.display = 'none';
+          albumCtx = null;
+        }
+      }
+      if (D.mediaItemCtx && D.mediaItemCtx.style.display !== 'none') {
+        if (!D.mediaItemCtx.contains(e.target)) {
+          D.mediaItemCtx.style.display = 'none';
+          mediaCtx = null;
+        }
+      }
+      if (D.contextMenu && D.contextMenu.style.display !== 'none') {
+        if (!D.contextMenu.contains(e.target)) {
+          D.contextMenu.style.display = 'none';
+        }
+      }
+    });
+
     // ─── Media Context Menu ────────────────────────────
     if (D.mediaItemCtx) {
       D.mediaItemCtx.querySelectorAll('.ctx-item').forEach(function(item) {
