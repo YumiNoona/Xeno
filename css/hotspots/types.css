@@ -162,13 +162,12 @@
 .xeno-hotspot-info .tip::after {
   content: '';
   position: absolute;
-  right: 99%;
-  width: 1.8em;
-  height: 1.8em;
+  right: 100%;
   top: 50%;
-  margin: -.9em 0 0;
-  background: url(../img/tooltip.svg) no-repeat center center;
-  background-size: 100%;
+  margin-top: -9px;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-right: 14px solid white;
 }
 .xeno-hotspot-info h2 {
   padding: 15px;
@@ -255,7 +254,7 @@
 .xeno-hotspot-tooltip .in .image {
   width: 24px;
   height: 24px;
-  background-image: url(../img/info.png);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='12' y1='16' x2='12' y2='12'/%3E%3Cline x1='12' y1='8' x2='12.01' y2='8'/%3E%3C/svg%3E");
   background-size: cover;
 }
 .xeno-hotspot-tooltip .out:hover {

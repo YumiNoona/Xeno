@@ -1,72 +1,96 @@
 /*
  * Xeno — Local Storage Engine
- * Tour data → localStorage. Media blobs → Cache API.
- * Media URLs use /xeno-media/<id> paths — the service worker intercepts
- * these and serves cached blobs with proper Content-Type. No blob: URLs
- * involved, so no WebGL crossOrigin security errors.
- *
- * Fallback: if the SW isn't active yet (first-visit race), media grid
- * thumbnails fall back to a session-only blob URL. Scene creation waits
- * up to 3 s for the SW, then tries the /xeno-media/ path regardless.
- *
- * Keeps window.XenoSupabase namespace for backward compatibility.
+ * Tour data → localStorage. Media blobs → IndexedDB.
+ * No Service Worker dependency — blobs are served as blob: URLs directly.
  */
 (function () {
   'use strict';
 
   var LOCAL_STORAGE_PREFIX = 'xeno_tour_';
-  var CACHE_NAME = 'xeno-blobs';
+  var DB_NAME = 'xeno-media-db';
+  var DB_VERSION = 1;
+  var STORE_NAME = 'blobs';
 
-  // ─── SW readiness ───────────────────────────────────
+  // ─── IndexedDB helpers ────────────────────────────────
 
-  function swReady() {
-    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator))
-      return Promise.resolve();
-    if (navigator.serviceWorker.controller)
-      return Promise.resolve();
-    // Wait for SW to take control (with timeout)
-    return new Promise(function(resolve) {
-      var done = false;
-      function finish() { if (!done) { done = true; resolve(); } }
-      navigator.serviceWorker.addEventListener('controllerchange', finish);
-      setTimeout(finish, 3000);
+  function dbOpen() {
+    return new Promise(function(resolve, reject) {
+      var req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = function(e) {
+        var db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME))
+          db.createObjectStore(STORE_NAME);
+      };
+      req.onsuccess = function(e) { resolve(e.target.result); };
+      req.onerror = function(e) { reject(e.target.error); };
     });
   }
 
-  // ─── Cache API helpers ───────────────────────────────
-
-  function cacheAvailable() { return typeof caches !== 'undefined'; }
-
-  function cacheStore(key, blob) {
-    if (!cacheAvailable()) return Promise.resolve();
-    return caches.open(CACHE_NAME).then(function(cache) {
-      return cache.put('/xeno-media/' + key, new Response(blob, {
-        headers: { 'Content-Type': blob.type || 'application/octet-stream' }
-      }));
-    }).catch(function(err) { console.warn('[Xeno] Cache store failed', err); });
+  function dbStore(key, blob) {
+    return dbOpen().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(blob, key);
+        tx.oncomplete = function() { db.close(); resolve(); };
+        tx.onerror = function(e) { db.close(); reject(e.target.error); };
+      });
+    });
   }
 
-  function cacheGet(key) {
-    if (!cacheAvailable()) return Promise.resolve(null);
-    return caches.open(CACHE_NAME).then(function(cache) {
-      return cache.match('/xeno-media/' + key).then(function(r) { return r ? r.blob() : null; });
-    }).catch(function() { return null; });
+  function dbGet(key) {
+    return dbOpen().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(STORE_NAME, 'readonly');
+        var req = tx.objectStore(STORE_NAME).get(key);
+        req.onsuccess = function() { db.close(); resolve(req.result || null); };
+        req.onerror = function(e) { db.close(); reject(e.target.error); };
+      });
+    });
   }
 
-  function cacheDelete(key) {
-    if (!cacheAvailable()) return Promise.resolve();
-    return caches.open(CACHE_NAME).then(function(c) { return c.delete('/xeno-media/' + key); });
+  function dbDelete(key) {
+    return dbOpen().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).delete(key);
+        tx.oncomplete = function() { db.close(); resolve(); };
+        tx.onerror = function(e) { db.close(); reject(e.target.error); };
+      });
+    });
   }
 
-  // Create a session-only blob URL from cache (fallback when SW isn't active)
-  var _sessionUrls = {};
+  // ─── Blob storage helpers ─────────────────────────────
 
-  function sessionUrl(key) {
-    if (_sessionUrls[key]) return Promise.resolve(_sessionUrls[key]);
-    return cacheGet(key).then(function(blob) {
+  function blobStore(key, blob) {
+    return dbStore(key, blob).catch(function(err) {
+      console.warn('[Xeno] IndexedDB store failed', err);
+    });
+  }
+
+  function blobGet(key) {
+    return dbGet(key).catch(function() { return null; });
+  }
+
+  function blobDelete(key) {
+    return dbDelete(key).catch(function() {});
+  }
+
+  // Track active blob URLs so we can revoke them
+  var _blobUrls = {};
+
+  function revokeBlobUrl(key) {
+    if (_blobUrls[key]) {
+      URL.revokeObjectURL(_blobUrls[key]);
+      delete _blobUrls[key];
+    }
+  }
+
+  function createBlobUrl(key) {
+    revokeBlobUrl(key);
+    return blobGet(key).then(function(blob) {
       if (!blob) return null;
-      _sessionUrls[key] = URL.createObjectURL(blob);
-      return _sessionUrls[key];
+      _blobUrls[key] = URL.createObjectURL(blob);
+      return _blobUrls[key];
     });
   }
 
@@ -105,10 +129,10 @@
   }
   function deleteMedia(id) {
     var m = getLocalMedia(); var rec = m.find(function(x) { return x.id === id; });
-    if (rec && rec.url && rec.url.indexOf('/xeno-media/') === 0)
-      cacheDelete(rec.url.replace('/xeno-media/', ''));
-    if (rec && rec._sessionUrl && rec._sessionUrl.indexOf('blob:') === 0)
-      URL.revokeObjectURL(rec._sessionUrl);
+    if (rec) {
+      revokeBlobUrl(rec.id);
+      blobDelete(rec.id);
+    }
     m = m.filter(function(x) { return x.id !== id; }); saveLocalMedia(m);
     return Promise.resolve();
   }
@@ -173,31 +197,17 @@
 
   function fetchMedia(albumId) {
     var list = getLocalMedia();
-    // Filter out dead blob: URLs from previous sessions
-    list = list.filter(function(m) {
-      if (m.url && m.url.indexOf('blob:') === 0) {
-        if (m._sessionUrl && m._sessionUrl.indexOf('blob:') === 0)
-          URL.revokeObjectURL(m._sessionUrl);
-        return false;
-      }
-      return true;
-    });
-    // Attach session URLs for cached media (SW fallback)
-    var cachePromises = [];
+    // Attach blob URLs from IDB
+    var blobPromises = [];
     list.forEach(function(m) {
-      if (m.url && m.url.indexOf('/xeno-media/') === 0 && !m._sessionUrl) {
-        var key = m.url.replace('/xeno-media/', '');
-        cachePromises.push(
-          cacheGet(key).then(function(blob) {
-            if (blob) {
-              m._sessionUrl = URL.createObjectURL(blob);
-              m._sessionUrlKey = key;
-            }
-          })
-        );
-      }
+      if (m._blobUrl) return;
+      blobPromises.push(
+        createBlobUrl(m.id).then(function(blobUrl) {
+          if (blobUrl) m._blobUrl = blobUrl;
+        })
+      );
     });
-    return Promise.all(cachePromises).then(function() {
+    return Promise.all(blobPromises).then(function() {
       var f = list.filter(function(m) {
         return albumId ? m.album_id === albumId : m.album_id === null;
       });
@@ -209,48 +219,17 @@
   function uploadAndRecordMedia(file, albumId) {
     return new Promise(function(resolve, reject) {
       var mediaId = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
       var record = {
         id: mediaId, filename: file.name, type: file.type, size: file.size,
-        album_id: albumId || null, created_at: new Date().toISOString()
+        album_id: albumId || null, created_at: new Date().toISOString(),
+        url: mediaId
       };
 
-      function storeAndResolve(asBase64) {
-        cacheStore(mediaId, file).then(function() {
-          record.url = '/xeno-media/' + mediaId;
-          record.is_ephemeral = false;
-          // For current-session display: also create a blob URL
-          var blobUrl = URL.createObjectURL(file);
-          _sessionUrls[mediaId] = blobUrl;
-          record._sessionUrl = blobUrl;
-          if (asBase64) record.url = asBase64; // small files use base64
-          var list = getLocalMedia(); list.push(record); saveLocalMedia(list);
-          resolve(record);
-        });
-      }
-
-      if (file.size > 2 * 1024 * 1024) {
-        storeAndResolve(null);
-        return;
-      }
-
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        record.url = e.target.result;
-        record.is_ephemeral = false;
-        var list = getLocalMedia(); list.push(record);
-        try {
-          localStorage.setItem('xeno_media', JSON.stringify(list));
-          // Also store in cache for persistence
-          cacheStore(mediaId, file);
-          resolve(record);
-        } catch (err) {
-          if (err.name === 'QuotaExceededError' || err.code === 22)
-            storeAndResolve(null);
-          else reject(err);
-        }
-      };
-      reader.onerror = function(err) { reject(err); };
-      reader.readAsDataURL(file);
+      blobStore(mediaId, file).then(function() {
+        var list = getLocalMedia(); list.push(record); saveLocalMedia(list);
+        resolve(record);
+      });
     });
   }
 
@@ -258,20 +237,19 @@
 
   function downloadAsFile(tourData, filename) {
     filename = filename || 'data.js';
-    // Strip any remaining /xeno-media/ URLs (they won't work in exported tour)
     var cleaned = JSON.parse(JSON.stringify(tourData));
-    function stripXeno(obj) {
-      if (typeof obj === 'string' && obj.indexOf('/xeno-media/') === 0)
-        return 'media/' + obj.replace('/xeno-media/', '') + '.bin';
-      if (Array.isArray(obj)) return obj.map(stripXeno);
+    function stripBlob(obj) {
+      if (typeof obj === 'string' && obj.indexOf('blob:') === 0)
+        return '';
+      if (Array.isArray(obj)) return obj.map(stripBlob);
       if (obj && typeof obj === 'object') {
         var out = {};
-        for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k)) out[k] = stripXeno(obj[k]);
+        for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k)) out[k] = stripBlob(obj[k]);
         return out;
       }
       return obj;
     }
-    cleaned = stripXeno(cleaned);
+    cleaned = stripBlob(cleaned);
     var content = 'var data = ' + JSON.stringify(cleaned, null, 2) + ';\n';
     var blob = new Blob([content], { type: 'application/javascript' });
     var url = URL.createObjectURL(blob);
@@ -279,6 +257,15 @@
     a.href = url; a.download = filename;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  // ─── Resolve a stored media ID to a blob URL ──────────
+
+  function resolveMediaId(mediaId) {
+    if (_blobUrls[mediaId]) return Promise.resolve(_blobUrls[mediaId]);
+    return createBlobUrl(mediaId).then(function(blobUrl) {
+      return blobUrl || null;
+    });
   }
 
   // ─── Init / stubs ─────────────────────────────────────
@@ -297,7 +284,6 @@
     fetchMedia: fetchMedia, uploadAndRecordMedia: uploadAndRecordMedia,
     renameAlbum: renameAlbum, deleteAlbum: deleteAlbum,
     renameMedia: renameMedia, deleteMedia: deleteMedia, moveMedia: moveMedia,
-    swReady: swReady,
-    cacheGet: cacheGet
+    resolveMediaId: resolveMediaId
   };
 })();

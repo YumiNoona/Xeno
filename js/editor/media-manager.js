@@ -78,7 +78,7 @@
         item.__mediaIndex = index;
         item.__mediaData = media;
 
-        var thumb = (media.type && media.type.startsWith('video')) ? '' : (media._sessionUrl || media.url);
+        var thumb = (media.type && media.type.startsWith('video')) ? '' : media._blobUrl;
         var imgHtml;
         if (thumb) {
           imgHtml = '<img src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;media-thumb-placeholder&quot;>Broken</div>\'">';
@@ -246,11 +246,12 @@
               window.XenoSupabase.renameMedia(tm.id, n.trim()).then(function() { loadMedia(currentAlbumId); }).catch(function(err) { alert('Error: ' + err.message); });
           } else if (action === 'delete-media') {
             if (confirm('Delete "' + tm.filename + '"?'))
-              window.XenoSupabase.deleteMedia(tm.id, tm.url).then(function() { loadMedia(currentAlbumId); }).catch(function(err) { alert('Error: ' + err.message); });
+              window.XenoSupabase.deleteMedia(tm.id).then(function() { loadMedia(currentAlbumId); }).catch(function(err) { alert('Error: ' + err.message); });
           } else if (action === 'move-media') {
             openMoveModal();
           } else if (action === 'download-media') {
-            downloadFile(tm.url, tm.filename);
+            var dlUrl = tm._blobUrl || tm.url;
+            downloadFile(dlUrl, tm.filename);
           }
           if (action !== 'move-media') mediaCtx = null;
           if (D.mediaItemCtx) D.mediaItemCtx.style.display = 'none';
@@ -296,12 +297,34 @@
     if (D.btnAddSelected) {
       D.btnAddSelected.addEventListener('click', function() {
         if (selectedIds.size === 0) return;
+        if (!S.projectSlug) {
+          if (confirm('You need to create a project first. Create a new project now?')) {
+            var slug = 'project_' + Date.now();
+            var defaultData = {
+              settings: {
+                title: 'New Tour', name: 'New Tour', mouseViewMode: 'drag',
+                autorotateEnabled: false, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
+                fullscreenButton: true, sceneListStyle: 'sidebar',
+                showMinimap: false, minimapPosition: 'bottom-left', showControls: true,
+                gyroscopeEnabled: false, vrEnabled: false,
+                defaultTransition: 'opacity', defaultTransitionDuration: 1000, defaultTransitionEasing: 'easeInOut',
+                branding: { logoUrl: null, accentColor: '#e62e5a', logoPosition: 'top-left' },
+                intro: { enabled: false, title: '', subtitle: '', buttonText: 'Enter Tour' }
+              },
+              scenes: [],
+              floorplan: { enabled: false, imageUrl: '', width: 800, height: 600 }
+            };
+            window.XenoSupabase.saveTour(slug, defaultData).then(function() {
+              window.location.href = window.location.pathname + '?project=' + slug;
+            });
+          }
+          return;
+        }
         selectedIds.forEach(function(mid) {
           var m = selectedMap[mid];
           if (m) {
-            // Scene images go through Marzipano WebGL → use real path, not blob URL
-            if (m.type && m.type.startsWith('video/')) E.addVideoSceneFromUrl(m.url, m.filename);
-            else E.addSceneFromUrl(m.url, m.filename);
+            if (m.type && m.type.startsWith('video/')) E.addVideoSceneFromUrl(m.id, m.filename);
+            else E.addSceneFromUrl(m.id, m.filename);
           }
         });
         D.mediaModal.classList.remove('visible');
@@ -320,7 +343,7 @@
         var promises = [];
         selectedIds.forEach(function(mid) {
           var m = selectedMap[mid];
-          if (m) promises.push(window.XenoSupabase.deleteMedia(m.id, m.url));
+          if (m) promises.push(window.XenoSupabase.deleteMedia(m.id));
         });
         Promise.all(promises).then(function() {
           selectedIds.clear(); selectedMap = {}; lastIndex = null;

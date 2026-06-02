@@ -23,8 +23,7 @@ var PRECACHE = [
   '/js/editor/partials/dashboard.js', '/js/editor/partials/workspace-topbar.js',
   '/js/editor/partials/viewport.js', '/js/editor/partials/properties-panel.js',
   '/js/editor/partials/context-menus.js', '/js/editor/partials/media-modal.js',
-  '/img/logo.ico', '/img/link.png', '/img/photo.png', '/img/info.png',
-  '/img/hotspot.png', '/img/tooltip.svg', '/manifest.json',
+  '/manifest.json',
   '/public/logo.ico', '/public/logo 16x16.png', '/public/logo 32x32.png'
 ];
 

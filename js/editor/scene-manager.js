@@ -247,7 +247,7 @@
     document.getElementById('btn-add-scene').addEventListener('click', function() {
       D.mediaModal.classList.add('visible');
       E.loadAlbums();
-      E.loadMedia(null);
+      E.loadMedia(E.state.currentAlbumId);
     });
 
     // ─── Multi-delete scenes ─────────────────────────────
@@ -274,34 +274,39 @@
     });
 
     // ─── Add Scene Helpers ───────────────────────────────
+    function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
+
     function createSceneFromUrl(url, name, forceVideo) {
       var newId = 'scene_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
       var cleanName = (name || 'Untitled').replace(/\.[^/.]+$/, '');
       var isVideo = forceVideo || url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || (name && name.toLowerCase().match(/\.(mp4|webm|ogg)$/));
-      var sData = {
-        id: newId, name: cleanName, type: isVideo ? 'video' : 'image',
-        mediaUrl: url, thumbnailUrl: isVideo ? 'img/photo.png' : url,
-        initialViewParameters: { yaw: 0, pitch: 0, fov: 1.57 },
-        hotspots: []
-      };
-      if (isVideo) sData.videoOptions = { autoplay: true, loop: true, muted: true };
 
-      // Wait for SW to be ready before creating Marzipano scene
-      // (needed for /xeno-media/ URLs on first visit)
-      var readyPromise = (url.indexOf('/xeno-media/') === 0 && window.XenoSupabase)
-        ? window.XenoSupabase.swReady() : Promise.resolve();
+      var resolveFn = (isMediaId(url) && window.XenoSupabase)
+        ? window.XenoSupabase.resolveMediaId(url).then(function(b) { return b || url; })
+        : Promise.resolve(url);
 
-      readyPromise.then(function() {
+      resolveFn.then(function(displayUrl) {
+        var storedUrl = isMediaId(url) ? url : displayUrl;
+        var thumbUrl = isVideo ? 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"/%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"/%3E%3Cpolyline points="21 15 16 10 5 21"/%3E%3C/svg%3E' : (isMediaId(url) ? displayUrl : storedUrl);
+        var sData = {
+          id: newId, name: cleanName, type: isVideo ? 'video' : 'image',
+          mediaUrl: storedUrl, thumbnailUrl: thumbUrl,
+          _mediaId: isMediaId(url) ? storedUrl : undefined,
+          initialViewParameters: { yaw: 0, pitch: 0, fov: 1.57 },
+          hotspots: []
+        };
+        if (isVideo) sData.videoOptions = { autoplay: true, loop: true, muted: true };
+
         window.data.scenes.push(sData);
         var source, geometry, view, limiter;
         if (isVideo) {
           var asset = new window.XenoVideoAsset();
-          asset.setVideo(sData.mediaUrl, sData.videoOptions);
+          asset.setVideo(displayUrl, sData.videoOptions);
           source = new window.Xeno.SingleAssetSource(asset);
           geometry = new window.Xeno.EquirectGeometry([{ width: 1 }]);
           limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
         } else {
-          source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
+          source = window.Xeno.ImageUrlSource.fromString(displayUrl);
           geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
           limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
         }

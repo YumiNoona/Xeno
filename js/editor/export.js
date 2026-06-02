@@ -31,27 +31,78 @@
       ];
 
       var imagesToBundle = [
-        'img/link.png', 'img/photo.png', 'img/info.png', 'img/hotspot.png', 'img/logo.ico', 'img/tooltip.svg',
+
         'public/logo.ico', 'public/logo 16x16.png', 'public/logo 32x32.png'
       ];
 
+      // Sync live editor state into window.data before export
+      if (S.scenes && S.scenes.length) window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
       var exportedData = JSON.parse(JSON.stringify(window.data));
       var mediaPromises = [];
 
-      exportedData.scenes.forEach(function(sceneData) {
-        var originalUrl = sceneData.mediaUrl;
-        if (originalUrl) {
-          var ext = 'jpg';
-          if (originalUrl.indexOf('.png') !== -1) ext = 'png';
-          else if (originalUrl.indexOf('.gif') !== -1) ext = 'gif';
-          var filename = 'scene_' + sceneData.id + '.' + ext;
-          var relativePath = 'media/' + filename;
-          var p = fetch(originalUrl)
-            .then(function(res) { if (!res.ok) throw new Error('Failed to fetch ' + sceneData.name); return res.blob(); })
-            .then(function(blob) { zip.file(relativePath, blob); sceneData.mediaUrl = relativePath; if (sceneData.thumbnailUrl) sceneData.thumbnailUrl = relativePath; })
-            .catch(function(err) { console.warn('Could not bundle media for scene ' + sceneData.name, err); });
+      function extFromMime(mime) {
+        var map = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp',
+          'video/mp4': 'mp4', 'video/webm': 'webm', 'video/ogg': 'ogv' };
+        return map[mime] || 'bin';
+      }
+
+      function resolveUrl(url) {
+        return url && url.indexOf('blob:') === 0
+          ? Promise.resolve(url)
+          : url && url.indexOf('media_') === 0 && window.XenoSupabase
+            ? window.XenoSupabase.resolveMediaId(url).then(function(b) { return b || url; })
+            : Promise.resolve(url);
+      }
+
+      function bundleHotspotMedia(hotspots, sceneId) {
+        (hotspots || []).forEach(function(hs, idx) {
+          var src = hs.content && hs.content.src;
+          if (!src || (src.indexOf('blob:') !== 0 && src.indexOf('media_') !== 0)) return;
+          var p = resolveUrl(src).then(function(fetchUrl) {
+            return fetch(fetchUrl).then(function(res) {
+              if (!res.ok) throw new Error('Failed to fetch hotspot media');
+              return res.blob();
+            }).then(function(blob) {
+              var ext = extFromMime(blob.type) || 'bin';
+              var path = 'media/hs_' + sceneId + '_' + idx + '.' + ext;
+              zip.file(path, blob);
+              hs.content.src = path;
+            });
+          }).catch(function(err) {
+            console.warn('Could not bundle hotspot media for scene ' + sceneId, err);
+          });
           mediaPromises.push(p);
-        }
+        });
+      }
+
+      function bundleSceneMedia(sceneData) {
+        if (!sceneData.mediaUrl) return;
+        var origUrl = sceneData.mediaUrl;
+        var p = resolveUrl(origUrl).then(function(fetchUrl) {
+          return fetch(fetchUrl).then(function(res) {
+            if (!res.ok) throw new Error('Failed to fetch ' + sceneData.name);
+            return res.blob();
+          }).then(function(blob) {
+            var ext = extFromMime(blob.type) || 'jpg';
+            var relativePath = 'media/scene_' + sceneData.id + '.' + ext;
+            zip.file(relativePath, blob);
+            sceneData.mediaUrl = relativePath;
+            if (sceneData.thumbnailUrl && (sceneData.thumbnailUrl.indexOf('blob:') === 0 || sceneData.thumbnailUrl === origUrl)) {
+              sceneData.thumbnailUrl = relativePath;
+            }
+          });
+        }).catch(function(err) {
+          console.warn('Could not bundle media for scene ' + sceneData.name, err);
+        });
+        mediaPromises.push(p);
+      }
+
+      exportedData.scenes.forEach(function(sceneData) {
+        bundleSceneMedia(sceneData);
+        bundleHotspotMedia(sceneData.hotspots, sceneData.id);
+        bundleHotspotMedia(sceneData.linkHotspots, sceneData.id);
+        bundleHotspotMedia(sceneData.infoHotspots, sceneData.id);
+        bundleHotspotMedia(sceneData.mediaHotspots, sceneData.id);
       });
 
       var readme =

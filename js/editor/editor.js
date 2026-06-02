@@ -26,10 +26,38 @@
   document.getElementById('workspace-view').style.display = 'flex';
   document.getElementById('dashboard-view').style.display = 'none';
 
+  function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
+
+  function resolveSceneMedia(data) {
+    if (!data || !data.scenes) return Promise.resolve(null);
+    // Clone to avoid mutating the canonical data (preserve media IDs for saving)
+    var clone = JSON.parse(JSON.stringify(data));
+    var promises = [];
+    clone.scenes.forEach(function(s) {
+      if (isMediaId(s.mediaUrl)) {
+        s._mediaId = s.mediaUrl;
+        promises.push(window.XenoSupabase.resolveMediaId(s.mediaUrl).then(function(b) {
+          if (b) { s.mediaUrl = b; if (isMediaId(s.thumbnailUrl)) s.thumbnailUrl = b; }
+        }));
+      }
+    });
+    return Promise.all(promises).then(function() { return clone; });
+  }
+
+  window.XenoEditor.restoreMediaIds = function restoreMediaIds(data) {
+    (data.scenes || []).forEach(function(s) {
+      if (s._mediaId) {
+        s.mediaUrl = s._mediaId;
+        if (s.thumbnailUrl && s.thumbnailUrl.indexOf('blob:') === 0) s.thumbnailUrl = s._mediaId;
+        delete s._mediaId;
+      }
+    });
+  };
+
   window.XenoSupabase.loadTour(projectSlug)
     .then(function(savedData) {
       if (projectSlug === 'sample-tour' && !savedData) {
-        savedData = window.data;
+        savedData = JSON.parse(JSON.stringify(window.data));
         window.XenoSupabase.saveTour('sample-tour', savedData);
       }
       if (!savedData) {
@@ -49,11 +77,16 @@
         };
         window.XenoSupabase.saveTour(projectSlug, savedData);
       }
-      startEditor(savedData);
+      // Keep canonical data (with media IDs) for saving — clone once more in case
+      // modules modify it later (they push/remove scenes, but mediaUrl stays as IDs)
+      window.data = JSON.parse(JSON.stringify(savedData));
+      return resolveSceneMedia(savedData);
+    })
+    .then(function(resolvedClone) {
+      if (resolvedClone) startEditor(resolvedClone);
     });
 
   function startEditor(data) {
-    window.data = data;
     window.isEditorMode = true;
 
     var topbarName = document.getElementById('topbar-project-name');
@@ -66,7 +99,7 @@
       });
       topbarName.addEventListener('blur', function() {
         if (!this.textContent.trim()) this.textContent = 'Untitled Tour';
-        if (projectSlug) window.XenoSupabase.saveTour(projectSlug, window.data);
+        if (projectSlug) { if (S.scenes && S.scenes.length) window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); }); window.XenoEditor.restoreMediaIds(window.data); window.XenoSupabase.saveTour(projectSlug, window.data); }
       });
       topbarName.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); this.blur(); }

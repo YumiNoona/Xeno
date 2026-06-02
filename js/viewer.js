@@ -472,15 +472,78 @@
 
   } // end initViewer()
 
+  // ── Resolve media IDs to blob URLs ────────────────────────
+  function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
+
+  function resolveMediaIdOrUrl(v) {
+    return isMediaId(v) && window.XenoSupabase
+      ? window.XenoSupabase.resolveMediaId(v).then(function (b) { return b || v; })
+      : Promise.resolve(v);
+  }
+
+  function resolveAllMedia(tourData) {
+    if (!tourData || !tourData.scenes) return Promise.resolve(tourData);
+    var promises = [];
+    tourData.scenes.forEach(function (scene) {
+      if (isMediaId(scene.mediaUrl)) {
+        promises.push(resolveMediaIdOrUrl(scene.mediaUrl).then(function (blobUrl) {
+          scene.mediaUrl = blobUrl;
+        }));
+      }
+      if (isMediaId(scene.thumbnailUrl)) {
+        promises.push(resolveMediaIdOrUrl(scene.thumbnailUrl).then(function (blobUrl) {
+          scene.thumbnailUrl = blobUrl;
+        }));
+      }
+      var allHotspots = (scene.hotspots || []).concat(scene.linkHotspots || [], scene.infoHotspots || [], scene.mediaHotspots || []);
+      allHotspots.forEach(function (hs) {
+        var src = hs.content && hs.content.src;
+        if (isMediaId(src)) {
+          promises.push(resolveMediaIdOrUrl(src).then(function (blobUrl) {
+            hs.content.src = blobUrl;
+          }));
+        }
+      });
+    });
+    return Promise.all(promises).then(function () { return tourData; });
+  }
+
+  // ── Preload scene images so Marzipano has them ready ──────
+  function preloadSceneImages(tourData) {
+    if (!tourData || !tourData.scenes) return Promise.resolve(tourData);
+    return new Promise(function (resolve) {
+      var total = 0;
+      var loaded = 0;
+      tourData.scenes.forEach(function (s) {
+        if (s.type === 'video' || !s.mediaUrl) return;
+        total++;
+        var img = new Image();
+        img.onload = img.onerror = function () { loaded++; if (loaded >= total) resolve(tourData); };
+        img.src = s.mediaUrl;
+      });
+      if (total === 0) resolve(tourData);
+    });
+  }
+
   // ── Startup ──────────────────────────────────────────────────
   if (!window.isExported) {
     var previewSlug = new URLSearchParams(window.location.search).get('project') || 'sample-tour';
     window.XenoSupabase.loadTour(previewSlug)
       .then(function (savedData) {
-        initViewer(savedData || window.data);
+        return resolveAllMedia(savedData || window.data);
+      })
+      .then(function (tourData) {
+        return preloadSceneImages(tourData);
+      })
+      .then(function (tourData) {
+        initViewer(tourData);
       });
   } else {
-    initViewer(window.data);
+    resolveAllMedia(window.data).then(function () {
+      return preloadSceneImages(window.data);
+    }).then(function () {
+      initViewer(window.data);
+    });
   }
 
 })();

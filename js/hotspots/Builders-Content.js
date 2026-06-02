@@ -57,7 +57,7 @@
 
     var icon = document.createElement('img');
     icon.className = 'icon';
-    icon.src = new URL('img/info.png', document.baseURI).href;
+    icon.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Ccircle cx="12" cy="12" r="10"/%3E%3Cline x1="12" y1="16" x2="12" y2="12"/%3E%3Cline x1="12" y1="8" x2="12.01" y2="8"/%3E%3C/svg%3E';
 
     var p = document.createElement('p');
     p.textContent = hotspot.text || '';

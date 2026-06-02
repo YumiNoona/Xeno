@@ -51,7 +51,21 @@
       var c = Object.assign({}, h); c.type = c.type || 'image'; c.style = c.style || 'media'; hotspots.push(c);
     });
 
-    hotspots.forEach(function(hsData) { E.createVisualHotspot(hsData); });
+    // Resolve media IDs in hotspot content.src
+    function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
+    var resolvePromises = [];
+    hotspots.forEach(function(hs) {
+      var src = hs.content && hs.content.src;
+      if (isMediaId(src) && window.XenoSupabase) {
+        resolvePromises.push(window.XenoSupabase.resolveMediaId(src).then(function(blobUrl) {
+          if (blobUrl) hs.content.src = blobUrl;
+        }));
+      }
+    });
+
+    Promise.all(resolvePromises).then(function() {
+      hotspots.forEach(function(hsData) { E.createVisualHotspot(hsData); });
+    });
 
     if (S.selectedHotspotData) {
       var list = container.listHotspots();

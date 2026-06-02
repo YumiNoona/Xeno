@@ -143,19 +143,6 @@
   stroke-linejoin: round;
 }
 
-/* ─── Branding Logo ──────────────────────────────────────── */
-#branding-logo {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  width: 100px;
-  height: 40px;
-  background: url('../img/logo.png') no-repeat center right;
-  background-size: contain;
-  z-index: 1000;
-  pointer-events: none;
-  opacity: 0.8;
-}
 
 /* ─── Transition Overlay ─────────────────────────────────── */
 #transition-overlay {

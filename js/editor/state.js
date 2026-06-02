@@ -32,7 +32,8 @@
     if (S.saveTimeout) clearTimeout(S.saveTimeout);
     S.saveTimeout = setTimeout(function() {
       if (S.projectSlug && window.XenoSupabase) {
-        window.XenoSupabase.saveTour(S.projectSlug, window.data);
+        if (S.scenes && S.scenes.length) window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
+        window.XenoEditor.restoreMediaIds(window.data); window.XenoSupabase.saveTour(S.projectSlug, window.data);
       }
     }, 500);
   };
