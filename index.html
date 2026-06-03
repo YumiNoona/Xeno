@@ -34,7 +34,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px 20px;
+      padding: 72px 20px 64px;
       -webkit-font-smoothing: antialiased;
       position: relative;
       overflow-x: hidden;
@@ -130,30 +130,38 @@
     }
 
     /* ══════════════════════════════════════════════════════
-       MARQUEE TICKER
+       MARQUEE TICKERS
        ══════════════════════════════════════════════════════ */
 
     .ticker-wrap {
       position: fixed;
-      top: 0;
       left: 0;
       right: 0;
-      height: 28px;
+      height: 32px;
       background: var(--accent);
       overflow: hidden;
       z-index: 500;
       display: flex;
       align-items: center;
     }
+    .ticker-wrap.top {
+      top: 0;
+    }
+    .ticker-wrap.bottom {
+      bottom: 0;
+    }
     .ticker {
       white-space: nowrap;
-      animation: ticker 20s linear infinite;
-      font-size: var(--type-2xs);
+      animation: ticker 80s linear infinite;
+      font-size: var(--type-xs);
       font-weight: var(--weight-bold);
       color: #fff;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       padding-left: 100%;
+    }
+    .ticker-wrap:hover .ticker {
+      animation-play-state: paused;
     }
     @keyframes ticker {
       0% {
@@ -173,7 +181,7 @@
       z-index: 1;
       max-width: 960px;
       width: 100%;
-      margin-top: 40px;
+      margin-top: 0;
     }
 
     /* ── BRUTAL HEADER BAR ── */
@@ -591,11 +599,17 @@
   <!-- Construction grid -->
   <div class="grid-bg"></div>
 
-  <!-- Marquee ticker -->
-  <div class="ticker-wrap">
+  <!-- Marquee tickers -->
+  <div class="ticker-wrap top">
     <div class="ticker">
       XENO TOUR PLATFORM v1.0 &nbsp;◆&nbsp; ZERO-BUILD VANILLA JS &nbsp;◆&nbsp; WEBGL PANORAMA ENGINE &nbsp;◆&nbsp; NO FRAMEWORKS REQUIRED &nbsp;◆&nbsp; LOCAL-FIRST DATA STORAGE &nbsp;◆&nbsp; OFFLINE CAPABLE PWA &nbsp;◆&nbsp; IMMERSIVE 360° VIRTUAL TOURS &nbsp;◆&nbsp;
       XENO TOUR PLATFORM v1.0 &nbsp;◆&nbsp; ZERO-BUILD VANILLA JS &nbsp;◆&nbsp; WEBGL PANORAMA ENGINE &nbsp;◆&nbsp; NO FRAMEWORKS REQUIRED &nbsp;◆&nbsp; LOCAL-FIRST DATA STORAGE &nbsp;◆&nbsp; OFFLINE CAPABLE PWA &nbsp;◆&nbsp; IMMERSIVE 360° VIRTUAL TOURS &nbsp;◆&nbsp;
+    </div>
+  </div>
+  <div class="ticker-wrap bottom">
+    <div class="ticker">
+      DRAG TO LOOK AROUND &nbsp;◆&nbsp; ADD HOTSPOTS &nbsp;◆&nbsp; LINK SCENES &nbsp;◆&nbsp; EXPORT TO ZIP &nbsp;◆&nbsp; PREVIEW & VR READY &nbsp;◆&nbsp; FULLY OFFLINE &nbsp;◆&nbsp; CUSTOMIZABLE UI &nbsp;◆&nbsp;
+      DRAG TO LOOK AROUND &nbsp;◆&nbsp; ADD HOTSPOTS &nbsp;◆&nbsp; LINK SCENES &nbsp;◆&nbsp; EXPORT TO ZIP &nbsp;◆&nbsp; PREVIEW & VR READY &nbsp;◆&nbsp; FULLY OFFLINE &nbsp;◆&nbsp; CUSTOMIZABLE UI &nbsp;◆&nbsp;
     </div>
   </div>
 
@@ -693,7 +707,7 @@
   <!-- Footer -->
   <div class="footer">
     <hr>
-    BUILT WITH LOVE BY VEIL — XENO TOUR
+    BUILT WITH 💙 BY VEIL
   </div>
 
   <script>
