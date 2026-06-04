@@ -60,34 +60,34 @@ input[type="number"] {
 }
 
 #btn-save-view {
-  background: var(--accent);
-  border: none;
-  border-radius: var(--radius-full);
+  border: 3px solid var(--border);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  border-radius: 0;
   padding: 5px 14px;
-  font-weight: var(--weight-semibold);
-  color: #fff !important;
+  font-weight: var(--weight-bold);
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: all var(--t);
   font-size: var(--type-xs);
   font-family: var(--font);
-  letter-spacing: 0.02em;
-  box-shadow: var(--shadow-sm);
 }
 
 #btn-save-view svg {
   width: 14px;
   height: 14px;
-  stroke: #fff !important;
+  stroke: currentColor;
   fill: none;
   stroke-width: 2.5;
 }
 
 #btn-save-view:hover {
-  background: var(--accent-hover);
-  box-shadow: 0 2px 12px rgba(230, 46, 90, 0.35);
+  background: var(--bg-raised);
+  border-color: var(--border-hover);
 }
 
 /* ── Properties Panel ────────────────────────────────────── */

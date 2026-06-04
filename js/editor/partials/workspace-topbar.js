@@ -19,7 +19,7 @@
       Preview
     </button>
     <div class="topbar-sep"></div>
-    <button class="btn btn-publish" id="btn-export" style="color: #ff0000;">
+    <button class="btn btn-publish" id="btn-export">
       ${xIcon('download', 16)}
       Export Zip
     </button>

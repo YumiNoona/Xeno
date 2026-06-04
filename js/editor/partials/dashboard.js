@@ -7,7 +7,7 @@
         ${xIcon('folder', 14)}
         Media
       </button>
-      <button class="btn btn-new-project btn-primary" id="btn-new-project" style="color: #ffffff;">
+      <button class="btn btn-new-project" id="btn-new-project">
         ${xIcon('plus', 14)}
         New Project
       </button>

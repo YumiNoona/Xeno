@@ -101,6 +101,7 @@
   --border-subtle: #1a1a1a;
   --border-hover: #404040;
   --border-focus: var(--accent);
+  --border-glass: rgba(255, 255, 255, 0.08);
 
   --text-primary: #ffffff;
   --text-secondary: #e5e5e5;
@@ -180,10 +181,17 @@
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.60);
   --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.75);
 
-  /* ── 11. MOTION ─────────────────────────────────────────────*/
+    /* ── 11. MOTION ─────────────────────────────────────────────*/
   --t: 0.15s ease;
   --t-slow: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   --t-spring: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Smooth theme transitions on theme-switchable properties */
+body, body * {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-duration: 0.18s;
+  transition-timing-function: ease;
 }
 
 /* ── 12. TYPOGRAPHIC UTILITIES ─────────────────────────────────
@@ -359,6 +367,7 @@ h6 {
   --border-subtle: #f0f0f0;
   --border-hover: #d4d4d4;
   --border-focus: var(--accent);
+  --border-glass: rgba(0, 0, 0, 0.08);
 
   --text-primary: #000000;
   --text-secondary: #262626;

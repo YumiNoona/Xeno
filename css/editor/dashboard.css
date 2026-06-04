@@ -38,26 +38,7 @@
 }
 
 .btn-new-project {
-  background: var(--accent);
-  border: none;
-  color: #000000;
-  padding: 8px 18px;
-  border-radius: var(--r-sm);
-  font-size: var(--size-sm);
-  font-weight: var(--weight-regular);
-  cursor: pointer;
-  font-family: var(--font);
-  transition: all 0.14s;
-  display: flex;
-  align-items: center;
-  gap: 7px;
   letter-spacing: 0.04em;
-}
-
-.btn-new-project:hover {
-  background: var(--accent-hover);
-  box-shadow: 0 4px 16px rgba(230, 46, 90, 0.3);
-  transform: translateY(-1px);
 }
 
 .btn-new-project svg {
@@ -248,9 +229,9 @@
 }
 
 .btn-delete-project {
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.6);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   width: 26px;
   height: 26px;
   border-radius: 50%;

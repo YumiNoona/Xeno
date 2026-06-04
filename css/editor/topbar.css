@@ -40,10 +40,10 @@
   letter-spacing: 0.01em;
   padding: 6px 14px;
   border-radius: var(--radius-md);
-  border: 1px solid transparent;
+  border: 1px solid var(--border);
   cursor: text;
   transition: all 0.2s;
-  background: transparent;
+  background: var(--bg-raised);
   max-width: 400px;
   white-space: nowrap;
   overflow: hidden;

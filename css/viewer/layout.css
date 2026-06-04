@@ -28,7 +28,7 @@ body {
   font-size: var(--type-md);
   line-height: 1.5;
   color: var(--text-primary);
-  background: #000;
+  background: var(--bg-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -222,7 +222,7 @@ body {
 
 #controls .ctrl-btn:hover {
   background: var(--bg-hover);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--border-hover);
   transform: scale(1.05);
 }
 
