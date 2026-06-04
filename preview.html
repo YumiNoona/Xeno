@@ -10,7 +10,10 @@
   <link rel="icon" type="image/png" sizes="32x32" href="public/logo 32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="public/logo 16x16.png">
   <link rel="manifest" href="manifest.json">
-  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}</script>
+  <script>
+    if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}
+    (function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t)})();
+  </script>
 
   <!-- Font: JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,6 +30,7 @@
   </style>
   <link rel="stylesheet" href="css/lib/hint.css">
   <link rel="stylesheet" href="css/viewer/layout.css">
+  <link rel="stylesheet" href="css/editor/buttons.css">
   <link rel="stylesheet" href="css/viewer/components.css">
   <link rel="stylesheet" href="css/hotspots/types.css">
   <link rel="stylesheet" href="css/hotspots/animations.css">
@@ -44,7 +48,7 @@
 
   <!-- UI Overlays -->
   <div id="titleBar">
-    <h1 class="sceneName">Loading...</h1>
+    <div class="sceneName">Loading...</div>
   </div>
 
   <div id="sceneList">
@@ -148,17 +152,6 @@
       </svg>
     </div>
 
-    <!-- View Mode: eye with sparkle -->
-    <div id="viewModeToggle" class="ctrl-btn" title="Change View Mode">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-        stroke-linejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-        <circle cx="12" cy="12" r="3" />
-        <line x1="20" y1="4" x2="22" y2="2" />
-        <line x1="19" y1="2" x2="21" y2="4" />
-      </svg>
-    </div>
-
     <!-- Pan Controls: crosshair arrows -->
     <div id="viewControlsToggle" class="ctrl-btn" title="Toggle Pan Controls">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
@@ -205,12 +198,13 @@
 
   <div id="transition-overlay"></div>
 
-  <!-- Intro Screen -->
-  <div id="intro-screen">
+  <!-- Intro Screen (hidden by default, shown only when intro.enabled is true) -->
+  <div id="intro-screen" style="display:none;">
     <div class="intro-content">
+      <div class="intro-logo">✦ <span>Xeno</span></div>
       <h1 id="intro-title">Xeno Tour</h1>
-      <p id="intro-desc">Welcome to the interactive 360 experience.</p>
-      <button id="btn-start-tour">Start Tour</button>
+      <p id="intro-desc"></p>
+      <button class="btn" id="btn-start-tour">Enter Tour</button>
     </div>
   </div>
 
@@ -239,54 +233,7 @@
 
   <!-- App Entry -->
   <script src="js/viewer.js"></script>
-
-  <!-- View Mode Menu -->
-  <div id="viewModeMenu" class="view-mode-menu">
-
-    <!-- Normal: standard globe grid -->
-    <div class="view-mode-item" data-mode="normal">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-        stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 2a15 15 0 0 1 0 20" />
-        <path d="M12 2a15 15 0 0 0 0 20" />
-        <path d="M2 12h20" />
-        <path d="M2 7h20M2 17h20" stroke-opacity="0.4" />
-      </svg>
-      <span>Normal</span>
-    </div>
-
-    <!-- Mirror Ball: disco grid sphere -->
-    <div class="view-mode-item" data-mode="mirror-ball">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-        stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M3.5 9h17M3.5 12h17M3.5 15h17" />
-        <path d="M12 3c2 2 3 5 3 9s-1 7-3 9" />
-        <path d="M12 3c-2 2-3 5-3 9s1 7 3 9" />
-        <circle cx="8" cy="8" r="0.8" fill="currentColor" stroke="none" />
-        <circle cx="16" cy="7" r="0.8" fill="currentColor" stroke="none" />
-        <circle cx="17" cy="15" r="0.8" fill="currentColor" stroke="none" />
-      </svg>
-      <span>Mirror Ball</span>
-    </div>
-
-    <!-- Little Planet: planet with orbit ring -->
-    <div class="view-mode-item" data-mode="little-planet">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-        stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="15" r="5" />
-        <ellipse cx="12" cy="15" rx="9" ry="3" stroke-opacity="0.45" />
-        <path d="M5 8 Q12 4 19 8" stroke-opacity="0.4" />
-        <circle cx="7" cy="5" r="0.7" fill="currentColor" stroke="none" />
-        <circle cx="17" cy="4" r="0.7" fill="currentColor" stroke="none" />
-        <circle cx="12" cy="3" r="0.5" fill="currentColor" stroke="none" />
-      </svg>
-      <span>Little Planet</span>
-    </div>
-
-  </div>
-
+  
 </body>
 
 </html>

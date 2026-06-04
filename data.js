@@ -12,6 +12,7 @@ var data = {
     autorotateInactivityDelay: 3000,
     fullscreenButton: true,
     sceneListStyle: "sidebar",
+    layoutTheme: "default",
     showMinimap: false,
     minimapPosition: "bottom-left",
     showControls: true,

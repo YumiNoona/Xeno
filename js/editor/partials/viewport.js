@@ -55,9 +55,6 @@
     <div class="pill-tool" data-tool="minimap" title="Minimap">
       ${xIcon('map', 16)}
     </div>
-    <div class="pill-tool" data-tool="scene-settings" title="Scene settings">
-      ${xIcon('settings', 16)}
-    </div>
   </div>
 
   <div class="resizer right-resizer" id="right-resizer"></div>`);s.remove()})();

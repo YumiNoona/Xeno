@@ -11,7 +11,6 @@
     var props = document.getElementById('properties-panel');
     var rightResizer = document.getElementById('right-resizer');
     var sidebarCollapse = document.getElementById('sidebar-collapse-btn');
-    var propsCollapse = document.getElementById('props-collapse-btn');
 
     if (sidebarCollapse) {
       function updateSidebarCollapseIcon() {
@@ -36,22 +35,6 @@
       resizeObs.observe(sidebar, { attributes: true, attributeFilter: ['style'] });
       updateSidebarCollapseIcon();
       syncCollapseButtonPos();
-    }
-
-    if (propsCollapse) {
-      propsCollapse.addEventListener('click', function() {
-        props.classList.remove('visible');
-        D.propsReopenBtn.style.display = 'flex';
-        setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
-      });
-    }
-
-    if (D.propsReopenBtn) {
-      D.propsReopenBtn.addEventListener('click', function() {
-        props.classList.add('visible');
-        this.style.display = 'none';
-        setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
-      });
     }
 
     if (leftResizer) {
@@ -114,6 +97,13 @@
     if (btnPreview) {
       btnPreview.addEventListener('click', function() {
         if (S.projectSlug) window.open('preview.html?project=' + encodeURIComponent(S.projectSlug), '_blank');
+      });
+    }
+
+    var btnSettings = document.getElementById('btn-settings');
+    if (btnSettings) {
+      btnSettings.addEventListener('click', function() {
+        E.openProjectSettingsPanel();
       });
     }
 

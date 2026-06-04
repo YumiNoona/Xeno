@@ -10,6 +10,10 @@
   <div class="topbar-actions">
     <button class="btn-icon" id="topbar-theme-toggle" title="Toggle Theme"></button>
     <div class="topbar-sep"></div>
+    <button class="btn btn-settings" id="btn-settings">
+      ${xIcon('settings', 16)}
+      Settings
+    </button>
     <button class="btn" id="btn-media-manager">
       ${xIcon('folder', 16)}
       Media

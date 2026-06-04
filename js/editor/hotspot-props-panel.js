@@ -8,10 +8,12 @@
     // ─── Open / Close ────────────────────────────────────
     E.openPropertiesPanel = function(hsData) {
       S.selectedHotspotData = hsData;
+      // Hide all non-hotspot sections
+      D.fieldsSceneSettings.style.display = 'none';
+      D.fieldsProjectSettings.style.display = 'none';
       D.panelTitle.textContent = 'Hotspot Properties';
       D.panelActionsHotspot.style.display = 'flex';
       D.panelPosition.style.display = 'flex';
-      D.fieldsSceneSettings.style.display = 'none';
       D.fieldsHotspotProperties.style.display = 'block';
 
       D.propType.value = hsData.type || 'info';
@@ -50,14 +52,19 @@
       showTypeFields(hsData.type);
 
       D.propsPanel.classList.add('visible');
-      D.propsReopenBtn.style.display = 'none';      setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
+      setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
       E.startViewReadLoop();
     };
 
     E.closePropertiesPanel = function() {
       S.selectedHotspotData = null;
+      var ps = document.getElementById('fields-project-settings');
+      if (ps) ps.style.display = 'none';
+      var pa = document.getElementById('panel-actions-project');
+      if (pa) pa.style.display = 'none';
+      D.fieldsHotspotProperties.style.display = 'none';
+      D.fieldsSceneSettings.style.display = 'none';
       D.propsPanel.classList.remove('visible');
-      D.propsReopenBtn.style.display = 'flex';
       setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
     };
 

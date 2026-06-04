@@ -30,7 +30,7 @@
             settings: {
               title: name.trim(), name: name.trim(), mouseViewMode: 'drag',
               autorotateEnabled: false, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
-              fullscreenButton: true, sceneListStyle: 'sidebar',
+              fullscreenButton: true, sceneListStyle: 'sidebar', layoutTheme: 'default',
               showMinimap: false, minimapPosition: 'bottom-left', showControls: true,
               gyroscopeEnabled: false, vrEnabled: false,
               defaultTransition: 'opacity', defaultTransitionDuration: 1000, defaultTransitionEasing: 'easeInOut',

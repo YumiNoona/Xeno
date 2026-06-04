@@ -1,11 +1,5 @@
 (()=>{const s=document.currentScript;s.insertAdjacentHTML('beforebegin',`<!-- Properties Panel -->
 <div id="properties-panel">
-  <div class="collapse-btn" id="props-collapse-btn">
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  </div>
   <div class="panel-header">
     <h3 id="panel-title">Hotspot Properties</h3>
     <button class="close-panel" id="btn-close-properties">
@@ -396,6 +390,109 @@
       </div>
     </div>
 
+    <!-- Project Settings -->
+    <div class="type-fields" id="fields-project-settings" style="display:none;">
+      <div class="panel-actions" id="panel-actions-project" style="margin-bottom:12px;">
+        <button class="btn btn-primary" id="btn-save-project-settings">
+          ${xIcon('check', 14)}
+          Save Settings
+        </button>
+      </div>
+      <div class="project-settings-section">
+        <label class="ps-section-label">Preview Options</label>
+        <div class="form-group toggle-group">
+          <label>VR Mode</label>
+          <input type="checkbox" id="ps-vr">
+        </div>
+        <div class="form-group toggle-group">
+          <label>Gyroscope Control</label>
+          <input type="checkbox" id="ps-gyro">
+        </div>
+        <div class="form-group">
+          <label>Scene List Style</label>
+          <select id="ps-scene-list-style">
+            <option value="sidebar">Sidebar (left)</option>
+            <option value="bottom-strip">Bottom Strip</option>
+          </select>
+        </div>
+        <div class="form-group toggle-group">
+          <label>Control Buttons</label>
+          <input type="checkbox" id="ps-controls" checked>
+        </div>
+        <div class="form-group toggle-group">
+          <label>Fullscreen Button</label>
+          <input type="checkbox" id="ps-fullscreen" checked>
+        </div>
+        <div class="form-group toggle-group">
+          <label>Autorotate</label>
+          <input type="checkbox" id="ps-autorotate">
+        </div>
+        <div class="form-group">
+          <label>Layout Theme</label>
+          <select id="ps-layout-theme">
+            <option value="default">Default (Sidebar)</option>
+            <option value="strip">Bottom Strip</option>
+            <option value="minimal">Minimal</option>
+            <option value="gallery">Gallery</option>
+            <option value="float">Floating</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="project-settings-section">
+        <label class="ps-section-label">Intro Screen</label>
+        <div class="form-group toggle-group">
+          <label>Show Intro Screen</label>
+          <input type="checkbox" id="ps-intro-enabled">
+        </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="ps-intro-title" placeholder="Tour title">
+        </div>
+        <div class="form-group">
+          <label>Subtitle</label>
+          <input type="text" id="ps-intro-subtitle" placeholder="Optional subtitle">
+        </div>
+        <div class="form-group">
+          <label>Button Text</label>
+          <input type="text" id="ps-intro-btn" placeholder="Enter Tour">
+        </div>
+      </div>
+
+      <div class="project-settings-section">
+        <label class="ps-section-label">Floorplan / Minimap</label>
+        <div class="form-group toggle-group">
+          <label>Enable Minimap</label>
+          <input type="checkbox" id="ps-minimap">
+        </div>
+        <div class="form-group">
+          <label>Minimap Position</label>
+          <select id="ps-minimap-pos">
+            <option value="bottom-left">Bottom Left</option>
+            <option value="bottom-right">Bottom Right</option>
+            <option value="top-left">Top Left</option>
+            <option value="top-right">Top Right</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Floorplan Image</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="ps-floorplan-url" placeholder="Paste URL or pick\u2026" style="flex:1;">
+            <button class="btn btn-secondary" id="ps-pick-floorplan"
+              style="padding:0 10px;border-radius:var(--radius-sm);">
+              ${xIcon('folder', 14)}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-settings-section">
+        <label class="ps-section-label">Hotspot Overview</label>
+        <div id="ps-hotspot-overview"></div>
+      </div>
+
+    </div>
+
     <!-- Actions -->
     <div class="panel-actions" id="panel-actions-hotspot">
       <button class="btn btn-primary" id="btn-save-properties">
@@ -414,14 +511,6 @@
     </div>
   </div>
 </div>
-<!-- Props reopen tab -->
-<div id="props-reopen-btn" title="Open Properties Panel" style="display:none;">
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
-</div>
-
-</div><!-- /pano-wrapper -->
+<!-- /pano-wrapper -->
 </div><!-- /editor-main -->
 </div><!-- /workspace-view -->`);s.remove()})();

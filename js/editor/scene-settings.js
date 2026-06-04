@@ -22,7 +22,6 @@
       }
 
       D.propsPanel.classList.add('visible');
-      D.propsReopenBtn.style.display = 'none';
       setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
     };
 

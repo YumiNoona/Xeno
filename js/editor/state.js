@@ -156,11 +156,33 @@
   D.propAudioNarration = $('prop-audio-narration');
 
   // Editor panels
-  D.propsReopenBtn   = $('props-reopen-btn');
   D.fieldsSceneSettings = $('fields-scene-settings');
   D.fieldsHotspotProperties = $('fields-hotspot-properties');
+  D.fieldsProjectSettings = $('fields-project-settings');
   D.panelActionsHotspot = $('panel-actions-hotspot');
   D.panelPosition    = $('panel-position');
+
+  // Project settings DOM
+  D.psVR          = $('ps-vr');
+  D.psGyro        = $('ps-gyro');
+  D.psControls    = $('ps-controls');
+  D.psFullscreen  = $('ps-fullscreen');
+  D.psAutorotate  = $('ps-autorotate');
+  D.psLayoutTheme = $('ps-layout-theme');
+  D.psMinimap     = $('ps-minimap');
+  D.psMinimapPos  = $('ps-minimap-pos');
+  D.psIntroEnabled = $('ps-intro-enabled');
+  D.psIntroTitle  = $('ps-intro-title');
+  D.psIntroSubtitle = $('ps-intro-subtitle');
+  D.psIntroBtn    = $('ps-intro-btn');
+  D.psTransition  = $('ps-transition');
+  D.psTransDur    = $('ps-trans-dur');
+  D.psTransDurLabel = $('ps-trans-dur-label');
+  D.psSceneListStyle = $('ps-scene-list-style');
+  D.psHotspotOverview = $('ps-hotspot-overview');
+  D.psSaveBtn     = $('btn-save-project-settings');
+  D.psFloorplanEnabled = $('ps-minimap');
+  D.psFloorplanUrl = $('ps-floorplan-url');
 
   // Media manager state (shared)
   D.currentAlbumId   = null;
@@ -172,7 +194,7 @@
   D.mediaCtxTarget   = null;
 
   var HOTSPOT_TOOLS = ['navigate', 'info', 'url', 'image', 'video', 'audio', 'embed', 'quad'];
-  var TOGGLE_TOOLS  = ['select', 'autorotate', 'minimap', 'scene-settings', 'move'];
+  var TOGGLE_TOOLS  = ['select', 'autorotate', 'minimap', 'move'];
 
   E.HOTSPOT_TOOLS = HOTSPOT_TOOLS;
   E.TOGGLE_TOOLS  = TOGGLE_TOOLS;

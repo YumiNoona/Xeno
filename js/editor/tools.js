@@ -189,12 +189,6 @@
         S.viewer.setIdleMovement(Infinity);
       }
       E.debouncedSave();
-    } else if (tool === 'scene-settings') {
-      setActiveTool('select');
-      S.editorState.placeMode = false;
-      D.panoWrapper.classList.remove('crosshair-mode');
-      hideModeBadge();
-      E.openSceneSettingsPanel();
     } else if (tool === 'minimap') {
       btnEl.classList.toggle('active');
       if (!window.data.settings) window.data.settings = {};
