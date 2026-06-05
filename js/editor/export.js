@@ -56,6 +56,8 @@
       // Sync live editor state into window.data before export
       if (S.scenes && S.scenes.length) window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
       var exportedData = JSON.parse(JSON.stringify(window.data));
+      if (!exportedData.settings) exportedData.settings = {};
+      exportedData.settings.layoutTheme = (window.data.settings && window.data.settings.layoutTheme) || 'default';
       var mediaPromises = [];
 
       function extFromMime(mime) {
@@ -73,7 +75,7 @@
         return url && url.indexOf('blob:') === 0
           ? Promise.resolve(url)
           : url && url.indexOf('media_') === 0 && window.XenoSupabase
-            ? window.XenoSupabase.resolveMediaId(url).then(function(b) { return b || url; })
+            ? window.XenoSupabase.resolveMediaId(url).then(function(b) { return b || null; })
             : Promise.resolve(url);
       }
 
@@ -95,6 +97,7 @@
             });
           }).catch(function(err) {
             console.warn('Could not bundle hotspot media for scene ' + sceneId, err);
+            hs.content.src = null;
           });
           mediaPromises.push(p);
         });
@@ -104,6 +107,7 @@
         if (!sceneData.mediaUrl) return;
         var origUrl = sceneData.mediaUrl;
         var p = resolveUrl(origUrl).then(function(fetchUrl) {
+          if (!fetchUrl) throw new Error('No blob found for ' + sceneData.name);
           return fetch(fetchUrl).then(function(res) {
             if (!res.ok) throw new Error('Failed to fetch ' + sceneData.name);
             return res.blob();
@@ -121,6 +125,8 @@
           });
         }).catch(function(err) {
           console.warn('Could not bundle media for scene ' + sceneData.name, err);
+          sceneData.mediaUrl = null;
+          sceneData.thumbnailUrl = null;
         });
         mediaPromises.push(p);
       }

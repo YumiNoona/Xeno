@@ -4,11 +4,14 @@ package-lock.json
 
 # Local Environment
 .env
+.env.local
+.env.production
 .DS_Store
 *.log
 .vscode/
 .idea/
 .gemini/
+Thumbs.db
 
 # Engine Dev Artifacts
 engine.jshintrc
@@ -16,10 +19,14 @@ jsdoc-conf.json
 jsdoc.md
 testem.json
 test.js
+dist/
 
 # Local config (contains production keys)
 config.js
 
-# Exported tours
+# Exported tours & temp files
 export/
 *.zip
+temp/
+*.csv
+*.tsv

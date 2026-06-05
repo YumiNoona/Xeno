@@ -426,15 +426,55 @@
         </div>
         <div class="form-group">
           <label>Layout Theme</label>
-          <select id="ps-layout-theme">
-            <option value="default">Default (Sidebar)</option>
-            <option value="strip">Bottom Strip</option>
-            <option value="minimal">Minimal</option>
-            <option value="gallery">Gallery</option>
-            <option value="float">Floating</option>
-            <option value="hamburger">Hamburger Menu</option>
-            <option value="center-bar">Center Bar</option>
-          </select>
+          <input type="hidden" id="ps-layout-theme" value="default">
+          <div class="theme-card-grid">
+            <div class="theme-card" data-theme="default">
+              <div class="tc-diagram">
+                <div class="tc-sidebar"></div>
+                <div class="tc-pano"></div>
+                <div class="tc-ctrl" style="bottom:4px;right:4px"></div>
+              </div>
+              <div class="tc-name">Default</div>
+              <div class="tc-desc">Left sidebar, controls bottom-right</div>
+            </div>
+
+            <div class="theme-card" data-theme="gallery">
+              <div class="tc-diagram">
+                <div class="tc-pano"></div>
+                <div class="tc-gallery-bottom"></div>
+                <div class="tc-ctrl" style="top:4px;right:4px"></div>
+              </div>
+              <div class="tc-name">Gallery</div>
+              <div class="tc-desc">Slide-up bottom drawer, controls top-right</div>
+            </div>
+            <div class="theme-card" data-theme="float">
+              <div class="tc-diagram">
+                <div class="tc-pano"></div>
+                <div class="tc-float-pill"></div>
+                <div class="tc-ctrl" style="bottom:24px;right:4px"></div>
+              </div>
+              <div class="tc-name">Float</div>
+              <div class="tc-desc">Floating pill, controls stacked bottom-right</div>
+            </div>
+            <div class="theme-card" data-theme="hamburger">
+              <div class="tc-diagram">
+                <div class="tc-pano"></div>
+                <div class="tc-hamburger-menu"></div>
+                <div class="tc-ctrl" style="bottom:4px;right:4px"></div>
+              </div>
+              <div class="tc-name">Hamburger</div>
+              <div class="tc-desc">Side-pull menu, toggle on left edge</div>
+            </div>
+            <div class="theme-card" data-theme="center-bar">
+              <div class="tc-diagram">
+                <div class="tc-pano"></div>
+                <div class="tc-center-bar-bottom"></div>
+                <div class="tc-ctrl" style="bottom:22px;left:50%;transform:translateX(-50%)"></div>
+              </div>
+              <div class="tc-name">Center Bar</div>
+              <div class="tc-desc">Full-width bottom bar, controls pill above</div>
+            </div>
+          </div>
         </div>
       </div>
 

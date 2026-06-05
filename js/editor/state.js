@@ -169,7 +169,7 @@
   D.psFullscreen  = $('ps-fullscreen');
   D.psCapture     = $('ps-capture');
   D.psAutorotate  = $('ps-autorotate');
-  D.psLayoutTheme = $('ps-layout-theme');
+  D.psLayoutTheme = $('ps-layout-theme'); // hidden input
   D.psMinimap     = $('ps-minimap');
   D.psMinimapPos  = $('ps-minimap-pos');
   D.psIntroEnabled = $('ps-intro-enabled');

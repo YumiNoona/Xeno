@@ -38,7 +38,12 @@
     if (D.psFullscreen) D.psFullscreen.checked = s.fullscreenButton !== false;
     if (D.psCapture) D.psCapture.checked = s.showCaptureButton !== false;
     if (D.psAutorotate) D.psAutorotate.checked = s.autorotateEnabled === true;
-    if (D.psLayoutTheme) D.psLayoutTheme.value = s.layoutTheme || 'default';
+    if (D.psLayoutTheme) {
+      D.psLayoutTheme.value = s.layoutTheme || 'default';
+      document.querySelectorAll('.theme-card').forEach(function(c) {
+        c.classList.toggle('selected', c.dataset.theme === D.psLayoutTheme.value);
+      });
+    }
     if (D.psIntroEnabled) D.psIntroEnabled.checked = s.intro && s.intro.enabled === true;
     if (D.psIntroTitle) D.psIntroTitle.value = (s.intro && s.intro.title) || '';
     if (D.psIntroSubtitle) D.psIntroSubtitle.value = (s.intro && s.intro.subtitle) || '';
@@ -66,6 +71,19 @@
     s.showCaptureButton = D.psCapture ? D.psCapture.checked : true;
     s.autorotateEnabled = D.psAutorotate ? D.psAutorotate.checked : false;
     s.layoutTheme = D.psLayoutTheme ? D.psLayoutTheme.value : 'default';
+    try {
+      var slug = window.currentProjectSlug || (window.location.search.match(/[?&]project=([^&]+)/) || [])[1];
+      if (slug) {
+        var raw = localStorage.getItem('xeno_tour_' + slug);
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (!parsed.data) parsed.data = {};
+          if (!parsed.data.settings) parsed.data.settings = {};
+          parsed.data.settings.layoutTheme = s.layoutTheme;
+          localStorage.setItem('xeno_tour_' + slug, JSON.stringify(parsed));
+        }
+      }
+    } catch(e) {}
     if (!s.intro) s.intro = {};
     s.intro.enabled = D.psIntroEnabled ? D.psIntroEnabled.checked : false;
     s.intro.title = D.psIntroTitle ? D.psIntroTitle.value : '';
@@ -120,6 +138,16 @@
         D.psTransDurLabel.textContent = this.value + 'ms';
       });
     }
+
+    // Theme card click handler
+    document.querySelectorAll('.theme-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        document.querySelectorAll('.theme-card').forEach(function(c) { c.classList.remove('selected'); });
+        this.classList.add('selected');
+        D.psLayoutTheme.value = this.dataset.theme;
+        D.psLayoutTheme.dispatchEvent(new Event('change'));
+      });
+    });
 
     // Auto-save on any change to project settings fields
     if (D.fieldsProjectSettings) {
