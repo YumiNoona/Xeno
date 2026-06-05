@@ -167,6 +167,7 @@
   D.psGyro        = $('ps-gyro');
   D.psControls    = $('ps-controls');
   D.psFullscreen  = $('ps-fullscreen');
+  D.psCapture     = $('ps-capture');
   D.psAutorotate  = $('ps-autorotate');
   D.psLayoutTheme = $('ps-layout-theme');
   D.psMinimap     = $('ps-minimap');
@@ -178,7 +179,6 @@
   D.psTransition  = $('ps-transition');
   D.psTransDur    = $('ps-trans-dur');
   D.psTransDurLabel = $('ps-trans-dur-label');
-  D.psSceneListStyle = $('ps-scene-list-style');
   D.psHotspotOverview = $('ps-hotspot-overview');
   D.psSaveBtn     = $('btn-save-project-settings');
   D.psFloorplanEnabled = $('ps-minimap');

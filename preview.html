@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="css/lib/hint.css">
   <link rel="stylesheet" href="css/viewer/layout.css">
   <link rel="stylesheet" href="css/editor/buttons.css">
-  <link rel="stylesheet" href="css/viewer/components.css">
+  <link rel="stylesheet" href="css/viewer/components.css?v=2">
   <link rel="stylesheet" href="css/hotspots/types.css">
   <link rel="stylesheet" href="css/hotspots/animations.css">
   <link rel="stylesheet" href="css/hotspots/dots.css">
@@ -164,6 +164,15 @@
       </svg>
     </div>
 
+    <!-- Capture: camera icon -->
+    <div id="captureToggle" class="ctrl-btn" title="Capture Screenshot">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+    </div>
+
   </div>
 
   <!-- Directional pan controls -->
@@ -198,7 +207,33 @@
 
   <div id="transition-overlay"></div>
 
-  <!-- Intro Screen (hidden by default, shown only when intro.enabled is true) -->
+  <!-- Capture overlay -->
+  <div id="capture-overlay" style="display:none;">
+    <div class="capture-backdrop"></div>
+    <div class="capture-container">
+      <div class="capture-main">
+        <div class="capture-image-wrap" data-ratio="full">
+          <img class="capture-image" src="" alt="Capture">
+        </div>
+      </div>
+      <div class="capture-sidebar">
+        <div class="capture-sidebar-title">Aspect</div>
+        <div class="ratio-options">
+          <div class="ratio-option active" data-ratio="full"><span class="ratio-indicator"></span><span class="ratio-label">Full</span></div>
+          <div class="ratio-option" data-ratio="1-1"><span class="ratio-indicator"></span><span class="ratio-label">1:1</span></div>
+          <div class="ratio-option" data-ratio="4-3"><span class="ratio-indicator"></span><span class="ratio-label">4:3</span></div>
+          <div class="ratio-option" data-ratio="3-2"><span class="ratio-indicator"></span><span class="ratio-label">3:2</span></div>
+          <div class="ratio-option" data-ratio="16-9"><span class="ratio-indicator"></span><span class="ratio-label">16:9</span></div>
+        </div>
+        <div class="capture-actions">
+          <button class="ctrl-btn" id="capture-download" title="Download">↓</button>
+          <button class="ctrl-btn" id="capture-close" title="Close">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Intro Screen (controlled by inline script — zero flash) -->
   <div id="intro-screen" style="display:none;">
     <div class="intro-content">
       <div class="intro-logo">✦ <span>Xeno</span></div>
@@ -207,6 +242,62 @@
       <button class="btn" id="btn-start-tour">Enter Tour</button>
     </div>
   </div>
+  <script>
+  (function(){
+    try {
+      var slug = new URLSearchParams(window.location.search).get('project');
+      if (slug) {
+        var raw = localStorage.getItem('xeno_tour_' + slug);
+        if (raw) {
+          var d = JSON.parse(raw);
+          var s = d && d.data && d.data.settings;
+          if (s) {
+            // Apply visibility settings immediately (before any rendering)
+            if (s.showControls === false) {
+              // For hamburger theme, move toggle button outside controls first
+              if (s.layoutTheme === 'hamburger') {
+                var sceneListToggle = document.getElementById('sceneListToggle');
+                if (sceneListToggle && sceneListToggle.parentNode) {
+                  sceneListToggle.parentNode.removeChild(sceneListToggle);
+                  document.body.appendChild(sceneListToggle);
+                }
+              }
+              var ctrl = document.getElementById('controls');
+              if (ctrl) ctrl.style.display = 'none';
+            }
+            if (s.gyroscopeEnabled === false) {
+              var g = document.getElementById('gyroToggle');
+              if (g) g.style.display = 'none';
+            }
+            if (s.vrEnabled === false) {
+              var v = document.getElementById('vrToggle');
+              if (v) v.style.display = 'none';
+            }
+            if (s.showCaptureButton === false) {
+              var cap = document.getElementById('captureToggle');
+              if (cap) cap.style.display = 'none';
+            }
+            // Intro screen
+            if (s.intro && s.intro.enabled) {
+              var intro = s.intro;
+              var titleEl = document.getElementById('intro-title');
+              var descEl = document.getElementById('intro-desc');
+              var btnEl = document.getElementById('btn-start-tour');
+              if (titleEl) titleEl.textContent = intro.title || s.name || 'Xeno Tour';
+              if (descEl) {
+                descEl.textContent = intro.subtitle || '';
+                descEl.style.display = intro.subtitle ? '' : 'none';
+              }
+              if (btnEl) btnEl.textContent = intro.buttonText || 'Enter Tour';
+              var el = document.getElementById('intro-screen');
+              if (el) el.style.display = '';
+            }
+          }
+        }
+      }
+    } catch(e) {}
+  })();
+  </script>
 
   <!-- Dependencies -->
   <script src="js/lib/screenfull.js"></script>

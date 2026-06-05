@@ -15,6 +15,9 @@
     D.fieldsProjectSettings.style.display = 'block';
     D.panelActionsHotspot.style.display = 'none';
     D.panelPosition.style.display = 'none';
+    // Show the save button (may have been hidden by closePropertiesPanel)
+    var pa = document.getElementById('panel-actions-project');
+    if (pa) pa.style.display = '';
 
     S.selectedHotspotElement = null;
     panel.classList.add('visible');
@@ -33,9 +36,9 @@
     if (D.psGyro) D.psGyro.checked = s.gyroscopeEnabled === true;
     if (D.psControls) D.psControls.checked = s.showControls !== false;
     if (D.psFullscreen) D.psFullscreen.checked = s.fullscreenButton !== false;
+    if (D.psCapture) D.psCapture.checked = s.showCaptureButton !== false;
     if (D.psAutorotate) D.psAutorotate.checked = s.autorotateEnabled === true;
     if (D.psLayoutTheme) D.psLayoutTheme.value = s.layoutTheme || 'default';
-    if (D.psSceneListStyle) D.psSceneListStyle.value = s.sceneListStyle || 'sidebar';
     if (D.psIntroEnabled) D.psIntroEnabled.checked = s.intro && s.intro.enabled === true;
     if (D.psIntroTitle) D.psIntroTitle.value = (s.intro && s.intro.title) || '';
     if (D.psIntroSubtitle) D.psIntroSubtitle.value = (s.intro && s.intro.subtitle) || '';
@@ -60,9 +63,9 @@
     s.gyroscopeEnabled = D.psGyro ? D.psGyro.checked : false;
     s.showControls = D.psControls ? D.psControls.checked : true;
     s.fullscreenButton = D.psFullscreen ? D.psFullscreen.checked : true;
+    s.showCaptureButton = D.psCapture ? D.psCapture.checked : true;
     s.autorotateEnabled = D.psAutorotate ? D.psAutorotate.checked : false;
     s.layoutTheme = D.psLayoutTheme ? D.psLayoutTheme.value : 'default';
-    s.sceneListStyle = D.psSceneListStyle ? D.psSceneListStyle.value : 'sidebar';
     if (!s.intro) s.intro = {};
     s.intro.enabled = D.psIntroEnabled ? D.psIntroEnabled.checked : false;
     s.intro.title = D.psIntroTitle ? D.psIntroTitle.value : '';
@@ -118,9 +121,9 @@
       });
     }
 
-    // Auto-save layout theme on change
-    if (D.psLayoutTheme) {
-      D.psLayoutTheme.addEventListener('change', function () {
+    // Auto-save on any change to project settings fields
+    if (D.fieldsProjectSettings) {
+      D.fieldsProjectSettings.addEventListener('change', function () {
         saveSettings();
       });
     }

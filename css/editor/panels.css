@@ -363,13 +363,10 @@ input[type="number"] {
 
 /* ── Project Settings ───────────────────────────────────── */
 .project-settings-section {
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
 }
 
 .project-settings-section:last-child {
-  border-bottom: none;
   margin-bottom: 0;
 }
 

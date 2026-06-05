@@ -408,13 +408,6 @@
           <label>Gyroscope Control</label>
           <input type="checkbox" id="ps-gyro">
         </div>
-        <div class="form-group">
-          <label>Scene List Style</label>
-          <select id="ps-scene-list-style">
-            <option value="sidebar">Sidebar (left)</option>
-            <option value="bottom-strip">Bottom Strip</option>
-          </select>
-        </div>
         <div class="form-group toggle-group">
           <label>Control Buttons</label>
           <input type="checkbox" id="ps-controls" checked>
@@ -422,6 +415,10 @@
         <div class="form-group toggle-group">
           <label>Fullscreen Button</label>
           <input type="checkbox" id="ps-fullscreen" checked>
+        </div>
+        <div class="form-group toggle-group">
+          <label>Capture Button</label>
+          <input type="checkbox" id="ps-capture" checked>
         </div>
         <div class="form-group toggle-group">
           <label>Autorotate</label>
@@ -435,6 +432,8 @@
             <option value="minimal">Minimal</option>
             <option value="gallery">Gallery</option>
             <option value="float">Floating</option>
+            <option value="hamburger">Hamburger Menu</option>
+            <option value="center-bar">Center Bar</option>
           </select>
         </div>
       </div>
