@@ -64,7 +64,6 @@
         fov: S.currentSceneCtx.view.fov()
       };
       E.debouncedSave();
-      alert('Default view saved for "' + S.currentSceneCtx.data.name + '"');
     });
 
     // ─── Bottom bar camera readout ───────────────────────

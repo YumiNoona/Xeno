@@ -199,6 +199,41 @@
     return wrapper;
   };
 
+  builders.text = function(hotspot) {
+    var wrapper = document.createElement('div');
+    wrapper.classList.add('xeno-hotspot-text');
+
+    var label = document.createElement('div');
+    label.classList.add('text-label');
+
+    var content = document.createElement('span');
+    content.textContent = hotspot.text || hotspot.title || 'Text';
+    content.classList.add('text-content');
+    label.appendChild(content);
+
+    var hasBg = hotspot.bgColor && hotspot.bgColor !== 'transparent';
+    content.style.color = hotspot.textColor || '#ffffff';
+    content.style.fontSize = (hotspot.fontSize || 14) + 'px';
+    content.style.fontFamily = hotspot.fontFamily || 'inherit';
+    content.style.fontWeight = hotspot.bold ? 'bold' : 'normal';
+    content.style.fontStyle = hotspot.italic ? 'italic' : 'normal';
+    content.style.textDecoration = hotspot.underline ? 'underline' : 'none';
+    if (hotspot.rotation) {
+      label.style.transform = 'translate(-50%, -50%) rotate(' + hotspot.rotation + 'deg)';
+    }
+    if (hasBg) {
+      label.style.backgroundColor = hotspot.bgColor;
+      label.style.padding = '6px 12px';
+      label.style.borderRadius = '6px';
+    } else {
+      label.style.backgroundColor = 'transparent';
+      label.style.padding = '0';
+      label.style.borderRadius = '0';
+    }
+    wrapper.appendChild(label);
+    return wrapper;
+  };
+
   builders.image = function(hotspot) {
     var wrapper = document.createElement('div');
     wrapper.classList.add('xeno-hotspot-link');

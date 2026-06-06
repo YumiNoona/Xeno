@@ -12,9 +12,11 @@
   var STORE_NAME = 'blobs';
 
   // ─── IndexedDB helpers ────────────────────────────────
+  var _db = null;
 
   function dbOpen() {
-    return new Promise(function(resolve, reject) {
+    if (_db) return _db;
+    _db = new Promise(function(resolve, reject) {
       var req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = function(e) {
         var db = e.target.result;
@@ -22,8 +24,9 @@
           db.createObjectStore(STORE_NAME);
       };
       req.onsuccess = function(e) { resolve(e.target.result); };
-      req.onerror = function(e) { reject(e.target.error); };
+      req.onerror = function(e) { _db = null; reject(e.target.error); };
     });
+    return _db;
   }
 
   function dbStore(key, blob) {
@@ -31,8 +34,8 @@
       return new Promise(function(resolve, reject) {
         var tx = db.transaction(STORE_NAME, 'readwrite');
         tx.objectStore(STORE_NAME).put(blob, key);
-        tx.oncomplete = function() { db.close(); resolve(); };
-        tx.onerror = function(e) { db.close(); reject(e.target.error); };
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function(e) { reject(e.target.error); };
       });
     });
   }
@@ -42,8 +45,8 @@
       return new Promise(function(resolve, reject) {
         var tx = db.transaction(STORE_NAME, 'readonly');
         var req = tx.objectStore(STORE_NAME).get(key);
-        req.onsuccess = function() { db.close(); resolve(req.result || null); };
-        req.onerror = function(e) { db.close(); reject(e.target.error); };
+        req.onsuccess = function() { resolve(req.result || null); };
+        req.onerror = function(e) { reject(e.target.error); };
       });
     });
   }
@@ -53,8 +56,8 @@
       return new Promise(function(resolve, reject) {
         var tx = db.transaction(STORE_NAME, 'readwrite');
         tx.objectStore(STORE_NAME).delete(key);
-        tx.oncomplete = function() { db.close(); resolve(); };
-        tx.onerror = function(e) { db.close(); reject(e.target.error); };
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function(e) { reject(e.target.error); };
       });
     });
   }
@@ -104,7 +107,13 @@
     try { localStorage.setItem('xeno_albums', JSON.stringify(a)); } catch (e) { console.error(e); }
   }
   function getLocalMedia() {
-    try { var d = localStorage.getItem('xeno_media'); return d ? JSON.parse(d) : []; }
+    try {
+      var d = localStorage.getItem('xeno_media');
+      if (!d) return [];
+      var list = JSON.parse(d);
+      list.forEach(function(m) { delete m._blobUrl; });
+      return list;
+    }
     catch (e) { return []; }
   }
   function saveLocalMedia(m) {
@@ -268,6 +277,93 @@
     });
   }
 
+  // ─── Export / Import ──────────────────────────────────
+
+  function exportProject(slug) {
+    var raw = localStorage.getItem(LOCAL_STORAGE_PREFIX + slug);
+    if (!raw) return Promise.reject(new Error('Project not found'));
+    var bundle = JSON.parse(raw);
+    var projectData = bundle.data || bundle;
+    projectData.slug = slug;
+    var mediaList = getLocalMedia();
+    var albums = getLocalAlbums();
+
+    // Collect all media IDs referenced by this project
+    var referencedIds = {};
+    function scanForMediaIds(obj) {
+      if (typeof obj === 'string' && obj.indexOf('media_') === 0) referencedIds[obj] = true;
+      if (Array.isArray(obj)) obj.forEach(scanForMediaIds);
+      if (obj && typeof obj === 'object') {
+        for (var k in obj) { if (obj.hasOwnProperty(k)) scanForMediaIds(obj[k]); }
+      }
+    }
+    scanForMediaIds(projectData);
+
+    // Filter media to only include items referenced by this project
+    var projectMedia = mediaList.filter(function(m) { return referencedIds[m.id]; });
+
+    return Promise.all(projectMedia.map(function(m) {
+      return blobGet(m.id).then(function(blob) {
+        if (!blob) return { id: m.id, filename: m.filename, type: m.type, size: m.size, album_id: m.album_id, created_at: m.created_at, data: null };
+        return new Promise(function(resolve) {
+          var reader = new FileReader();
+          reader.onload = function() {
+            resolve({ id: m.id, filename: m.filename, type: m.type, size: m.size, album_id: m.album_id, created_at: m.created_at, data: reader.result });
+          };
+          reader.onerror = function() { resolve({ id: m.id, filename: m.filename, type: m.type, size: m.size, album_id: m.album_id, created_at: m.created_at, data: null }); };
+          reader.readAsDataURL(blob);
+        });
+      });
+    })).then(function(mediaEntries) {
+      return {
+        version: '1.0',
+        type: 'xeno-project',
+        exportedAt: new Date().toISOString(),
+        project: projectData,
+        albums: albums,
+        media: mediaEntries
+      };
+    });
+  }
+
+  function importProject(bundle) {
+    if (!bundle || bundle.type !== 'xeno-project') return Promise.reject(new Error('Invalid project file'));
+    var slug = bundle.project.slug;
+    // Save tour data
+    var payload = { data: bundle.project, updated_at: new Date().toISOString() };
+    localStorage.setItem(LOCAL_STORAGE_PREFIX + slug, JSON.stringify(payload));
+    // Merge albums
+    if (bundle.albums && bundle.albums.length) {
+      var existingAlbums = getLocalAlbums();
+      var albumIds = {};
+      existingAlbums.forEach(function(a) { albumIds[a.id] = true; });
+      bundle.albums.forEach(function(a) { if (!albumIds[a.id]) existingAlbums.push(a); });
+      saveLocalAlbums(existingAlbums);
+    }
+    // Merge media records
+    var existingMedia = getLocalMedia();
+    var mediaIds = {};
+    existingMedia.forEach(function(m) { mediaIds[m.id] = true; });
+    var newRecords = (bundle.media || []).map(function(m) {
+      return { id: m.id, filename: m.filename, type: m.type, size: m.size, album_id: m.album_id, created_at: m.created_at, url: m.id };
+    });
+    newRecords.forEach(function(r) { if (!mediaIds[r.id]) existingMedia.push(r); });
+    saveLocalMedia(existingMedia);
+    // Restore blobs to IndexedDB
+    var blobPromises = (bundle.media || []).map(function(m) {
+      if (!m.data) return Promise.resolve();
+      var base64 = m.data.split(',')[1];
+      if (!base64) return Promise.resolve();
+      try {
+        var binary = atob(base64);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return blobStore(m.id, new Blob([bytes], { type: m.type }));
+      } catch(e) { return Promise.resolve(); }
+    });
+    return Promise.all(blobPromises).then(function() { return slug; });
+  }
+
   // ─── Init / stubs ─────────────────────────────────────
 
   function init() { console.log('[Xeno] Running in local storage mode'); }
@@ -284,6 +380,7 @@
     fetchMedia: fetchMedia, uploadAndRecordMedia: uploadAndRecordMedia,
     renameAlbum: renameAlbum, deleteAlbum: deleteAlbum,
     renameMedia: renameMedia, deleteMedia: deleteMedia, moveMedia: moveMedia,
-    resolveMediaId: resolveMediaId
+    resolveMediaId: resolveMediaId,
+    exportProject: exportProject, importProject: importProject
   };
 })();

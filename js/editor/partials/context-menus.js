@@ -12,6 +12,10 @@
     ${xIcon('copy', 14)}
     Duplicate
   </div>
+  <div class="ctx-item" data-action="scene-thumbnail">
+    ${xIcon('photo', 14)}
+    Set Thumbnail
+  </div>
   <div class="ctx-sep"></div>
   <div class="ctx-item ctx-danger" data-action="delete">
     ${xIcon('trash', 14)}
@@ -46,6 +50,27 @@
   </div>
   <div class="ctx-sep"></div>
   <div class="ctx-item ctx-danger" data-action="delete-media">
+    ${xIcon('trash', 14)}
+    Delete
+  </div>
+</div>
+
+<!-- Project Context Menu -->
+<div id="project-ctx" class="xeno-ctx-menu">
+  <div class="ctx-item" data-action="rename-project">
+    ${xIcon('edit', 14)}
+    Rename
+  </div>
+  <div class="ctx-item" data-action="thumb-project">
+    ${xIcon('photo', 14)}
+    Set Thumbnail
+  </div>
+  <div class="ctx-item" data-action="download-project">
+    ${xIcon('download', 14)}
+    Download
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item ctx-danger" data-action="delete-project">
     ${xIcon('trash', 14)}
     Delete
   </div>

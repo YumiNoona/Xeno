@@ -67,11 +67,14 @@
         style: S.editorState.activeTool,
         yaw: coords.yaw, pitch: coords.pitch,
         title: 'New ' + S.editorState.activeTool, text: '',
-        animation: 'none', iconStyle: {navigate:'arrow',info:'info',image:'photo',video:'camera',audio:'volume',url:'link'}[S.editorState.activeTool] || 'default', iconSize: 44,
+        animation: 'none', iconStyle: {navigate:'arrow',info:'info',image:'photo',video:'camera',audio:'volume',url:'link',text:'default'}[S.editorState.activeTool] || 'default', iconSize: 44,
         target: null, transition: 'opacity', transitionDuration: 800,
         linkUrl: '', linkType: 'external', linkTarget: null, linkLabel: '',
         urlHref: '', urlLabel: 'Open link', urlOpenIn: 'newtab',
-        content: { src: '', caption: '', linkUrl: '' }
+        content: { src: '', caption: '', linkUrl: '' },
+        bgColor: 'rgba(0,0,0,0.7)', textColor: '#ffffff', fontSize: 14,
+        fontFamily: null, bold: false, italic: false, underline: false,
+        rotation: 0
       };
 
       if (!S.currentSceneCtx.data.hotspots) S.currentSceneCtx.data.hotspots = [];

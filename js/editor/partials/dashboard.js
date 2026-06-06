@@ -7,6 +7,10 @@
         ${xIcon('folder', 14)}
         Media
       </button>
+      <button class="btn btn-secondary" id="btn-import-project">
+        ${xIcon('upload', 14)}
+        Import
+      </button>
       <button class="btn btn-new-project" id="btn-new-project">
         ${xIcon('plus', 14)}
         New Project

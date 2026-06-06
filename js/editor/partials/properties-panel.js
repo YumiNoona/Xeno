@@ -20,9 +20,10 @@
         <option value="audio">Audio</option>
         <option value="embed">Embedded (YouTube/Maps)</option>
         <option value="quad">Surface (4-Point)</option>
+        <option value="text">Text Label</option>
       </select>
     </div>
-    <div class="form-group">
+    <div class="form-group" id="group-hotspot-title">
       <label>Label / Title</label>
       <input type="text" id="prop-title" placeholder="Hotspot title">
     </div>
@@ -47,6 +48,7 @@
         <option value="wobble">Wobble</option>
       </select>
     </div>
+    <div id="group-hotspot-generic">
     <div class="form-group">
       <label>Icon Style</label>
       <select id="prop-icon-style">
@@ -137,6 +139,7 @@
             </button>
       </div>
     </div>
+    </div><!-- /group-hotspot-generic -->
 
     <!-- Navigate fields -->
     <div class="type-fields" id="fields-navigate">
@@ -365,6 +368,59 @@
       </div>
     </div>
 
+    <!-- Text fields -->
+    <div class="type-fields" id="fields-text" style="display:none;">
+      <div class="form-group">
+        <label>Text Content</label>
+        <textarea id="prop-text-content" placeholder="Enter text to display on the tour..." rows="4" style="width:100%;resize:vertical;"></textarea>
+      </div>
+      <div class="form-group toggle-group">
+        <label>Background</label>
+        <input type="checkbox" id="prop-text-bg" checked>
+      </div>
+      <div class="form-group">
+        <label>Text Color</label>
+        <input type="color" id="prop-text-color" value="#ffffff">
+      </div>
+      <div class="form-group">
+        <label>Background Color</label>
+        <input type="color" id="prop-text-bg-color" value="#000000">
+      </div>
+      <div class="form-group">
+        <label>Font Size <span id="prop-text-size-label">14px</span></label>
+        <input type="range" id="prop-text-size" min="10" max="48" value="14" step="1">
+      </div>
+      <div class="form-group">
+        <label>Rotation <span id="prop-text-rot-label">0°</span></label>
+        <input type="range" id="prop-text-rotation" min="-180" max="180" value="0" step="1">
+      </div>
+      <div class="form-group">
+        <label>Font Family</label>
+        <select id="prop-text-font">
+          <option value="">Default</option>
+          <option value="Arial, sans-serif">Arial</option>
+          <option value="'Helvetica Neue', sans-serif">Helvetica</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="'Times New Roman', serif">Times New Roman</option>
+          <option value="'Courier New', monospace">Courier</option>
+          <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+          <option value="Impact, fantasy">Impact</option>
+          <option value="'Comic Sans MS', cursive">Comic Sans</option>
+        </select>
+      </div>
+      <div class="form-group" style="display:flex;gap:16px;align-items:center;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="prop-text-bold"><strong>B</strong>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="prop-text-italic"><em>I</em>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="prop-text-underline"><u>U</u>
+        </label>
+      </div>
+    </div>
+
     </div><!-- /#fields-hotspot-properties -->
 
     <!-- Scene settings -->
@@ -424,19 +480,14 @@
           <label>Autorotate</label>
           <input type="checkbox" id="ps-autorotate">
         </div>
+        <div class="form-group toggle-group">
+          <label>Show Scenes</label>
+          <input type="checkbox" id="ps-show-scenes" checked>
+        </div>
         <div class="form-group">
           <label>Layout Theme</label>
-          <input type="hidden" id="ps-layout-theme" value="default">
+          <input type="hidden" id="ps-layout-theme" value="hamburger">
           <div class="theme-card-grid">
-            <div class="theme-card" data-theme="default">
-              <div class="tc-diagram">
-                <div class="tc-sidebar"></div>
-                <div class="tc-pano"></div>
-                <div class="tc-ctrl" style="bottom:4px;right:4px"></div>
-              </div>
-              <div class="tc-name">Default</div>
-              <div class="tc-desc">Left sidebar, controls bottom-right</div>
-            </div>
 
             <div class="theme-card" data-theme="gallery">
               <div class="tc-diagram">
@@ -475,6 +526,24 @@
               <div class="tc-desc">Full-width bottom bar, controls pill above</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="project-settings-section">
+        <label class="ps-section-label">Default Transition</label>
+        <div class="form-group">
+          <label>Transition Effect</label>
+          <select id="ps-transition">
+            <option value="opacity">Opacity Fade</option>
+            <option value="dissolve">Dissolve</option>
+            <option value="slide">Slide</option>
+            <option value="zoom">Zoom</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Duration</label>
+          <input type="range" id="ps-trans-dur" min="200" max="3000" step="100" value="1000">
+          <span id="ps-trans-dur-label" style="font-size:var(--type-xs);color:var(--text-muted);margin-left:8px;">1000ms</span>
         </div>
       </div>
 

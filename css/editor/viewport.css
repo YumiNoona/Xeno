@@ -160,20 +160,20 @@
   left: 50%;
   transform: translateX(-50%);
   background: var(--bg-glass);
-  padding: 4px;
+  padding: 5px 5px 5px 14px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 1px;
+  gap: 2px;
   z-index: 100;
   backdrop-filter: blur(20px);
   box-shadow: var(--shadow-lg);
 }
 
 .pill-tool {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
@@ -187,8 +187,8 @@
 }
 
 .pill-tool svg {
-  width: 15px;
-  height: 15px;
+  width: 17px;
+  height: 17px;
   stroke: currentColor;
   fill: none;
   stroke-width: 2.5;
@@ -211,7 +211,7 @@
 
 .pill-sep {
   width: 1px;
-  height: 18px;
+  height: 22px;
   background: var(--border);
   margin: 0 3px;
 }
@@ -220,7 +220,7 @@
 .pill-tool::after {
   content: attr(title);
   position: absolute;
-  bottom: 40px;
+  bottom: 44px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--bg-elevated);

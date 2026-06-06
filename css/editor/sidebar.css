@@ -52,6 +52,7 @@
   flex-direction: column;
   z-index: 10;
   transition: width 0.2s ease-out;
+  overflow: hidden;
 }
 
 .sidebar-header {
@@ -167,18 +168,34 @@
   overflow: hidden;
   cursor: pointer;
   border: 1.5px solid transparent;
-  transition: border-color 0.14s, transform 0.14s;
+  transition: border-color 0.14s, transform 0.14s, box-shadow 0.14s;
   flex-shrink: 0;
   background: var(--bg-raised);
 }
 
-.scene-card:hover:not(.active) {
+.scene-card:hover {
   border-color: var(--border-hover);
   transform: scale(1.015);
 }
 
 .scene-card.active {
   border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.scene-card.active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--accent);
+  border-radius: var(--r-sm);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.scene-card.active:hover {
+  border-color: var(--accent-hover);
+  background: var(--accent-glow);
 }
 
 .scene-card-thumb {
@@ -262,13 +279,14 @@
 #scene-multi-toolbar {
   background: var(--bg-panel);
   border-top: 1px solid var(--border);
-  padding: 8px 10px;
+  padding: 6px 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
   z-index: 10;
+  overflow: hidden;
 }
 
 #scene-multi-toolbar #scene-sel-count {
@@ -276,11 +294,17 @@
   color: var(--text-secondary);
   font-weight: var(--weight-regular);
   letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 #scene-multi-toolbar .btn {
-  padding: 5px 10px;
+  padding: 4px 8px;
   font-size: var(--size-xs);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 #scene-multi-toolbar .btn-secondary {
@@ -295,8 +319,21 @@
 }
 
 .scene-card.scene-selected {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+  border-color: var(--info);
+  box-shadow: 0 0 0 1px var(--info);
+}
+
+.scene-card.scene-selected:hover {
+  border-color: var(--info);
+  box-shadow: 0 0 0 2px var(--info);
+}
+
+.scene-card.active.scene-selected {
+  box-shadow: 0 0 0 1px var(--info), 0 0 12px var(--accent-dim);
+}
+
+.scene-card.active.scene-selected:hover {
+  box-shadow: 0 0 0 2px var(--info), 0 0 16px var(--accent-dim);
 }
 
 .scene-card.scene-selected::after {

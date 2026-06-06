@@ -57,7 +57,7 @@
       if (S.scenes && S.scenes.length) window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
       var exportedData = JSON.parse(JSON.stringify(window.data));
       if (!exportedData.settings) exportedData.settings = {};
-      exportedData.settings.layoutTheme = (window.data.settings && window.data.settings.layoutTheme) || 'default';
+      exportedData.settings.layoutTheme = (window.data.settings && window.data.settings.layoutTheme) || 'hamburger';
       var mediaPromises = [];
 
       function extFromMime(mime) {

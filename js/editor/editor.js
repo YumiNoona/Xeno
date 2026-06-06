@@ -64,8 +64,8 @@
         savedData = {
           settings: {
             title: 'New Tour', name: 'New Tour', mouseViewMode: 'drag',
-            autorotateEnabled: false, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
-            fullscreenButton: true, sceneListStyle: 'sidebar', layoutTheme: 'default',
+            autorotateEnabled: false, showScenes: true, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
+            fullscreenButton: true, sceneListStyle: 'sidebar', layoutTheme: 'hamburger',
             showMinimap: false, minimapPosition: 'bottom-left', showControls: true,
             gyroscopeEnabled: false, vrEnabled: false,
             defaultTransition: 'opacity', defaultTransitionDuration: 1000, defaultTransitionEasing: 'easeInOut',
@@ -116,7 +116,7 @@
       targetPitch: 0, targetFov: Math.PI / 2
     };
     S.autorotate = window.Xeno.autorotate(autorotateOpts);
-    S.autorotateEnabled = !!(data.settings && data.settings.autorotateEnabled);
+    S.autorotateEnabled = false;
 
     (data.scenes || []).forEach(function(sData) {
       var source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
@@ -126,22 +126,6 @@
       var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
       S.scenes.push({ data: sData, scene: scene, view: view });
     });
-
-    var autorotateBtn = Array.prototype.find.call(D.pillTools, function(btn) {
-      return btn.getAttribute('data-tool') === 'autorotate';
-    });
-    if (autorotateBtn && S.autorotateEnabled) {
-      autorotateBtn.classList.add('active');
-      S.viewer.startMovement(S.autorotate);
-      S.viewer.setIdleMovement((data.settings && data.settings.autorotateInactivityDelay) || 3000, S.autorotate);
-    }
-
-    var minimapBtn = Array.prototype.find.call(D.pillTools, function(btn) {
-      return btn.getAttribute('data-tool') === 'minimap';
-    });
-    if (minimapBtn && data.settings && data.settings.showMinimap) {
-      minimapBtn.classList.add('active');
-    }
 
     // Initialize all editor modules
     E.setupTools();

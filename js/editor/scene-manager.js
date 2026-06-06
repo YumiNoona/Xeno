@@ -17,7 +17,7 @@
         if (s.data.hidden) card.classList.add('hidden-scene');
         if (S.currentSceneCtx && S.currentSceneCtx.data.id === s.data.id) card.classList.add('active');
 
-        var thumb = s.data.thumbnailUrl || s.data.mediaUrl || '';
+        var thumb = s.data.mediaUrl || '';
         var imgHtml = thumb
           ? '<img class="scene-card-thumb" src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;scene-thumb-placeholder&quot;>Scene</div>\'">'
           : '<div class="scene-thumb-placeholder">Scene</div>';
@@ -81,11 +81,14 @@
         // Click → switch scene (unless multi-select active)
         card.addEventListener('click', function(e) {
           if (e.shiftKey) {
-            if (S.lastClickedSceneIndex !== null) {
+            if (S.lastClickedSceneIndex !== null && S.lastClickedSceneIndex < S.scenes.length) {
               var si = Math.min(S.lastClickedSceneIndex, index);
               var ei = Math.max(S.lastClickedSceneIndex, index);
-              for (var i = si; i <= ei; i++) S.selectedSceneIds.add(S.scenes[i].data.id);
+              for (var i = si; i <= ei; i++) {
+                if (S.scenes[i]) S.selectedSceneIds.add(S.scenes[i].data.id);
+              }
             } else {
+              S.lastClickedSceneIndex = null;
               S.selectedSceneIds.add(s.data.id);
             }
           } else if (S.selectedSceneIds.size > 0) {
@@ -118,6 +121,15 @@
         D.sceneGridEl.appendChild(card);
       });
     };
+
+    // ─── Click empty area → clear selection ────────────────
+    D.sceneGridEl.addEventListener('click', function(e) {
+      if (e.target === D.sceneGridEl || e.target === this) {
+        S.selectedSceneIds.clear();
+        S.lastClickedSceneIndex = null;
+        syncSceneSelection();
+      }
+    });
 
     // ─── Scene selection sync ────────────────────────────
     function syncSceneSelection() {
@@ -155,9 +167,7 @@
       D.bottomViewYaw.value = (params.yaw * 180 / Math.PI).toFixed(0);
       D.bottomViewPitch.value = (params.pitch * 180 / Math.PI).toFixed(0);
       D.bottomViewFov.value = (params.fov * 180 / Math.PI).toFixed(0);
-      sceneCtx.scene.switchTo({}, function() {
-        if (S.autorotateEnabled) S.viewer.startMovement(S.autorotate);
-      });
+      sceneCtx.scene.switchTo({});
       E.renderSceneGrid();
       E.renderSceneHotspots();
       E.closePropertiesPanel();
@@ -169,6 +179,7 @@
       D.contextMenu.style.display = 'none';
       if (D.mediaFolderCtx) D.mediaFolderCtx.style.display = 'none';
       if (D.mediaItemCtx) D.mediaItemCtx.style.display = 'none';
+      if (D.projectCtx) D.projectCtx.style.display = 'none';
     });
 
     D.contextMenu.querySelectorAll('.ctx-item').forEach(function(item) {
@@ -201,6 +212,16 @@
           S.scenes.push({ data: clone, scene: scene, view: view });
           E.renderSceneGrid();
           E.debouncedSave();
+        } else if (action === 'scene-thumbnail') {
+          var targetScene = S.contextTarget;
+          S.mediaPickerCallback = function(url) {
+            targetScene.data.thumbnailUrl = url;
+            E.renderSceneGrid();
+            E.debouncedSave();
+          };
+          D.mediaModal.classList.add('visible');
+          E.loadAlbums();
+          E.loadMedia(null);
         } else if (action === 'delete') {
           if (S.scenes.length <= 1) { alert('Cannot delete the only scene.'); return; }
           if (!confirm('Delete "' + S.contextTarget.data.name + '"?')) return;
@@ -247,7 +268,7 @@
     document.getElementById('btn-add-scene').addEventListener('click', function() {
       D.mediaModal.classList.add('visible');
       E.loadAlbums();
-      E.loadMedia(E.state.currentAlbumId);
+      E.loadMedia(null);
     });
 
     // ─── Multi-delete scenes ─────────────────────────────

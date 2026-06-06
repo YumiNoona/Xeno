@@ -38,8 +38,9 @@
     if (D.psFullscreen) D.psFullscreen.checked = s.fullscreenButton !== false;
     if (D.psCapture) D.psCapture.checked = s.showCaptureButton !== false;
     if (D.psAutorotate) D.psAutorotate.checked = s.autorotateEnabled === true;
+    if (D.psShowScenes) D.psShowScenes.checked = s.showScenes !== false;
     if (D.psLayoutTheme) {
-      D.psLayoutTheme.value = s.layoutTheme || 'default';
+      D.psLayoutTheme.value = s.layoutTheme || 'hamburger';
       document.querySelectorAll('.theme-card').forEach(function(c) {
         c.classList.toggle('selected', c.dataset.theme === D.psLayoutTheme.value);
       });
@@ -70,7 +71,8 @@
     s.fullscreenButton = D.psFullscreen ? D.psFullscreen.checked : true;
     s.showCaptureButton = D.psCapture ? D.psCapture.checked : true;
     s.autorotateEnabled = D.psAutorotate ? D.psAutorotate.checked : false;
-    s.layoutTheme = D.psLayoutTheme ? D.psLayoutTheme.value : 'default';
+    s.showScenes = D.psShowScenes ? D.psShowScenes.checked : true;
+    s.layoutTheme = D.psLayoutTheme ? D.psLayoutTheme.value : 'hamburger';
     try {
       var slug = window.currentProjectSlug || (window.location.search.match(/[?&]project=([^&]+)/) || [])[1];
       if (slug) {

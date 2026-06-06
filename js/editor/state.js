@@ -51,6 +51,7 @@
   D.panelTitle       = $('panel-title');
   D.sceneGridEl      = $('scene-grid');
   D.contextMenu      = $('context-menu');
+  D.projectCtx       = $('project-ctx');
   D.mediaModal       = $('media-modal');
 
   // Theme Toggles
@@ -154,6 +155,18 @@
   D.propAudioAutoplay = $('prop-audio-autoplay');
   D.propAudioLabel   = $('prop-audio-label');
   D.propAudioNarration = $('prop-audio-narration');
+  D.propTextContent  = $('prop-text-content');
+  D.propTextBg       = $('prop-text-bg');
+  D.propTextColor    = $('prop-text-color');
+  D.propTextBgColor  = $('prop-text-bg-color');
+  D.propTextSize     = $('prop-text-size');
+  D.propTextSizeLabel = $('prop-text-size-label');
+  D.propTextFont     = $('prop-text-font');
+  D.propTextBold     = $('prop-text-bold');
+  D.propTextItalic   = $('prop-text-italic');
+  D.propTextUnderline = $('prop-text-underline');
+  D.propTextRotation = $('prop-text-rotation');
+  D.propTextRotLabel = $('prop-text-rot-label');
 
   // Editor panels
   D.fieldsSceneSettings = $('fields-scene-settings');
@@ -169,6 +182,7 @@
   D.psFullscreen  = $('ps-fullscreen');
   D.psCapture     = $('ps-capture');
   D.psAutorotate  = $('ps-autorotate');
+  D.psShowScenes  = $('ps-show-scenes');
   D.psLayoutTheme = $('ps-layout-theme'); // hidden input
   D.psMinimap     = $('ps-minimap');
   D.psMinimapPos  = $('ps-minimap-pos');
@@ -193,8 +207,8 @@
   D.albumCtxTarget   = null;
   D.mediaCtxTarget   = null;
 
-  var HOTSPOT_TOOLS = ['navigate', 'info', 'url', 'image', 'video', 'audio', 'embed', 'quad'];
-  var TOGGLE_TOOLS  = ['select', 'autorotate', 'minimap', 'move'];
+  var HOTSPOT_TOOLS = ['navigate', 'info', 'url', 'image', 'video', 'audio', 'embed', 'quad', 'text'];
+  var TOGGLE_TOOLS  = ['select', 'move'];
 
   E.HOTSPOT_TOOLS = HOTSPOT_TOOLS;
   E.TOGGLE_TOOLS  = TOGGLE_TOOLS;

@@ -77,6 +77,10 @@
       hideAllTypeFields();
       var el = document.getElementById('fields-' + type);
       if (el) el.style.display = 'block';
+      var gen = document.getElementById('group-hotspot-generic');
+      if (gen) gen.style.display = type === 'text' ? 'none' : '';
+      var title = document.getElementById('group-hotspot-title');
+      if (title) title.style.display = type === 'text' ? 'none' : '';
     }
 
     function fillTypeFields(hsData) {
@@ -114,6 +118,18 @@
       D.propQuadSrcWidth.value = hsData.srcWidth || 480;
       D.propQuadSrcHeight.value = hsData.srcHeight || 270;
       E.renderQuadPoints(hsData.quadPoints || []);
+      D.propTextContent.value = hsData.text || '';
+      D.propTextBg.checked = hsData.bgColor !== 'transparent';
+      D.propTextColor.value = hsData.textColor || '#ffffff';
+      D.propTextBgColor.value = (hsData.bgColor && hsData.bgColor !== 'transparent') ? hsData.bgColor : '#000000';
+      D.propTextSize.value = hsData.fontSize || 14;
+      D.propTextSizeLabel.textContent = (hsData.fontSize || 14) + 'px';
+      D.propTextFont.value = hsData.fontFamily || '';
+      D.propTextBold.checked = hsData.bold === true;
+      D.propTextItalic.checked = hsData.italic === true;
+      D.propTextUnderline.checked = hsData.underline === true;
+      D.propTextRotation.value = hsData.rotation || 0;
+      D.propTextRotLabel.textContent = (hsData.rotation || 0) + '\u00B0';
     }
 
     function toggleCustomIconGroup() {
@@ -331,6 +347,16 @@
         S.selectedHotspotData.content.src = D.propAudioUrl.value;
         S.selectedHotspotData.autoplay = D.propAudioAutoplay.checked;
         S.selectedHotspotData.showPlayerLabel = D.propAudioLabel.checked;
+      } else if (S.selectedHotspotData.type === 'text') {
+        S.selectedHotspotData.text = D.propTextContent.value;
+        S.selectedHotspotData.textColor = D.propTextColor.value;
+        S.selectedHotspotData.bgColor = D.propTextBg.checked ? D.propTextBgColor.value : 'transparent';
+        S.selectedHotspotData.fontSize = parseInt(D.propTextSize.value);
+        S.selectedHotspotData.fontFamily = D.propTextFont.value || null;
+        S.selectedHotspotData.bold = D.propTextBold.checked;
+        S.selectedHotspotData.italic = D.propTextItalic.checked;
+        S.selectedHotspotData.underline = D.propTextUnderline.checked;
+        S.selectedHotspotData.rotation = parseInt(D.propTextRotation.value) || 0;
       }
       E.renderSceneHotspots();
       E.closePropertiesPanel();

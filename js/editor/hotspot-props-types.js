@@ -234,5 +234,59 @@
       E.renderSceneHotspots();
       E.debouncedSave();
     });
+
+    // ─── Text fields ──────────────────────────────────
+    D.propTextContent.addEventListener('input', function() {
+      if (S.selectedHotspotData) S.selectedHotspotData.text = this.value;
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
+    D.propTextBg.addEventListener('change', function() {
+      if (S.selectedHotspotData) S.selectedHotspotData.bgColor = this.checked ? (D.propTextBgColor.value || 'rgba(0,0,0,0.7)') : 'transparent';
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
+    D.propTextColor.addEventListener('input', function() {
+      if (S.selectedHotspotData) S.selectedHotspotData.textColor = this.value;
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
+    D.propTextBgColor.addEventListener('input', function() {
+      if (S.selectedHotspotData && D.propTextBg.checked) S.selectedHotspotData.bgColor = this.value;
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
+    D.propTextSize.addEventListener('input', function() {
+      D.propTextSizeLabel.textContent = this.value + 'px';
+      if (S.selectedHotspotData) S.selectedHotspotData.fontSize = parseInt(this.value);
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
+    D.propTextFont.addEventListener('change', function() {
+      if (S.selectedHotspotData) S.selectedHotspotData.fontFamily = this.value;
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
+    D.propTextBold.addEventListener('change', function() {
+      if (S.selectedHotspotData) S.selectedHotspotData.bold = this.checked;
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
+    D.propTextItalic.addEventListener('change', function() {
+      if (S.selectedHotspotData) S.selectedHotspotData.italic = this.checked;
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
+    D.propTextUnderline.addEventListener('change', function() {
+      if (S.selectedHotspotData) S.selectedHotspotData.underline = this.checked;
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
+    D.propTextRotation.addEventListener('input', function() {
+      D.propTextRotLabel.textContent = this.value + '\u00B0';
+      if (S.selectedHotspotData) S.selectedHotspotData.rotation = parseInt(this.value);
+      E.renderSceneHotspots();
+      E.debouncedSave();
+    });
   };
 })();

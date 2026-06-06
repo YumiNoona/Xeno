@@ -232,21 +232,22 @@ body {
 }
 
 .ctrl-btn .icon.on {
-  display: block;
+  display: none;
 }
 
 .ctrl-btn .icon.off {
-  display: none;
+  display: block;
 }
 
 .ctrl-btn.active .icon.on,
 .ctrl-btn.enabled .icon.on {
-  display: none;
+  display: block;
 }
 
 .ctrl-btn.active .icon.off,
 .ctrl-btn.enabled .icon.off {
-  display: block;
+  display: none;
+}
 }
 
 #controls .ctrl-btn svg {

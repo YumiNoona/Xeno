@@ -188,10 +188,15 @@
 }
 
 /* Smooth theme transitions on theme-switchable properties */
-body, body * {
-  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
-  transition-duration: 0.18s;
-  transition-timing-function: ease;
+html, body {
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+[data-theme] .scene-card, [data-theme] .btn, [data-theme] .card,
+[data-theme] input, [data-theme] select, [data-theme] textarea,
+[data-theme] #controls .ctrl-btn, [data-theme] #sceneList,
+[data-theme] #dashboard-view, [data-theme] .dashboard-header,
+[data-theme] .project-card, [data-theme] .media-item {
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 /* ── 12. TYPOGRAPHIC UTILITIES ─────────────────────────────────
@@ -381,6 +386,23 @@ h6 {
   --accent-hover: #fb7185;
   --accent-active: #be123c;
   --accent-text: #e11d48;
+
+  --success: #10b981;
+  --success-dim: rgba(16, 185, 129, 0.08);
+  --success-hover: #34d399;
+  --warning: #d97706;
+  --warning-dim: rgba(217, 119, 6, 0.08);
+  --danger: #ef4444;
+  --danger-dim: rgba(239, 68, 68, 0.08);
+  --info: #3b82f6;
+  --info-dim: rgba(59, 130, 246, 0.08);
+
+  --hs-navigate: var(--accent);
+  --hs-info: #d97706;
+  --hs-url: #059669;
+  --hs-image: #c026d3;
+  --hs-video: #e11d48;
+  --hs-audio: #7c3aed;
 
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);

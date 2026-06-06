@@ -2,6 +2,7 @@
   'use strict';
   var E = window.XenoEditor;
   var D = E.dom;
+  var currentProjectTour = null;
 
   E.initDashboard = function() {
     var searchInput = document.getElementById('project-search');
@@ -29,8 +30,8 @@
           var blankData = {
             settings: {
               title: name.trim(), name: name.trim(), mouseViewMode: 'drag',
-              autorotateEnabled: false, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
-              fullscreenButton: true, sceneListStyle: 'sidebar', layoutTheme: 'default',
+              autorotateEnabled: false, showScenes: true, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
+              fullscreenButton: true, sceneListStyle: 'sidebar', layoutTheme: 'hamburger',
               showMinimap: false, minimapPosition: 'bottom-left', showControls: true,
               gyroscopeEnabled: false, vrEnabled: false,
               defaultTransition: 'opacity', defaultTransitionDuration: 1000, defaultTransitionEasing: 'easeInOut',
@@ -38,7 +39,7 @@
               intro: { enabled: false, title: '', subtitle: '', buttonText: 'Enter Tour' }
             },
             scenes: [],
-            floorplan: { enabled: false, imageUrl: 'media/floorplan.jpg', width: 800, height: 600 }
+            floorplan: { enabled: false, imageUrl: '', width: 800, height: 600 }
           };
           window.XenoSupabase.saveTour(slug, blankData).then(function() {
             window.location.search = '?project=' + encodeURIComponent(slug);
@@ -47,15 +48,100 @@
       });
     }
 
+    // ─── Import project ─────────────────────────────────
+    var btnImport = document.getElementById('btn-import-project');
+    var importInput = document.createElement('input');
+    importInput.type = 'file';
+    importInput.accept = '.json,.xeno';
+    importInput.style.display = 'none';
+    document.body.appendChild(importInput);
+
+    if (btnImport) {
+      btnImport.addEventListener('click', function() { importInput.click(); });
+      importInput.addEventListener('change', function() {
+        var file = this.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function() {
+          try {
+            var bundle = JSON.parse(reader.result);
+            window.XenoSupabase.importProject(bundle).then(function(slug) {
+              alert('Project imported successfully!');
+              loadDashboard();
+            }).catch(function(err) {
+              alert('Import failed: ' + err.message);
+            });
+          } catch(e) {
+            alert('Invalid project file: ' + e.message);
+          }
+        };
+        reader.readAsText(file);
+        this.value = '';
+      });
+    }
+
     if (E.setupThemeToggle) E.setupThemeToggle();
+
+    // ─── Project context menu handlers ──────────────────
+    var projectCtx = document.getElementById('project-ctx');
+    if (projectCtx) {
+      projectCtx.querySelectorAll('.ctx-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+          var tour = currentProjectTour;
+          var action = this.getAttribute('data-action');
+          projectCtx.style.display = 'none';
+          if (!tour) return;
+          var slug = tour.slug;
+          var title = (tour.data && tour.data.settings && (tour.data.settings.name || tour.data.settings.title)) || slug;
+
+          if (action === 'rename-project') {
+            var newName = prompt('Rename project:', title);
+            if (newName && newName.trim()) {
+              if (!tour.data) tour.data = {};
+              if (!tour.data.settings) tour.data.settings = {};
+              tour.data.settings.name = newName.trim();
+              tour.data.settings.title = newName.trim();
+              window.XenoSupabase.saveTour(slug, tour.data).then(function() { loadDashboard(); });
+            }
+          } else if (action === 'thumb-project') {
+            E.state.mediaPickerCallback = function(url) {
+              if (!tour.data) tour.data = {};
+              if (!tour.data.settings) tour.data.settings = {};
+              tour.data.settings.thumbnailUrl = url;
+              window.XenoSupabase.saveTour(slug, tour.data).then(function() { loadDashboard(); });
+            };
+            D.mediaModal.classList.add('visible');
+            E.loadAlbums();
+            E.loadMedia(null);
+          } else if (action === 'download-project') {
+            window.XenoSupabase.exportProject(slug).then(function(bundle) {
+              var blob = new Blob([JSON.stringify(bundle)], { type: 'application/json' });
+              var a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = slug + '.xeno.json';
+              a.click();
+            }).catch(function(err) {
+              alert('Export failed: ' + err.message);
+            });
+          } else if (action === 'delete-project') {
+            if (confirm('Delete project "' + title + '"?')) {
+              window.XenoSupabase.deleteTour(slug).then(function() {
+                loadDashboard();
+              }).catch(function(err) { alert('Failed: ' + err.message); });
+            }
+          }
+        });
+      });
+    }
+
     loadDashboard();
   };
 
   function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
 
-  function resolveThumbUrl(firstScene) {
-    if (!firstScene) return Promise.resolve(null);
-    var url = firstScene.thumbnailUrl || firstScene.mediaUrl;
+  function resolveThumbUrl(firstScene, settings) {
+    if (!firstScene && !settings) return Promise.resolve(null);
+    var url = (settings && settings.thumbnailUrl) || (firstScene && firstScene.thumbnailUrl) || (firstScene && firstScene.mediaUrl);
     if (!url) return Promise.resolve(null);
     if (!isMediaId(url) || !window.XenoSupabase) return Promise.resolve(url);
     return window.XenoSupabase.resolveMediaId(url).then(function(b) { return b || url; });
@@ -75,7 +161,8 @@
       var title = '';
       if (tour.data && tour.data.settings) title = tour.data.settings.name || tour.data.settings.title || '';
       title = title || tour.slug || 'Untitled Project';
-      var thumbUrl = (firstScene && (firstScene.thumbnailUrl || firstScene.mediaUrl)) || '';
+      var projectThumb = (tour.data && tour.data.settings && tour.data.settings.thumbnailUrl) || null;
+      var thumbUrl = projectThumb || (firstScene && (firstScene.thumbnailUrl || firstScene.mediaUrl)) || '';
 
       // Use non-media-ID URLs directly; media IDs get resolved in the second pass
       var initialSrc = (thumbUrl && !isMediaId(thumbUrl)) ? thumbUrl : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"/%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"/%3E%3Cpolyline points="21 15 16 10 5 21"/%3E%3C/svg%3E';
@@ -112,6 +199,17 @@
           }).catch(function(err) {
             alert('Failed to delete project: ' + err.message);
           });
+        }
+      });
+
+      card.addEventListener('contextmenu', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        currentProjectTour = tour;
+        var ctx = document.getElementById('project-ctx');
+        if (ctx) {
+          ctx.style.display = 'block';
+          ctx.style.left = e.clientX + 'px';
+          ctx.style.top = e.clientY + 'px';
         }
       });
 

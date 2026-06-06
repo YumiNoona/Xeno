@@ -13,6 +13,11 @@
   <script>
     if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}
     (function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t)})();
+    (function(){
+      var slug=new URLSearchParams(window.location.search).get('project'),theme='hamburger';
+      if(slug){try{var r=localStorage.getItem('xeno_tour_'+slug);if(r){var p=JSON.parse(r);if(p&&p.data&&p.data.settings)theme=p.data.settings.layoutTheme||'hamburger'}}catch(e){}}
+      document.body.setAttribute('data-layout-theme',theme);
+    })();
   </script>
 
   <!-- Font: JetBrains Mono -->
@@ -39,6 +44,35 @@
 </head>
 
 <body class="desktop no-touch">
+
+  <!-- Loading overlay -->
+  <div id="xeno-loading">
+    <style>
+      #xeno-loading {
+        position: fixed; inset: 0; z-index: 99999;
+        background: #0a0a0a; display: flex;
+        flex-direction: column; align-items: center; justify-content: center;
+        gap: 16px; transition: opacity 0.3s ease;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      #xeno-loading.hide { opacity: 0; pointer-events: none; }
+      #xeno-loading .loader-logo { font-size: 48px; font-weight: 700; color: #fff; letter-spacing: 0.04em; }
+      #xeno-loading .loader-logo span { color: #e11d48; }
+      #xeno-loading .loader-bar {
+        width: 120px; height: 2px; background: #262626; border-radius: 2px; overflow: hidden;
+      }
+      #xeno-loading .loader-bar div {
+        height: 100%; width: 40%; background: #e11d48; border-radius: 2px;
+        animation: loader-slide 1s ease-in-out infinite;
+      }
+      @keyframes loader-slide {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(350%); }
+      }
+    </style>
+    <div class="loader-logo"><span>✦</span> XENO</div>
+    <div class="loader-bar"><div></div></div>
+  </div>
 
   <!-- Main Viewer -->
   <div id="pano"></div>
@@ -254,14 +288,6 @@
           if (s) {
             // Apply visibility settings immediately (before any rendering)
             if (s.showControls === false) {
-              // For hamburger theme, move toggle button outside controls first
-              if (s.layoutTheme === 'hamburger') {
-                var sceneListToggle = document.getElementById('sceneListToggle');
-                if (sceneListToggle && sceneListToggle.parentNode) {
-                  sceneListToggle.parentNode.removeChild(sceneListToggle);
-                  document.body.appendChild(sceneListToggle);
-                }
-              }
               var ctrl = document.getElementById('controls');
               if (ctrl) ctrl.style.display = 'none';
             }
@@ -276,6 +302,12 @@
             if (s.showCaptureButton === false) {
               var cap = document.getElementById('captureToggle');
               if (cap) cap.style.display = 'none';
+            }
+            if (s.showScenes === false) {
+              var slt = document.getElementById('sceneListToggle');
+              if (slt) slt.style.display = 'none';
+              var sl = document.getElementById('sceneList');
+              if (sl) { sl.style.display = 'none'; sl.classList.remove('enabled'); }
             }
             // Intro screen
             if (s.intro && s.intro.enabled) {

@@ -9,19 +9,19 @@
   <div id="view-controls-bar">
     <div class="view-control-field">
       <span>Yaw</span>
-      <input type="number" id="bottom-view-yaw" step="1">
+      <input type="number" id="bottom-view-yaw" value="0" min="-180" max="180">
     </div>
     <div class="view-control-field">
       <span>Pitch</span>
-      <input type="number" id="bottom-view-pitch" step="1">
+      <input type="number" id="bottom-view-pitch" value="0" min="-90" max="90">
     </div>
     <div class="view-control-field">
       <span>FOV</span>
       <input type="number" id="bottom-view-fov" step="1" min="60" max="120">
     </div>
-    <button id="btn-save-view">
-      ${xIcon('camera', 14)}
-      Save Default View
+    <div class="view-control-sep"></div>
+    <button id="btn-save-view" title="Save current view as default for this scene">
+      ${xIcon('check', 14)}
     </button>
   </div>
 
@@ -49,11 +49,8 @@
     <div class="pill-tool" data-tool="audio" title="Audio">
       ${xIcon('volume', 16)}
     </div>
-    <div class="pill-tool" data-tool="autorotate" title="Autorotate">
-      ${xIcon('rotate-cw', 16)}
-    </div>
-    <div class="pill-tool" data-tool="minimap" title="Minimap">
-      ${xIcon('map', 16)}
+    <div class="pill-tool" data-tool="text" title="Text">
+      ${xIcon('type', 16)}
     </div>
   </div>
 

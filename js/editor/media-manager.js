@@ -230,6 +230,11 @@
           D.contextMenu.style.display = 'none';
         }
       }
+      if (D.projectCtx && D.projectCtx.style.display !== 'none') {
+        if (!D.projectCtx.contains(e.target)) {
+          D.projectCtx.style.display = 'none';
+        }
+      }
     });
 
     // ─── Media Context Menu ────────────────────────────
@@ -264,13 +269,15 @@
       if (!mediaCtx || !D.moveTargetAlbum || !D.moveMediaModal) return;
       window.XenoSupabase.fetchAlbums().then(function(albums) {
         D.moveTargetAlbum.innerHTML = '';
-        var root = document.createElement('option');
-        root.value = ''; root.textContent = '📁 Root (No Album)';
-        D.moveTargetAlbum.appendChild(root);
+        if (mediaCtx.album_id !== null) {
+          var root = document.createElement('option');
+          root.value = ''; root.textContent = '📁 Root (No Album)';
+          D.moveTargetAlbum.appendChild(root);
+        }
         albums.forEach(function(a) {
+          if (mediaCtx.album_id === a.id) return;
           var o = document.createElement('option');
           o.value = a.id; o.textContent = '📁 ' + a.name;
-          if (mediaCtx.album_id === a.id) o.selected = true;
           D.moveTargetAlbum.appendChild(o);
         });
         D.moveMediaModal.style.display = 'flex';
@@ -303,7 +310,7 @@
             var defaultData = {
               settings: {
                 title: 'New Tour', name: 'New Tour', mouseViewMode: 'drag',
-                autorotateEnabled: false, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
+                autorotateEnabled: false, showScenes: true, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
                 fullscreenButton: true, sceneListStyle: 'sidebar',
                 showMinimap: false, minimapPosition: 'bottom-left', showControls: true,
                 gyroscopeEnabled: false, vrEnabled: false,

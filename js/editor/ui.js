@@ -43,7 +43,7 @@
         leftResizer.classList.add('dragging');
         function onMove(e2) {
           var w = e2.clientX;
-          if (w > 150 && w < 500) {
+          if (w > 180 && w < 500) {
             sidebar.style.transition = 'none';
             sidebar.style.width = w + 'px';
             sidebar.style.minWidth = w + 'px';
