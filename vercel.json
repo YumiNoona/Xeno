@@ -1,9 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/publish", "destination": "/api/publish.js" },
-    { "source": "/api/load/:slug", "destination": "/api/load.js?slug=:slug" },
-    { "source": "/api/delete/:slug", "destination": "/api/delete.js?slug=:slug" },
-    { "source": "/t/:slug", "destination": "/api/tour.js?slug=:slug" },
-    { "source": "/", "destination": "/index.html" }
+    { "source": "/t/:slug", "destination": "/api/tour?slug=:slug" }
   ]
 }
