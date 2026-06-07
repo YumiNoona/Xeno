@@ -15,9 +15,7 @@
 
     if (btnMediaDashboard) {
       btnMediaDashboard.addEventListener('click', function() {
-        D.mediaModal.classList.add('visible');
-        E.loadAlbums();
-        E.loadMedia(null);
+        E.openMediaModal();
       });
     }
 
@@ -110,9 +108,7 @@
               tour.data.settings.thumbnailUrl = url;
               window.XenoSupabase.saveTour(slug, tour.data).then(function() { loadDashboard(); });
             };
-            D.mediaModal.classList.add('visible');
-            E.loadAlbums();
-            E.loadMedia(null);
+            E.openMediaModal();
           } else if (action === 'download-project') {
             window.XenoSupabase.exportProject(slug).then(function(bundle) {
               var blob = new Blob([JSON.stringify(bundle)], { type: 'application/json' });

@@ -811,7 +811,37 @@
       .then(function(r) { if (!r.ok) throw new Error('Project not found'); return r.json(); })
       .then(function(bundle) {
         var tourData = bundle.project || bundle;
-        return resolveAllMedia(tourData).then(function() { return tourData; });
+        // Convert base64 media from bundle to blob URLs
+        if (bundle.media && bundle.media.length) {
+          var mediaMap = {};
+          var mediaPromises = bundle.media.map(function(m) {
+            if (!m.data) return Promise.resolve();
+            var base64 = m.data.split(',')[1];
+            if (!base64) return Promise.resolve();
+            try {
+              var binary = atob(base64);
+              var bytes = new Uint8Array(binary.length);
+              for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+              var blob = new Blob([bytes], { type: m.type });
+              mediaMap[m.id] = URL.createObjectURL(blob);
+              return Promise.resolve();
+            } catch(e) { return Promise.resolve(); }
+          });
+          return Promise.all(mediaPromises).then(function() {
+            // Replace media IDs in tour data with blob URLs
+            function patchUrls(obj) {
+              if (typeof obj === 'string' && mediaMap[obj]) return mediaMap[obj];
+              if (Array.isArray(obj)) return obj.map(patchUrls);
+              if (obj && typeof obj === 'object') {
+                for (var k in obj) if (obj.hasOwnProperty(k) && k !== '_mediaId') obj[k] = patchUrls(obj[k]);
+              }
+              return obj;
+            }
+            patchUrls(tourData);
+            return tourData;
+          });
+        }
+        return tourData;
       })
       .then(function(tourData) {
         return preloadSceneImages(tourData);

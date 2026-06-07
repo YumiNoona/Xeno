@@ -374,7 +374,7 @@
           a.download = (S.projectSlug || 'xeno-tour') + '.zip';
           document.body.appendChild(a); a.click();
           document.body.removeChild(a);
-          URL.revokeObjectURL(url);
+          setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
           exportBtn.innerHTML = originalText;
           exportBtn.disabled = false;
         })

@@ -385,9 +385,7 @@
           inputEl.dispatchEvent(new Event('change'));
           inputEl.dispatchEvent(new Event('input'));
         };
-        if (D.mediaModal) D.mediaModal.classList.add('visible');
-        E.loadAlbums();
-        E.loadMedia(null);
+        E.openMediaModal();
       });
     }
 

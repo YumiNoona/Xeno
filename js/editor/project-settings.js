@@ -178,9 +178,7 @@
           fpInput.value = url;
           fpInput.dispatchEvent(new Event('change'));
         };
-        if (D.mediaModal) D.mediaModal.classList.add('visible');
-        E.loadAlbums();
-        E.loadMedia(null);
+        E.openMediaModal();
       });
     }
   }, 0);

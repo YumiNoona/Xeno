@@ -68,9 +68,15 @@
     syncSelection();
     D.mediaGridEl.innerHTML = '<div class="media-loading"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Loading...</div>';
 
+    _loadPending = true;
     window.XenoSupabase.fetchMedia(albumId).then(function(list) {
+      _loadPending = false;
       mediaCache = list;
       D.mediaGridEl.innerHTML = '';
+      if (list.length === 0) {
+        D.mediaGridEl.innerHTML = '<div class="media-empty">No media yet &mdash; upload files above</div>';
+        return;
+      }
       list.forEach(function(media, index) {
         var item = document.createElement('div');
         item.className = 'media-item';
@@ -139,15 +145,21 @@
 
   E.loadMedia = loadMedia;
 
+  // ─── Unified entry point (all callers use this) ────────
+  E.openMediaModal = function() {
+    if (_loadPending) return;
+    D.mediaModal.classList.add('visible');
+    loadAlbums();
+    loadMedia(currentAlbumId);
+  };
+
+  var _loadPending = false;
+
   // ─── Setup event listeners (called from editor.js) ────
   E.setupMediaManager = function() {
     var btnMedia = document.getElementById('btn-media-manager');
     if (btnMedia) {
-      btnMedia.addEventListener('click', function() {
-        D.mediaModal.classList.add('visible');
-        loadAlbums();
-        loadMedia(currentAlbumId);
-      });
+      btnMedia.addEventListener('click', function() { E.openMediaModal(); });
     }
 
     var btnClose = document.getElementById('btn-close-media');
@@ -394,11 +406,18 @@
   function handleFiles(files) {
     var uploadArea = document.getElementById('media-upload-area');
     if (!uploadArea) return;
+    var total = files.length;
+    var done = 0;
     var originalHtml = uploadArea.innerHTML;
-    uploadArea.innerHTML = '<div class="upload-icon-wrap"><svg class="spin" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></div><div class="upload-title">Uploading...</div><div class="upload-sub">Please wait while your files are processed.</div>';
+    uploadArea.innerHTML = '<div class="upload-icon-wrap"><svg class="spin" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></div><div class="upload-title">Uploading ' + done + ' / ' + total + '&hellip;</div><div class="upload-sub">Please wait while your files are processed.</div>';
     var promises = [];
     for (var i = 0; i < files.length; i++) {
-      promises.push(window.XenoSupabase.uploadAndRecordMedia(files[i], currentAlbumId));
+      promises.push(window.XenoSupabase.uploadAndRecordMedia(files[i], currentAlbumId).then(function(r) {
+        done++;
+        var titleEl = uploadArea.querySelector('.upload-title');
+        if (titleEl) titleEl.textContent = 'Uploading ' + done + ' / ' + total + '\u2026';
+        return r;
+      }));
     }
     Promise.all(promises).then(function() {
       uploadArea.innerHTML = originalHtml;

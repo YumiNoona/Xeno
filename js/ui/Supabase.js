@@ -101,6 +101,25 @@
     });
   }
 
+  function cleanOrphanBlobs() {
+    var mediaIds = {};
+    var list = getLocalMedia();
+    list.forEach(function(m) { mediaIds[m.id] = true; });
+    dbOpen().then(function(db) {
+      var tx = db.transaction(STORE_NAME, 'readonly');
+      var store = tx.objectStore(STORE_NAME);
+      var req = store.getAllKeys();
+      req.onsuccess = function() {
+        var keys = req.result || [];
+        var orphanKeys = keys.filter(function(k) { return !mediaIds[k]; });
+        if (!orphanKeys.length) return;
+        var delTx = db.transaction(STORE_NAME, 'readwrite');
+        var delStore = delTx.objectStore(STORE_NAME);
+        orphanKeys.forEach(function(k) { delStore.delete(k); });
+      };
+    }).catch(function() {});
+  }
+
   // ─── LocalStorage helpers ─────────────────────────────
 
   function getLocalAlbums() {
@@ -180,7 +199,14 @@
 
   function saveTour(slug, tourData) {
     var payload = { data: tourData, updated_at: new Date().toISOString() };
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + slug, JSON.stringify(payload));
+    try {
+      localStorage.setItem(LOCAL_STORAGE_PREFIX + slug, JSON.stringify(payload));
+    } catch(e) {
+      if (e.name === 'QuotaExceededError' || e.code === 22) {
+        alert('Storage is full! Please free up space. Your recent changes may not be saved.');
+      }
+      throw e;
+    }
     return Promise.resolve();
   }
 
@@ -210,10 +236,10 @@
 
   function fetchMedia(albumId) {
     var list = getLocalMedia();
-    // Attach blob URLs from IDB
+    // Always create fresh blob URLs (session-scoped, stale after reload)
     var blobPromises = [];
     list.forEach(function(m) {
-      if (m._blobUrl) return;
+      revokeBlobUrl(m.id);
       blobPromises.push(
         createBlobUrl(m.id).then(function(blobUrl) {
           if (blobUrl) m._blobUrl = blobUrl;
@@ -241,7 +267,12 @@
 
       blobStore(mediaId, file).then(function() {
         var list = getLocalMedia(); list.push(record); saveLocalMedia(list);
+        // Create blob URL immediately so uploaded image shows right away
+        record._blobUrl = URL.createObjectURL(file);
+        _blobUrls[mediaId] = record._blobUrl;
         resolve(record);
+      }).catch(function(err) {
+        reject(err);
       });
     });
   }
@@ -275,7 +306,6 @@
   // ─── Resolve a stored media ID to a blob URL ──────────
 
   function resolveMediaId(mediaId) {
-    if (_blobUrls[mediaId]) return Promise.resolve(_blobUrls[mediaId]);
     return createBlobUrl(mediaId).then(function(blobUrl) {
       return blobUrl || null;
     });
@@ -387,4 +417,7 @@
     resolveMediaId: resolveMediaId,
     exportProject: exportProject, importProject: importProject
   };
+
+  // Cleanup orphaned IndexedDB blobs (media records deleted but blobs remain)
+  setTimeout(function() { cleanOrphanBlobs(); }, 3000);
 })();

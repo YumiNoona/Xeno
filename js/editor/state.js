@@ -30,15 +30,96 @@
     if (S.saveTimeout) clearTimeout(S.saveTimeout);
     S.saveTimeout = setTimeout(function() {
       if (S.projectSlug && window.XenoSupabase) {
-        if (S.scenes && S.scenes.length) window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
+        if (S.scenes && S.scenes.length) {
+          E.pushUndo();
+          window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
+        }
         window.XenoEditor.restoreMediaIds(window.data);
         try { window.XenoSupabase.saveTour(S.projectSlug, window.data); } catch(e) {}
       }
     }, 500);
   };
 
+  // ─── Undo/Redo stack (circular buffer, 50 entries) ──────
+  var _undoStack = [];
+  var _undoIndex = -1;
+  var UNDO_MAX = 50;
+
+  E.pushUndo = function() {
+    if (!S.projectSlug) return;
+    var snapshot = JSON.parse(JSON.stringify(window.data));
+    _undoIndex++;
+    _undoStack.length = _undoIndex;
+    _undoStack.push(snapshot);
+    if (_undoStack.length > UNDO_MAX) { _undoStack.shift(); _undoIndex--; }
+  };
+
+  E.performUndo = function() {
+    if (_undoIndex <= 0 || !S.projectSlug || !S.viewer) return;
+    _undoIndex--;
+    var snap = _undoStack[_undoIndex];
+    window.data = JSON.parse(JSON.stringify(snap));
+    // Rebuild viewer from snapshot
+    var data = window.data;
+    S.scenes = [];
+    S.viewer.destroy();
+    S.viewer = new window.Xeno.Viewer(D.panoEl, { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } });
+    window.xenoViewer = S.viewer;
+    (data.scenes || []).forEach(function(sData) {
+      var source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
+      var geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
+      var limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+      var view = new window.Xeno.RectilinearView(sData.initialViewParameters || {}, limiter);
+      var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
+      S.scenes.push({ data: sData, scene: scene, view: view });
+    });
+    if (S.scenes.length > 0) {
+      var firstScene = S.scenes[0];
+      S.currentSceneCtx = firstScene;
+      firstScene.scene.switchTo({});
+      E.renderSceneGrid();
+      E.renderSceneHotspots();
+    }
+    E.debouncedSave();
+  };
+
+  E.performRedo = function() {
+    if (_undoIndex >= _undoStack.length - 1 || !S.projectSlug || !S.viewer) return;
+    _undoIndex++;
+    var snap = _undoStack[_undoIndex];
+    window.data = JSON.parse(JSON.stringify(snap));
+    var data = window.data;
+    S.scenes = [];
+    S.viewer.destroy();
+    S.viewer = new window.Xeno.Viewer(D.panoEl, { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } });
+    window.xenoViewer = S.viewer;
+    (data.scenes || []).forEach(function(sData) {
+      var source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
+      var geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
+      var limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+      var view = new window.Xeno.RectilinearView(sData.initialViewParameters || {}, limiter);
+      var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
+      S.scenes.push({ data: sData, scene: scene, view: view });
+    });
+    if (S.scenes.length > 0) {
+      var firstScene = S.scenes[0];
+      S.currentSceneCtx = firstScene;
+      firstScene.scene.switchTo({});
+      E.renderSceneGrid();
+      E.renderSceneHotspots();
+    }
+    E.debouncedSave();
+  };
+
+  // Ctrl+Z / Ctrl+Shift+Z
+  document.addEventListener('keydown', function(e) {
+    if (!e.ctrlKey && !e.metaKey) return;
+    if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); E.performUndo(); }
+    if (e.key === 'Z' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); E.performRedo(); }
+  });
+
   // Emergency flush on tab close to prevent data loss
-  window.addEventListener('beforeunload', function() {
+  function emergencySave() {
     if (S.saveTimeout) clearTimeout(S.saveTimeout);
     if (S.projectSlug && window.XenoSupabase && S.scenes && S.scenes.length) {
       try {
@@ -47,6 +128,11 @@
         window.XenoSupabase.saveTour(S.projectSlug, window.data);
       } catch(e) {}
     }
+  }
+  window.addEventListener('beforeunload', emergencySave);
+  window.addEventListener('pagehide', emergencySave);
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') emergencySave();
   });
 
   // ─── DOM refs (editor layout) ───────────────────────────

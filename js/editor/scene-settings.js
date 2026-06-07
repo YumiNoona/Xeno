@@ -25,6 +25,28 @@
       setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
     };
 
+    // ─── Capture as thumbnail ─────────────────────────────
+    var btnCapture = document.getElementById('btn-capture-thumb');
+    if (btnCapture) {
+      btnCapture.addEventListener('click', function() {
+        if (!S.currentSceneCtx || !S.viewer) return;
+        var panoEl = D.panoEl;
+        if (!panoEl) return;
+        // Capture the WebGL canvas as a data URL
+        var canvas = panoEl.querySelector('canvas');
+        if (!canvas) { alert('No canvas found'); return; }
+        try {
+          var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          S.currentSceneCtx.data.thumbnailUrl = dataUrl;
+          E.renderSceneGrid();
+          E.debouncedSave();
+          alert('Thumbnail captured from current view!');
+        } catch(e) {
+          alert('Capture failed: ' + e.message);
+        }
+      });
+    }
+
     // ─── Floorplan ───────────────────────────────────────
     D.propFloorplanEnabled.addEventListener('change', function() {
       if (!window.data.floorplan) window.data.floorplan = {};

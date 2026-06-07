@@ -1,4 +1,4 @@
-var CACHE = 'xeno-v1';
+var CACHE = 'xeno-v2';
 var BLOB_CACHE = 'xeno-blobs';
 var PRECACHE = [
   '/', '/editor.html', '/preview.html', '/index.html', '/data.js',

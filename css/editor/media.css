@@ -610,5 +610,13 @@
 
 .move-modal-actions .btn {
   justify-content: center;
-  min-width: 76px;
+}
+
+/* ── Empty state ──────────────────────────────────────── */
+.media-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--text-muted);
+  font-size: var(--type-sm);
 }

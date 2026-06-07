@@ -219,9 +219,7 @@
             E.renderSceneGrid();
             E.debouncedSave();
           };
-          D.mediaModal.classList.add('visible');
-          E.loadAlbums();
-          E.loadMedia(null);
+          E.openMediaModal();
         } else if (action === 'delete') {
           if (S.scenes.length <= 1) { alert('Cannot delete the only scene.'); return; }
           if (!confirm('Delete "' + S.contextTarget.data.name + '"?')) return;
@@ -266,9 +264,7 @@
 
     // ─── Add Scene from media button ─────────────────────
     document.getElementById('btn-add-scene').addEventListener('click', function() {
-      D.mediaModal.classList.add('visible');
-      E.loadAlbums();
-      E.loadMedia(null);
+      E.openMediaModal();
     });
 
     // ─── Multi-delete scenes ─────────────────────────────
@@ -292,6 +288,22 @@
       S.selectedSceneIds.clear();
       S.lastClickedSceneIndex = null;
       syncSceneSelection();
+    });
+
+    // ─── Batch rename scenes ──────────────────────────────
+    document.getElementById('btn-batch-rename-scenes').addEventListener('click', function() {
+      if (S.selectedSceneIds.size === 0) return;
+      var pattern = prompt('Enter name pattern (use # for number):', 'Room #');
+      if (!pattern) return;
+      var count = 1;
+      S.scenes.forEach(function(s) {
+        if (S.selectedSceneIds.has(s.data.id)) {
+          s.data.name = pattern.replace('#', String(count).padStart(2, '0'));
+          count++;
+        }
+      });
+      E.renderSceneGrid();
+      E.debouncedSave();
     });
 
     // ─── Add Scene Helpers ───────────────────────────────

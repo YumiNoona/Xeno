@@ -428,6 +428,16 @@
     <div class="type-fields" id="fields-scene-settings" style="display:none;">
       <div style="margin-top:0; padding-top:0; border-top:none;">
         <label
+          style="font-size:var(--type-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:var(--weight-semibold); margin-bottom:8px; display:block;">Scene</label>
+        <div class="form-group">
+          <button class="btn btn-secondary" id="btn-capture-thumb" style="width:100%;justify-content:center;">
+            ${xIcon('camera', 14)}
+            Capture as Thumbnail
+          </button>
+        </div>
+      </div>
+      <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+        <label
           style="font-size:var(--type-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:var(--weight-semibold); margin-bottom:8px; display:block;">Floorplan
           Settings</label>
         <div class="form-group toggle-group">
