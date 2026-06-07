@@ -14,7 +14,6 @@
     D.fieldsSceneSettings.style.display = 'none';
     D.fieldsProjectSettings.style.display = 'block';
     D.panelActionsHotspot.style.display = 'none';
-    D.panelPosition.style.display = 'none';
     // Show the save button (may have been hidden by closePropertiesPanel)
     var pa = document.getElementById('panel-actions-project');
     if (pa) pa.style.display = '';
@@ -51,9 +50,6 @@
     if (D.psIntroBtn) D.psIntroBtn.value = (s.intro && s.intro.buttonText) || 'Enter Tour';
     if (D.psMinimap) D.psMinimap.checked = s.showMinimap === true;
     if (D.psMinimapPos) D.psMinimapPos.value = s.minimapPosition || 'bottom-left';
-    if (D.psTransition) D.psTransition.value = s.defaultTransition || 'opacity';
-    if (D.psTransDur) D.psTransDur.value = s.defaultTransitionDuration || 1000;
-    if (D.psTransDurLabel) D.psTransDurLabel.textContent = (s.defaultTransitionDuration || 1000) + 'ms';
 
     // Floorplan
     var fp = window.data.floorplan || {};
@@ -93,8 +89,6 @@
     s.intro.buttonText = D.psIntroBtn ? D.psIntroBtn.value : 'Enter Tour';
     s.showMinimap = D.psMinimap ? D.psMinimap.checked : false;
     s.minimapPosition = D.psMinimapPos ? D.psMinimapPos.value : 'bottom-left';
-    s.defaultTransition = D.psTransition ? D.psTransition.value : 'opacity';
-    s.defaultTransitionDuration = D.psTransDur ? parseInt(D.psTransDur.value) : 1000;
 
     window.data.settings = s;
 
@@ -135,11 +129,6 @@
 
   // Wire up event listeners once DOM is ready
   setTimeout(function () {
-    if (D.psTransDur && D.psTransDurLabel) {
-      D.psTransDur.addEventListener('input', function () {
-        D.psTransDurLabel.textContent = this.value + 'ms';
-      });
-    }
 
     // Theme card click handler
     document.querySelectorAll('.theme-card').forEach(function(card) {

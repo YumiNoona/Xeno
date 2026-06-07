@@ -84,14 +84,22 @@
     iconWrapper.classList.add('icon_wrapper');
 
     var useDefaultIcon = !hotspot.iconStyle || hotspot.iconStyle === 'default';
-    if (useDefaultIcon) {
-      iconWrapper.innerHTML = '<div class="icon"><div class="inner_icon"><div class="icon1"></div><div class="icon2"></div></div></div>';
-    } else if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
+    if (useDefaultIcon || hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
       iconWrapper.style.cssText = 'display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,0.6); border:2px solid rgba(255,255,255,0.4); cursor:pointer; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,0.5); transition:transform 0.2s, background-color 0.2s;';
-      var img = document.createElement('img');
-      img.src = hotspot.customIconUrl;
-      img.style.cssText = 'width:24px; height:24px; object-fit:contain; pointer-events:none;';
-      iconWrapper.appendChild(img);
+      if (hotspot.iconStyle === 'custom' && hotspot.customIconUrl) {
+        var img = document.createElement('img');
+        img.src = hotspot.customIconUrl;
+        img.style.cssText = 'width:24px; height:24px; object-fit:contain; pointer-events:none;';
+        iconWrapper.appendChild(img);
+      } else {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('width', '24');
+        svg.setAttribute('height', '24');
+        svg.style.color = hotspot.iconColor || '#ffffff';
+        svg.innerHTML = getIconSvg('info');
+        iconWrapper.appendChild(svg);
+      }
     } else {
       iconWrapper.style.cssText = 'display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,0.6); border:2px solid rgba(255,255,255,0.4); cursor:pointer; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,0.5); transition:transform 0.2s, background-color 0.2s;';
       var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

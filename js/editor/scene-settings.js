@@ -10,9 +10,6 @@
       S.selectedHotspotData = null;
       D.panelTitle.textContent = 'Scene Settings';
       D.panelActionsHotspot.style.display = 'none';
-      D.panelPosition.style.display = 'none';
-      document.getElementById('panel-actions-hotspot').style.display = 'none';
-      document.getElementById('panel-position').style.display = 'none';
       document.querySelectorAll('.type-fields').forEach(function(f) { f.style.display = 'none'; });
       D.fieldsSceneSettings.style.display = 'block';
 

@@ -510,6 +510,12 @@
 
       // ── Narrator auto-tour ─────────────────────────
       clearTimeout(sceneCtx.__narratorTimer);
+      // Stop previous narrator audio
+      if (sceneCtx.__narratorAudio) {
+        sceneCtx.__narratorAudio.pause();
+        sceneCtx.__narratorAudio.currentTime = 0;
+        sceneCtx.__narratorAudio = null;
+      }
       var narratorHs = (sceneCtx.data.hotspots || []).find(function(h) { return h.type === 'narrator' && h.narratorAudio; });
       if (narratorHs) {
         // Show captions overlay
@@ -527,6 +533,7 @@
         var audio = new Audio(narratorHs.narratorAudio);
         audio.volume = 0.8;
         audio.play().catch(function() {});
+        sceneCtx.__narratorAudio = audio;
 
         // Auto-advance after duration
         var duration = (narratorHs.sceneDuration || 10) * 1000;
@@ -625,8 +632,8 @@
 
     // ── Gaze-based hotspot activation ──────────────────
     var _gazeHotspot = null;
-    var _gazeTimer = 0;
-    var GAZE_THRESHOLD = 6; // degrees
+    var _gazeStart = 0;
+    var GAZE_THRESHOLD = window.matchMedia('(max-width:500px)').matches ? 8 : 6;
     var GAZE_TIME = 2000;   // ms to activate
 
     setInterval(function() {
@@ -684,15 +691,14 @@
       });
 
       if (closest === _gazeHotspot) {
-        _gazeTimer += 200;
-        if (_gazeTimer >= GAZE_TIME && _gazeHotspot) {
+        if (Date.now() - _gazeStart >= GAZE_TIME && _gazeHotspot) {
           _gazeHotspot.click();
-          _gazeTimer = 0;
+          _gazeStart = 0;
           _gazeHotspot = null;
         }
       } else {
         _gazeHotspot = closest;
-        _gazeTimer = 0;
+        _gazeStart = closest ? Date.now() : 0;
       }
     }, 200);
 

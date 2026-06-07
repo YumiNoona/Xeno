@@ -252,7 +252,7 @@
     cam.setAttribute('look-controls',
       'enabled:true;pointerLockEnabled:false;touchEnabled:true;magicWindowTrackingEnabled:true;');
     cam.setAttribute('wasd-controls', 'enabled:false');
-    cam.setAttribute('fov', '80');
+    cam.setAttribute('fov', '90');
     cam.setAttribute('near', '0.1');
     cam.setAttribute('far', '200');
 

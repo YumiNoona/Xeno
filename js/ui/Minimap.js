@@ -34,16 +34,6 @@
       minimapElement.style.display = 'block';
     }
 
-    if (!data.floorplan.imageUrl) {
-      if (isEditor) {
-        var msg = document.createElement('div');
-        msg.style.cssText = 'color:var(--text-muted); font-size:var(--type-xs); font-family:inherit; text-align:center; padding:40px 10px;';
-        msg.innerHTML = 'No floorplan set.<br>Set it in Scene Settings.';
-        minimapElement.appendChild(msg);
-      }
-      return;
-    }
-
     // Header
     var header = document.createElement('div');
     header.style.cssText = 'padding:8px 12px; background:var(--bg-panel); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;';
@@ -61,7 +51,11 @@
 
     // Build the DOM map
     var mapImage = document.createElement('img');
-    mapImage.src = data.floorplan.imageUrl || '';
+    if (!data.floorplan.imageUrl) {
+      mapImage.src = generateAutoMap(scenes, 400, 280);
+    } else {
+      mapImage.src = data.floorplan.imageUrl || '';
+    }
     mapImage.style.width = '100%';
     mapImage.style.height = '100%';
     mapImage.style.objectFit = 'contain';
@@ -254,5 +248,35 @@
     var firstVisible = scenes.find(function(s) { return !s.data.hidden; }) || scenes[0];
     updateHotspotCount(firstVisible);
   };
+
+  function generateAutoMap(scenes, width, height) {
+    var canvas = document.createElement('canvas');
+    canvas.width = width || 400;
+    canvas.height = height || 280;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    for (var x = 0; x < canvas.width; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+    }
+    for (var y = 0; y < canvas.height; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+    }
+    var visibleScenes = scenes.filter(function(s) { return !s.data.hidden; });
+    var cols = Math.ceil(Math.sqrt(visibleScenes.length || 1));
+    visibleScenes.forEach(function(s, i) {
+      if (!s.data.minimapPosition || s.data.minimapPosition.x == null) {
+        var col = i % cols;
+        var row = Math.floor(i / cols);
+        s.data.minimapPosition = {
+          x: 15 + (col / Math.max(cols - 1, 1)) * 70,
+          y: 15 + (row / Math.max(Math.ceil(visibleScenes.length / cols) - 1, 1)) * 70
+        };
+      }
+    });
+    return canvas.toDataURL();
+  }
 
 })();

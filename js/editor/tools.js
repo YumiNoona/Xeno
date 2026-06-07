@@ -131,10 +131,6 @@
       if (S.dragHsData) {
         S.dragHsData.yaw = coords.yaw;
         S.dragHsData.pitch = coords.pitch;
-        if (S.selectedHotspotData === S.dragHsData) {
-          D.posYaw.textContent = (coords.yaw * 180 / Math.PI).toFixed(0);
-          D.posPitch.textContent = (coords.pitch * 180 / Math.PI).toFixed(0);
-        }
       }
     });
 

@@ -36,16 +36,16 @@
           });
         }).then(function(result) {
           var shareUrl = result.shareUrl || ('https://xeno.venusapp.in/t/' + result.slug);
-          var embedCode = '<iframe src="' + shareUrl + '" width="100%" height="600" frameborder="0" allowfullscreen></iframe>';
-          var msg = 'Share this link with your client:';
-          if (result.expiresAt) msg += '\n(Expires: ' + new Date(result.expiresAt).toLocaleDateString() + ')';
-          prompt(msg, shareUrl);
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(shareUrl).then(function() {
-              if (confirm('Link copied!\n\nDo you want to copy the embed code too?')) {
-                navigator.clipboard.writeText(embedCode);
-              }
-            }).catch(function() {});
+          // Save view count to project settings
+          if (result.views !== undefined) {
+            if (!window.data.settings) window.data.settings = {};
+            window.data.settings.views = result.views;
+          }
+          if (window.showShareModal) {
+            window.showShareModal(result.slug, shareUrl);
+          } else {
+            prompt('Share this link:', shareUrl);
+            if (navigator.clipboard) navigator.clipboard.writeText(shareUrl).catch(function() {});
           }
         }).catch(function(err) {
           var previewUrl = window.location.origin + '/preview.html?project=' + S.projectSlug;
@@ -75,6 +75,7 @@
 
       var filesToBundle = [
         'css/tokens.css', 'css/viewer/layout.css', 'css/viewer/components.css',
+        'css/editor/buttons.css',
         'css/hotspots/types.css', 'css/hotspots/animations.css', 'css/hotspots/dots.css',
         'css/lib/minimap.css', 'css/lib/hint.css',
         'js/lib/screenfull.js', 'js/lib/webvr-polyfill.js', 'js/engine/xeno.js',
@@ -158,6 +159,30 @@
         });
       }
 
+      function bundleHotspotAudio(hotspots, field, sceneId) {
+        (hotspots || []).forEach(function(hs, idx) {
+          var src = hs[field];
+          if (!src || (src.indexOf('blob:') !== 0 && src.indexOf('media_') !== 0)) return;
+          var p = resolveUrl(src).then(function(fetchUrl) {
+            return fetch(fetchUrl).then(function(res) {
+              if (!res.ok) throw new Error('Failed to fetch audio');
+              return res.blob();
+            }).then(function(blob) {
+              var ext = extFromMime(blob.type) || 'mp3';
+              var orig = src.indexOf('media_') === 0 ? getOriginalName(src, null) : null;
+              var name = uniqueName(orig || ('audio_' + sceneId + '_' + idx + '.' + ext));
+              var path = 'media/' + name;
+              zip.file(path, blob);
+              hs[field] = path;
+            });
+          }).catch(function(err) {
+            console.warn('Could not bundle audio for scene ' + sceneId, err);
+            hs[field] = null;
+          });
+          mediaPromises.push(p);
+        });
+      }
+
       function bundleSceneMedia(sceneData) {
         if (!sceneData.mediaUrl) return;
         var origUrl = sceneData.mediaUrl;
@@ -192,6 +217,8 @@
         bundleHotspotMedia(sceneData.linkHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.infoHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.mediaHotspots, sceneData.id);
+        bundleHotspotAudio(sceneData.hotspots, 'narratorAudio', sceneData.id);
+        bundleHotspotAudio(sceneData.hotspots, 'ambientAudio', sceneData.id);
       });
 
       var readme =

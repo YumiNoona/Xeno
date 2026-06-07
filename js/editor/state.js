@@ -179,10 +179,6 @@
   D.propTitle        = $('prop-title');
   D.propAnimation    = $('prop-animation');
   D.propIconStyle    = $('prop-icon-style');
-  D.propTargetScene  = $('prop-target-scene');
-  D.propTransition   = $('prop-transition');
-  D.propTransDuration = $('prop-trans-duration');
-  D.propTransDurLabel = $('prop-trans-dur-label');
   D.propBodyText     = $('prop-body-text');
   D.propLinkUrl      = $('prop-link-url');
   D.propLinkLabel    = $('prop-link-label');
@@ -190,8 +186,6 @@
   D.propUrlHref      = $('prop-url-href');
   D.propUrlLabel     = $('prop-url-label');
   D.propUrlOpenIn    = $('prop-url-open-in');
-  D.posYaw           = $('pos-yaw');
-  D.posPitch         = $('pos-pitch');
   D.propFloorplanUrl = $('prop-floorplan-url');
   D.btnPickFloorplan = $('btn-pick-floorplan');
   D.propFloorplanEnabled = $('prop-floorplan-enabled');
@@ -201,10 +195,16 @@
   D.propRingEnabled  = $('prop-ring-enabled');
   D.propIconColor    = $('prop-icon-color');
   D.btnResetIconColor = $('btn-reset-icon-color');
+  D.propIconColorHex  = $('prop-icon-color-hex');
+  D.propIconColorSwatch = $('prop-icon-color-swatch');
   D.propRingColor    = $('prop-ring-color');
+  D.propRingColorHex  = $('prop-ring-color-hex');
+  D.propRingColorSwatch = $('prop-ring-color-swatch');
   D.btnResetRingColor = $('btn-reset-ring-color');
   D.propRingSize     = $('prop-ring-size');
   D.propRingSizeLabel = $('prop-ring-size-label');
+  D.propRingCount     = $('prop-ring-count');
+  D.propRingCountLabel = $('prop-ring-count-label');
   D.propRingGap      = $('prop-ring-gap');
   D.propRingGapLabel = $('prop-ring-gap-label');
   D.groupRingGap     = $('group-ring-gap');
@@ -268,7 +268,6 @@
   D.fieldsHotspotProperties = $('fields-hotspot-properties');
   D.fieldsProjectSettings = $('fields-project-settings');
   D.panelActionsHotspot = $('panel-actions-hotspot');
-  D.panelPosition    = $('panel-position');
 
   // Project settings DOM
   D.psVR          = $('ps-vr');
@@ -285,9 +284,6 @@
   D.psIntroTitle  = $('ps-intro-title');
   D.psIntroSubtitle = $('ps-intro-subtitle');
   D.psIntroBtn    = $('ps-intro-btn');
-  D.psTransition  = $('ps-transition');
-  D.psTransDur    = $('ps-trans-dur');
-  D.psTransDurLabel = $('ps-trans-dur-label');
   D.psHotspotOverview = $('ps-hotspot-overview');
   D.psSaveBtn     = $('btn-save-project-settings');
   D.psFloorplanEnabled = $('ps-minimap');

@@ -13,7 +13,6 @@
       D.fieldsProjectSettings.style.display = 'none';
       D.panelTitle.textContent = 'Hotspot Properties';
       D.panelActionsHotspot.style.display = 'flex';
-      D.panelPosition.style.display = 'flex';
       D.fieldsHotspotProperties.style.display = 'block';
 
       D.propType.value = hsData.type || 'info';
@@ -22,8 +21,14 @@
       D.propIconStyle.value = hsData.iconStyle || 'default';
       D.propCustomIconUrl.value = hsData.customIconUrl || '';
       D.propRingEnabled.checked = hsData.ringEnabled !== false;
+      var ringProps = document.getElementById('group-ring-props');
+      if (ringProps) ringProps.style.display = D.propRingEnabled.checked ? '' : 'none';
       D.propIconColor.value = hsData.iconColor || '#ffffff';
       D.propRingColor.value = hsData.ringColor || '#ffffff';
+      if (D.propIconColorHex) D.propIconColorHex.value = hsData.iconColor || '#ffffff';
+      if (D.propRingColorHex) D.propRingColorHex.value = hsData.ringColor || '#ffffff';
+      if (D.propIconColorSwatch) D.propIconColorSwatch.style.background = hsData.iconColor || '#ffffff';
+      if (D.propRingColorSwatch) D.propRingColorSwatch.style.background = hsData.ringColor || '#ffffff';
 
       var rSize = hsData.ringSize || 2;
       D.propRingSize.value = rSize;
@@ -34,18 +39,14 @@
       D.propRingGapLabel.textContent = rGap + 'px';
 
       var rCount = hsData.ringCount || 1;
-      document.querySelectorAll('.ring-count-btn').forEach(function(btn) {
-        btn.classList.toggle('active', parseInt(btn.getAttribute('data-count')) === rCount);
-      });
-      D.groupRingGap.style.display = rCount > 1 ? 'block' : 'none';
+      if (D.propRingCount) D.propRingCount.value = rCount;
+      if (D.propRingCountLabel) D.propRingCountLabel.textContent = rCount;
 
       var size = hsData.iconSize || 44;
       D.propIconSize.value = size;
       D.propSizeLabel.textContent = size + 'px';
 
       toggleCustomIconGroup();
-      D.posYaw.textContent = ((hsData.yaw || 0) * 180 / Math.PI).toFixed(0);
-      D.posPitch.textContent = ((hsData.pitch || 0) * 180 / Math.PI).toFixed(0);
 
       populateTargetDropdowns();
       fillTypeFields(hsData);
@@ -84,13 +85,13 @@
       if (title) title.style.display = type === 'text' || type === 'narrator' || type === 'ambient' ? 'none' : '';
       var anim = document.getElementById('group-hotspot-animation');
       if (anim) anim.style.display = type === 'narrator' || type === 'ambient' ? 'none' : '';
+      var ringProps = document.getElementById('group-ring-props');
+      if (ringProps) ringProps.style.display = isAudio ? 'none' : (D.propRingEnabled && D.propRingEnabled.checked ? '' : 'none');
+      var iconSize = document.getElementById('group-icon-size');
+      if (iconSize) iconSize.style.display = isAudio ? 'none' : '';
     }
 
     function fillTypeFields(hsData) {
-      D.propTargetScene.value = hsData.target || '';
-      D.propTransition.value = hsData.transition || 'opacity';
-      D.propTransDuration.value = hsData.transitionDuration || 800;
-      D.propTransDurLabel.textContent = (hsData.transitionDuration || 800) + 'ms';
       D.propBodyText.value = hsData.text || '';
       D.propLinkUrl.value = hsData.linkUrl || '';
       D.propLinkLabel.value = hsData.linkLabel || '';
@@ -155,7 +156,7 @@
 
     function populateTargetDropdowns() {
       var currentId = S.currentSceneCtx ? S.currentSceneCtx.data.id : null;
-      [D.propTargetScene, D.propInfoTargetScene].forEach(function(sel) {
+      [D.propInfoTargetScene].forEach(function(sel) {
         if (!sel) return;
         var last = sel.value;
         sel.innerHTML = '<option value="">-- select --</option>';
@@ -221,6 +222,8 @@
     D.propIconColor.addEventListener('input', function() {
       if (!S.selectedHotspotData) return;
       S.selectedHotspotData.iconColor = this.value;
+      if (D.propIconColorHex) D.propIconColorHex.value = this.value;
+      if (D.propIconColorSwatch) D.propIconColorSwatch.style.background = this.value;
       if (S.selectedHotspotElement) {
         var svg = S.selectedHotspotElement.querySelector('svg');
         if (svg) svg.style.color = this.value;
@@ -230,8 +233,10 @@
       E.debouncedSave();
     });
 
-    D.btnResetIconColor.addEventListener('click', function() {
+    if (D.btnResetIconColor) D.btnResetIconColor.addEventListener('click', function() {
       D.propIconColor.value = '#ffffff';
+      if (D.propIconColorHex) D.propIconColorHex.value = '#ffffff';
+      if (D.propIconColorSwatch) D.propIconColorSwatch.style.background = '#ffffff';
       if (S.selectedHotspotData) {
         S.selectedHotspotData.iconColor = '#ffffff';
         E.renderSceneHotspots();
@@ -242,12 +247,16 @@
     D.propRingColor.addEventListener('input', function() {
       if (!S.selectedHotspotData) return;
       S.selectedHotspotData.ringColor = this.value;
+      if (D.propRingColorHex) D.propRingColorHex.value = this.value;
+      if (D.propRingColorSwatch) D.propRingColorSwatch.style.background = this.value;
       E.renderSceneHotspots();
       E.debouncedSave();
     });
 
-    D.btnResetRingColor.addEventListener('click', function() {
+    if (D.btnResetRingColor) D.btnResetRingColor.addEventListener('click', function() {
       D.propRingColor.value = '#ffffff';
+      if (D.propRingColorHex) D.propRingColorHex.value = '#ffffff';
+      if (D.propRingColorSwatch) D.propRingColorSwatch.style.background = '#ffffff';
       if (S.selectedHotspotData) {
         S.selectedHotspotData.ringColor = '#ffffff';
         E.renderSceneHotspots();
@@ -255,9 +264,33 @@
       }
     });
 
+    // Hex input → color picker sync
+    if (D.propIconColorHex && D.propIconColor) {
+      D.propIconColorHex.addEventListener('input', function() {
+        var val = this.value;
+        if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+          D.propIconColor.value = val;
+          D.propIconColor.dispatchEvent(new Event('input'));
+          if (D.propIconColorSwatch) D.propIconColorSwatch.style.background = val;
+        }
+      });
+    }
+    if (D.propRingColorHex && D.propRingColor) {
+      D.propRingColorHex.addEventListener('input', function() {
+        var val = this.value;
+        if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+          D.propRingColor.value = val;
+          D.propRingColor.dispatchEvent(new Event('input'));
+          if (D.propRingColorSwatch) D.propRingColorSwatch.style.background = val;
+        }
+      });
+    }
+
     D.propRingEnabled.addEventListener('change', function() {
       if (!S.selectedHotspotData) return;
       S.selectedHotspotData.ringEnabled = this.checked;
+      var ringProps = document.getElementById('group-ring-props');
+      if (ringProps) ringProps.style.display = this.checked ? '' : 'none';
       if (S.selectedHotspotElement) {
         var ringTarget = S.selectedHotspotElement.querySelector('.link-icon-wrapper, .icon_wrapper, .out');
         if (ringTarget) ringTarget.classList.toggle('has-ring', this.checked);
@@ -285,19 +318,6 @@
       E.debouncedSave();
     });
 
-    document.querySelectorAll('.ring-count-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.ring-count-btn').forEach(function(b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        var count = parseInt(btn.getAttribute('data-count'));
-        D.groupRingGap.style.display = count > 1 ? 'block' : 'none';
-        if (!S.selectedHotspotData) return;
-        S.selectedHotspotData.ringCount = count;
-        E.renderSceneHotspots();
-        E.debouncedSave();
-      });
-    });
-
     D.propIconSize.addEventListener('input', function() {
       var size = parseInt(this.value);
       D.propSizeLabel.textContent = size + 'px';
@@ -323,15 +343,10 @@
       S.selectedHotspotData.ringColor = D.propRingColor.value;
       S.selectedHotspotData.ringSize = parseInt(D.propRingSize.value);
       S.selectedHotspotData.ringGap = parseInt(D.propRingGap.value);
-      var activeCountBtn = document.querySelector('.ring-count-btn.active');
-      S.selectedHotspotData.ringCount = activeCountBtn ? parseInt(activeCountBtn.getAttribute('data-count')) : 1;
+      S.selectedHotspotData.ringCount = D.propRingCount ? parseInt(D.propRingCount.value) : 1;
       S.selectedHotspotData.iconSize = parseInt(D.propIconSize.value);
 
-      if (S.selectedHotspotData.type === 'navigate') {
-        S.selectedHotspotData.target = D.propTargetScene.value;
-        S.selectedHotspotData.transition = D.propTransition.value;
-        S.selectedHotspotData.transitionDuration = parseInt(D.propTransDuration.value);
-      } else if (S.selectedHotspotData.type === 'info') {
+      if (S.selectedHotspotData.type === 'info') {
         S.selectedHotspotData.text = D.propBodyText.value;
         S.selectedHotspotData.linkUrl = D.propLinkUrl.value;
         S.selectedHotspotData.linkLabel = D.propLinkLabel.value;
@@ -416,18 +431,51 @@
     bindMediaField(D.propAudioUrl, D.btnPickAudio);
     bindMediaField(D.propFloorplanUrl, D.btnPickFloorplan);
 
-    // ─── Position editable fields ────────────────────────
-    D.posYaw.addEventListener('input', function() {
-      if (!S.selectedHotspotData) return;
-      S.selectedHotspotData.yaw = parseFloat(this.textContent) * Math.PI / 180;
-      E.renderSceneHotspots();
-      E.debouncedSave();
+    // ─── Stepper button handlers ──────────────────────
+    document.querySelectorAll('.hs-stepper-up, .hs-stepper-down').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var targetId = this.getAttribute('data-target');
+        var delta = parseInt(this.getAttribute('data-delta'));
+        var input = document.getElementById(targetId);
+        var label = input && input.parentElement.querySelector('span');
+        if (!input) return;
+        var min = parseInt(input.getAttribute('min')) || 1;
+        var max = parseInt(input.getAttribute('max')) || 999;
+        var val = parseInt(input.value) + delta;
+        if (val < min || val > max) return;
+        input.value = val;
+        if (label) label.textContent = targetId === 'prop-ring-count' ? val : val + 'px';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        if (S.selectedHotspotData) {
+          if (targetId === 'prop-ring-size') S.selectedHotspotData.ringSize = val;
+          if (targetId === 'prop-icon-size') S.selectedHotspotData.iconSize = val;
+          if (targetId === 'prop-ring-count') S.selectedHotspotData.ringCount = val;
+          if (targetId === 'prop-ring-gap') S.selectedHotspotData.ringGap = val;
+          E.renderSceneHotspots();
+        }
+        E.debouncedSave();
+      });
     });
-    D.posPitch.addEventListener('input', function() {
-      if (!S.selectedHotspotData) return;
-      S.selectedHotspotData.pitch = parseFloat(this.textContent) * Math.PI / 180;
-      E.renderSceneHotspots();
-      E.debouncedSave();
+
+    // ─── Quick color preset clicks ────────────────────
+    document.querySelectorAll('.hs-qc-dot').forEach(function(dot) {
+      dot.addEventListener('click', function() {
+        var color = this.getAttribute('data-color');
+        var parent = this.closest('.hs-quick-colors');
+        if (!parent) return;
+        var targetId = parent.getAttribute('data-target');
+        var swatchId = parent.getAttribute('data-swatch');
+        var input = document.getElementById(targetId);
+        var swatch = document.getElementById(swatchId);
+        if (input) { input.value = color; input.dispatchEvent(new Event('input', { bubbles: true })); }
+        if (swatch) swatch.style.background = color;
+        if (S.selectedHotspotData) {
+          if (targetId === 'prop-icon-color') S.selectedHotspotData.iconColor = color;
+          if (targetId === 'prop-ring-color') S.selectedHotspotData.ringColor = color;
+          E.renderSceneHotspots();
+        }
+        E.debouncedSave();
+      });
     });
 
     // Setup type-specific listeners from the other module

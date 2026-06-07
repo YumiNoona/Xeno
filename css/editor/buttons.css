@@ -82,15 +82,30 @@
 }
 
 .btn-publish {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
   font-weight: var(--weight-bold);
 }
 
-.btn-publish:hover {
+#btn-publish {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+#btn-publish svg {
+  color: #fff;
+}
+
+#btn-publish:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+}
+
+[data-theme="light"] #btn-publish {
+  background: var(--bg-base);
+  border-color: var(--border);
+  color: #000;
+}
+[data-theme="light"] #btn-publish svg {
+  color: #000;
 }
 
 #btn-export {
@@ -98,10 +113,16 @@
   border-color: #e11d48;
   color: #e11d48;
 }
+#btn-export svg {
+  color: #e11d48;
+}
 
 #btn-export:hover {
   background: #e11d48;
   border-color: #e11d48;
+  color: #fff;
+}
+#btn-export:hover svg {
   color: #fff;
 }
 

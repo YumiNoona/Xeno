@@ -136,7 +136,8 @@
     loadDashboard();
   };
 
-  function showShareModal(slug) {
+  function showShareModal(slug, shareUrlOverride) {
+    var modal = document.getElementById('share-modal');
     var modal = document.getElementById('share-modal');
     var shareWhatsApp = document.getElementById('share-whatsapp');
     var shareTelegram = document.getElementById('share-telegram');
@@ -151,9 +152,9 @@
     if (shareTelegram) shareTelegram.href = 'https://t.me/share/url?url=https://xeno-tour.com&text=' + msg;
     if (shareWeTransfer) shareWeTransfer.href = 'https://wetransfer.com/';
 
-    var embedUrl = window.location.origin + '/t/' + slug;
+    var embedUrl = shareUrlOverride || (window.location.origin + '/t/' + slug);
     var embedCode = document.getElementById('share-embed-code');
-    if (embedCode) embedCode.value = '<iframe src="' + embedUrl + '" width="100%" height="600" frameborder="0" allowfullscreen></iframe>';
+    if (embedCode) embedCode.value = '<iframe src="' + embedUrl + '" width="100%" height="600" frameborder="0" allow="gyroscope; accelerometer; xr-spatial-tracking; fullscreen" allowfullscreen></iframe>';
 
     var btnCopyEmbed = document.getElementById('btn-copy-embed');
     if (btnCopyEmbed) {
@@ -172,6 +173,7 @@
     if (closeBtn) closeBtn.onclick = function() { modal.style.display = 'none'; };
     modal.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
   }
+  window.showShareModal = showShareModal;
 
   function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
 
@@ -206,6 +208,8 @@
       var card = document.createElement('div');
       card.className = 'project-card';
       if (isMediaId(thumbUrl)) card.dataset.thumbId = thumbUrl;
+      var views = (tour.data && tour.data.settings && tour.data.settings.views) || null;
+      var statusText = views ? (views + ' view' + (views !== 1 ? 's' : '')) : 'Published';
       card.innerHTML =
         '<div class="project-card-thumb-wrapper">' +
           '<img class="project-card-thumb" src="' + initialSrc + '" alt="Tour Thumbnail">' +
@@ -214,7 +218,7 @@
         '<div class="project-card-info">' +
           '<h4 class="project-card-title">' + title + '</h4>' +
           '<div class="project-card-meta">' +
-            '<span class="project-card-status">Published</span>' +
+            '<span class="project-card-status">' + statusText + '</span>' +
             '<span class="project-card-date">' + new Date(tour.updated_at).toLocaleDateString() + '</span>' +
           '</div>' +
         '</div>' +

@@ -152,7 +152,7 @@
     }
     .ticker {
       white-space: nowrap;
-      animation: ticker 80s linear infinite;
+      animation: ticker 45s linear infinite;
       font-size: var(--type-xs);
       font-weight: var(--weight-bold);
       color: #fff;
@@ -602,14 +602,14 @@
   <!-- Marquee tickers -->
   <div class="ticker-wrap top">
     <div class="ticker">
-      XENO TOUR PLATFORM v1.0 &nbsp;◆&nbsp; ZERO-BUILD VANILLA JS &nbsp;◆&nbsp; WEBGL PANORAMA ENGINE &nbsp;◆&nbsp; NO FRAMEWORKS REQUIRED &nbsp;◆&nbsp; LOCAL-FIRST DATA STORAGE &nbsp;◆&nbsp; OFFLINE CAPABLE PWA &nbsp;◆&nbsp; IMMERSIVE 360° VIRTUAL TOURS &nbsp;◆&nbsp;
-      XENO TOUR PLATFORM v1.0 &nbsp;◆&nbsp; ZERO-BUILD VANILLA JS &nbsp;◆&nbsp; WEBGL PANORAMA ENGINE &nbsp;◆&nbsp; NO FRAMEWORKS REQUIRED &nbsp;◆&nbsp; LOCAL-FIRST DATA STORAGE &nbsp;◆&nbsp; OFFLINE CAPABLE PWA &nbsp;◆&nbsp; IMMERSIVE 360° VIRTUAL TOURS &nbsp;◆&nbsp;
+      XENO TOUR PLATFORM v1.0 &nbsp;◆&nbsp; ZERO-BUILD VANILLA JS &nbsp;◆&nbsp; MARZIPANO WEBGL ENGINE &nbsp;◆&nbsp; 360° PANORAMA STUDIO &nbsp;◆&nbsp; REAL-TIME HOTSPOT EDITOR &nbsp;◆&nbsp; INDEXEDDB + LOCALSTORAGE &nbsp;◆&nbsp; NO FRAMEWORKS &ndash; NO BUNDLERS &nbsp;◆&nbsp; PWA OFFLINE READY &nbsp;◆&nbsp;
+      XENO TOUR PLATFORM v1.0 &nbsp;◆&nbsp; ZERO-BUILD VANILLA JS &nbsp;◆&nbsp; MARZIPANO WEBGL ENGINE &nbsp;◆&nbsp; 360° PANORAMA STUDIO &nbsp;◆&nbsp; REAL-TIME HOTSPOT EDITOR &nbsp;◆&nbsp; INDEXEDDB + LOCALSTORAGE &nbsp;◆&nbsp; NO FRAMEWORKS &ndash; NO BUNDLERS &nbsp;◆&nbsp; PWA OFFLINE READY &nbsp;◆&nbsp;
     </div>
   </div>
   <div class="ticker-wrap bottom">
-    <div class="ticker">
-      DRAG TO LOOK AROUND &nbsp;◆&nbsp; ADD HOTSPOTS &nbsp;◆&nbsp; LINK SCENES &nbsp;◆&nbsp; EXPORT TO ZIP &nbsp;◆&nbsp; PREVIEW & VR READY &nbsp;◆&nbsp; FULLY OFFLINE &nbsp;◆&nbsp; CUSTOMIZABLE UI &nbsp;◆&nbsp;
-      DRAG TO LOOK AROUND &nbsp;◆&nbsp; ADD HOTSPOTS &nbsp;◆&nbsp; LINK SCENES &nbsp;◆&nbsp; EXPORT TO ZIP &nbsp;◆&nbsp; PREVIEW & VR READY &nbsp;◆&nbsp; FULLY OFFLINE &nbsp;◆&nbsp; CUSTOMIZABLE UI &nbsp;◆&nbsp;
+    <div class="ticker" style="animation-direction: reverse;">
+      CREATE &nbsp;◆&nbsp; EDIT &nbsp;◆&nbsp; EXPORT &nbsp;◆&nbsp; SHARE &nbsp;◆&nbsp; TEXT LABELS WITH FONTS &nbsp;◆&nbsp; AMBIENT AUDIO ZONES &nbsp;◆&nbsp; AUTO-TOUR NARRATOR &nbsp;◆&nbsp; GAZE-BASED HOTSPOTS &nbsp;◆&nbsp; CUSTOM THEMES &nbsp;◆&nbsp; SCENE THUMBNAILS &nbsp;◆&nbsp; MULTI-SCENE CARDS &nbsp;◆&nbsp; VR MODE &nbsp;◆&nbsp; MINIMAP ARROWS &nbsp;◆&nbsp; DARK + LIGHT THEMES &nbsp;◆&nbsp; PORTABLE .XENO FILES &nbsp;◆&nbsp;
+      CREATE &nbsp;◆&nbsp; EDIT &nbsp;◆&nbsp; EXPORT &nbsp;◆&nbsp; SHARE &nbsp;◆&nbsp; TEXT LABELS WITH FONTS &nbsp;◆&nbsp; AMBIENT AUDIO ZONES &nbsp;◆&nbsp; AUTO-TOUR NARRATOR &nbsp;◆&nbsp; GAZE-BASED HOTSPOTS &nbsp;◆&nbsp; CUSTOM THEMES &nbsp;◆&nbsp; SCENE THUMBNAILS &nbsp;◆&nbsp; MULTI-SCENE CARDS &nbsp;◆&nbsp; VR MODE &nbsp;◆&nbsp; MINIMAP ARROWS &nbsp;◆&nbsp; DARK + LIGHT THEMES &nbsp;◆&nbsp; PORTABLE .XENO FILES &nbsp;◆&nbsp;
     </div>
   </div>
 
@@ -669,7 +669,7 @@
         <span class="card-tag">→ Launch</span>
       </a>
 
-      <a href="preview.html" class="card">
+      <div class="card" id="card-preview">
         <span class="card-corner"></span>
         <span class="card-num">[ 02 ]</span>
         <div class="card-icon">
@@ -680,7 +680,7 @@
         <h3>Preview Tour</h3>
         <p>Experience your project in full 360° immersive mode with VR support</p>
         <span class="card-tag">→ View</span>
-      </a>
+      </div>
 
       <a href="https://www.marzipano.net/demos/sample-tour/" target="_blank" class="card">
         <span class="card-corner"></span>
@@ -710,6 +710,23 @@
     BUILT WITH 💙 BY VEIL
   </div>
 
+  <!-- Tour picker modal -->
+  <div id="tour-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+    <div style="background:var(--bg-panel);border:3px solid var(--border);border-radius:0;padding:32px;max-width:480px;width:90%;max-height:70vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h3 style="font-size:var(--type-lg);color:var(--text-primary);text-transform:uppercase;letter-spacing:0.05em;">Select Tour</h3>
+        <button id="tour-picker-close" style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;">&times;</button>
+      </div>
+      <div id="tour-picker-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <div id="tour-picker-empty" style="display:none;text-align:center;padding:24px;">
+        <p style="color:var(--text-muted);margin-bottom:16px;">No tours found. Create one first!</p>
+        <a href="editor.html" class="btn" style="display:inline-flex;background:var(--accent);color:#fff;padding:10px 20px;text-decoration:none;border-radius:0;font-weight:var(--weight-bold);text-transform:uppercase;letter-spacing:0.05em;">
+          + Create New Tour
+        </a>
+      </div>
+    </div>
+  </div>
+
   <script>
     const themeToggle = document.getElementById('theme-toggle');
     const sunIcon = document.getElementById('sun-icon');
@@ -732,6 +749,64 @@
       sunIcon.style.display = theme === 'dark' ? 'none' : 'block';
       moonIcon.style.display = theme === 'dark' ? 'block' : 'none';
     }
+
+    // Preview tour picker
+    var cardPreview = document.getElementById('card-preview');
+    var pickerOverlay = document.getElementById('tour-picker-overlay');
+    var pickerList = document.getElementById('tour-picker-list');
+    var pickerEmpty = document.getElementById('tour-picker-empty');
+    var pickerClose = document.getElementById('tour-picker-close');
+
+    function getTours() {
+      var tours = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key.indexOf('xeno_tour_') === 0) {
+          try {
+            var raw = localStorage.getItem(key);
+            var parsed = JSON.parse(raw);
+            var data = parsed.data || parsed;
+            var name = (data.settings && (data.settings.name || data.settings.title)) || key.replace('xeno_tour_', '');
+            var slug = key.replace('xeno_tour_', '');
+            var scenes = (data.scenes && data.scenes.length) || 0;
+            tours.push({ slug: slug, name: name, scenes: scenes });
+          } catch(e) {}
+        }
+      }
+      tours.sort(function(a, b) { return b.slug.localeCompare(a.slug); });
+      return tours;
+    }
+
+    if (cardPreview) {
+      cardPreview.addEventListener('click', function() {
+        var tours = getTours();
+        pickerList.innerHTML = '';
+        if (tours.length === 0) {
+          pickerList.style.display = 'none';
+          pickerEmpty.style.display = '';
+        } else {
+          pickerList.style.display = '';
+          pickerEmpty.style.display = 'none';
+          tours.forEach(function(t) {
+            var el = document.createElement('a');
+            el.href = 'preview.html?project=' + encodeURIComponent(t.slug);
+            el.style.cssText = 'display:block;padding:12px 16px;background:var(--bg-raised);border:2px solid var(--border);color:var(--text-primary);text-decoration:none;transition:all 0.15s;font-family:inherit;';
+            el.innerHTML = '<strong>' + t.name + '</strong><br><span style="font-size:var(--type-xs);color:var(--text-muted);">' + t.scenes + ' scene' + (t.scenes !== 1 ? 's' : '') + '</span>';
+            el.addEventListener('mouseenter', function() { this.style.borderColor = 'var(--accent)'; });
+            el.addEventListener('mouseleave', function() { this.style.borderColor = 'var(--border)'; });
+            pickerList.appendChild(el);
+          });
+        }
+        pickerOverlay.style.display = 'flex';
+      });
+    }
+
+    if (pickerClose) {
+      pickerClose.addEventListener('click', function() { pickerOverlay.style.display = 'none'; });
+    }
+    pickerOverlay.addEventListener('click', function(e) {
+      if (e.target === pickerOverlay) pickerOverlay.style.display = 'none';
+    });
   </script>
 </body>
 </html>

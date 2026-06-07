@@ -48,7 +48,8 @@ module.exports = async function handler(req, res) {
       slug: slug,
       url: blob.url,
       shareUrl: proto + '://' + host + '/t/' + slug,
-      expiresAt: bundle.expiresAt
+      expiresAt: bundle.expiresAt,
+      views: bundle.views || 0
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });

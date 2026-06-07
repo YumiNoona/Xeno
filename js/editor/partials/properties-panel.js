@@ -86,50 +86,85 @@
         <option value="custom">Custom Image</option>
       </select>
     </div>
+
     <div class="form-group">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div>
+          <label>Color</label>
+            <label style="display:block;width:32px;height:32px;border:2px solid var(--border);cursor:pointer;position:relative;">
+              <input type="color" id="prop-icon-color" value="#ffffff" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+              <span id="prop-icon-color-swatch" style="display:block;width:100%;height:100%;background:#fff;"></span>
+            </label>
+        </div>
+        <div style="flex:1;margin-left:12px;">
+          <label>Size</label>
+          <div class="hs-stepper" style="align-items:stretch;">
+            <span id="prop-size-label" style="height:32px;display:flex;align-items:center;">44px</span>
+            <div class="hs-stepper-btns">
+              <button class="hs-stepper-up" data-target="prop-icon-size" data-delta="2" style="height:15px;">&#9650;</button>
+              <button class="hs-stepper-down" data-target="prop-icon-size" data-delta="-2" style="height:15px;">&#9660;</button>
+            </div>
+          </div>
+          <input type="hidden" id="prop-icon-size" value="44" min="24" max="96">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group toggle-group" style="padding-top:20px;">
       <label>Outer Ring</label>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-        <input type="checkbox" id="prop-ring-enabled" checked>
-        <span>Show outer ring</span>
-      </label>
+      <input type="checkbox" id="prop-ring-enabled" checked>
     </div>
-    <div class="form-group">
-      <label>Icon Color</label>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input type="color" id="prop-icon-color" value="#ffffff"
-          style="width:40px;height:32px;border-radius:6px;border:1px solid var(--border);cursor:pointer;padding:2px;">
-        <button class="btn btn-secondary" id="btn-reset-icon-color"
-          style="font-size:var(--type-xs);padding:4px 8px;">Reset</button>
+
+    <div id="group-ring-props" style="display:none;padding-top:12px;">
+      <div class="form-group">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div>
+            <label>Color</label>
+            <label style="display:block;width:32px;height:32px;border:2px solid var(--border);cursor:pointer;position:relative;">
+              <input type="color" id="prop-ring-color" value="#ffffff" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+              <span id="prop-ring-color-swatch" style="display:block;width:100%;height:100%;background:#fff;"></span>
+            </label>
+          </div>
+          <div style="flex:1;margin-left:12px;">
+            <label>Thickness</label>
+            <div class="hs-stepper" style="align-items:stretch;">
+              <span id="prop-ring-size-label" style="height:32px;display:flex;align-items:center;">2px</span>
+              <div class="hs-stepper-btns">
+                <button class="hs-stepper-up" data-target="prop-ring-size" data-delta="1" style="height:15px;">&#9650;</button>
+                <button class="hs-stepper-down" data-target="prop-ring-size" data-delta="-1" style="height:15px;">&#9660;</button>
+              </div>
+            </div>
+            <input type="hidden" id="prop-ring-size" value="2" min="1" max="8">
+          </div>
+          <div style="flex:1;">
+            <label>Ring Gap</label>
+            <div class="hs-stepper" style="align-items:stretch;">
+              <span id="prop-ring-gap-label" style="height:32px;display:flex;align-items:center;">6px</span>
+              <div class="hs-stepper-btns">
+                <button class="hs-stepper-up" data-target="prop-ring-gap" data-delta="1" style="height:15px;">&#9650;</button>
+                <button class="hs-stepper-down" data-target="prop-ring-gap" data-delta="-1" style="height:15px;">&#9660;</button>
+              </div>
+            </div>
+            <input type="hidden" id="prop-ring-gap" value="6" min="1" max="20">
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="padding-top:10px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="flex:1;">
+            <label>No. of Rings</label>
+            <div class="hs-stepper">
+              <span id="prop-ring-count-label" style="min-width:24px;">1</span>
+              <div class="hs-stepper-btns">
+                <button class="hs-stepper-up" data-target="prop-ring-count" data-delta="1" style="height:15px;">&#9650;</button>
+                <button class="hs-stepper-down" data-target="prop-ring-count" data-delta="-1" style="height:15px;">&#9660;</button>
+              </div>
+            </div>
+            <input type="hidden" id="prop-ring-count" value="1" min="1" max="3">
+          </div>
+        </div>
       </div>
     </div>
-    <div class="form-group">
-      <label>Ring Color</label>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input type="color" id="prop-ring-color" value="#ffffff"
-          style="width:40px;height:32px;border-radius:6px;border:1px solid var(--border);cursor:pointer;padding:2px;">
-        <button class="btn btn-secondary" id="btn-reset-ring-color"
-          style="font-size:var(--type-xs);padding:4px 8px;">Reset</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Ring Thickness <span id="prop-ring-size-label">2px</span></label>
-      <input type="range" id="prop-ring-size" min="1" max="8" value="2" step="1">
-    </div>
-    <div class="form-group">
-      <label>Number of Rings</label>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-secondary ring-count-btn active" data-count="1" style="flex:1;padding:4px 0;font-size:var(--type-xs);">1</button>
-        <button class="btn btn-secondary ring-count-btn" data-count="2" style="flex:1;padding:4px 0;font-size:var(--type-xs);">2</button>
-        <button class="btn btn-secondary ring-count-btn" data-count="3" style="flex:1;padding:4px 0;font-size:var(--type-xs);">3</button>
-      </div>
-    </div>
-    <div class="form-group" id="group-ring-gap">
-      <label>Ring Gap <span id="prop-ring-gap-label">6px</span></label>
-      <input type="range" id="prop-ring-gap" min="2" max="20" value="6" step="1">
-    </div>
-    <div class="form-group">
-      <label>Icon Size <span id="prop-size-label">44px</span></label>
-      <input type="range" id="prop-icon-size" min="24" max="96" value="44" step="2">
     </div>
     <div class="form-group" id="group-custom-icon" style="display:none;">
       <label>Custom Icon</label>
@@ -142,35 +177,6 @@
       </div>
     </div>
     </div><!-- /group-hotspot-generic -->
-
-    <!-- Navigate fields -->
-    <div class="type-fields" id="fields-navigate">
-      <div class="form-group">
-        <label>Target Scene</label>
-        <select id="prop-target-scene"></select>
-      </div>
-      <div class="form-group">
-        <label>Transition</label>
-        <select id="prop-transition">
-          <option value="opacity">Opacity</option>
-          <option value="fromRight">From Right</option>
-          <option value="throughBlack">Through Black</option>
-          <option value="fromCenter">From Center</option>
-          <option value="fromWhite">From White</option>
-          <option value="fromLeft">From Left</option>
-          <option value="iris">Iris</option>
-          <option value="throughWhite">Through White</option>
-          <option value="curtain">Curtain</option>
-          <option value="fromCorner">From Corner</option>
-          <option value="splitHorizontal">Split</option>
-          <option value="zoomOut">Zoom Out</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Duration <span id="prop-trans-dur-label">800ms</span></label>
-        <input type="range" id="prop-trans-duration" min="300" max="2000" value="800" step="100">
-      </div>
-    </div>
 
     <!-- Info fields -->
     <div class="type-fields" id="fields-info" style="display:none;">
@@ -513,24 +519,25 @@
 
     <!-- Project Settings -->
     <div class="type-fields" id="fields-project-settings" style="display:none;">
-      <div class="panel-actions" id="panel-actions-project" style="margin-bottom:12px;">
+      <div id="panel-actions-project">
         <button class="btn btn-primary" id="btn-save-project-settings">
           ${xIcon('check', 14)}
           Save Settings
         </button>
       </div>
+
       <div class="project-settings-section">
-        <label class="ps-section-label">Preview Options</label>
+        <label class="ps-section-label">Controls &amp; Features</label>
         <div class="form-group toggle-group">
-          <label>VR Mode</label>
+          <label>VR Mode Button</label>
           <input type="checkbox" id="ps-vr">
         </div>
         <div class="form-group toggle-group">
-          <label>Gyroscope Control</label>
+          <label>Gyroscope Button</label>
           <input type="checkbox" id="ps-gyro">
         </div>
         <div class="form-group toggle-group">
-          <label>Control Buttons</label>
+          <label>Navigation Buttons</label>
           <input type="checkbox" id="ps-controls" checked>
         </div>
         <div class="form-group toggle-group">
@@ -542,73 +549,56 @@
           <input type="checkbox" id="ps-capture" checked>
         </div>
         <div class="form-group toggle-group">
-          <label>Autorotate</label>
+          <label>Autorotate Button</label>
           <input type="checkbox" id="ps-autorotate">
         </div>
         <div class="form-group toggle-group">
-          <label>Show Scenes</label>
+          <label>Scene Button</label>
           <input type="checkbox" id="ps-show-scenes" checked>
-        </div>
-        <div class="form-group">
-          <label>Layout Theme</label>
-          <input type="hidden" id="ps-layout-theme" value="hamburger">
-          <div class="theme-card-grid">
-
-            <div class="theme-card" data-theme="gallery">
-              <div class="tc-diagram">
-                <div class="tc-pano"></div>
-                <div class="tc-gallery-bottom"></div>
-                <div class="tc-ctrl" style="top:4px;right:4px"></div>
-              </div>
-              <div class="tc-name">Gallery</div>
-              <div class="tc-desc">Slide-up bottom drawer, controls top-right</div>
-            </div>
-            <div class="theme-card" data-theme="float">
-              <div class="tc-diagram">
-                <div class="tc-pano"></div>
-                <div class="tc-float-pill"></div>
-                <div class="tc-ctrl" style="bottom:24px;right:4px"></div>
-              </div>
-              <div class="tc-name">Float</div>
-              <div class="tc-desc">Floating pill, controls stacked bottom-right</div>
-            </div>
-            <div class="theme-card" data-theme="hamburger">
-              <div class="tc-diagram">
-                <div class="tc-pano"></div>
-                <div class="tc-hamburger-menu"></div>
-                <div class="tc-ctrl" style="bottom:4px;right:4px"></div>
-              </div>
-              <div class="tc-name">Hamburger</div>
-              <div class="tc-desc">Side-pull menu, toggle on left edge</div>
-            </div>
-            <div class="theme-card" data-theme="center-bar">
-              <div class="tc-diagram">
-                <div class="tc-pano"></div>
-                <div class="tc-center-bar-bottom"></div>
-                <div class="tc-ctrl" style="bottom:22px;left:50%;transform:translateX(-50%)"></div>
-              </div>
-              <div class="tc-name">Center Bar</div>
-              <div class="tc-desc">Full-width bottom bar, controls pill above</div>
-            </div>
-          </div>
         </div>
       </div>
 
       <div class="project-settings-section">
-        <label class="ps-section-label">Default Transition</label>
-        <div class="form-group">
-          <label>Transition Effect</label>
-          <select id="ps-transition">
-            <option value="opacity">Opacity Fade</option>
-            <option value="dissolve">Dissolve</option>
-            <option value="slide">Slide</option>
-            <option value="zoom">Zoom</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Duration</label>
-          <input type="range" id="ps-trans-dur" min="200" max="3000" step="100" value="1000">
-          <span id="ps-trans-dur-label" style="font-size:var(--type-xs);color:var(--text-muted);margin-left:8px;">1000ms</span>
+        <label class="ps-section-label">Layout Theme</label>
+        <input type="hidden" id="ps-layout-theme" value="hamburger">
+        <div class="theme-card-grid">
+
+          <div class="theme-card" data-theme="gallery">
+            <div class="tc-diagram">
+              <div class="tc-pano"></div>
+              <div class="tc-gallery-bottom"></div>
+              <div class="tc-ctrl"></div>
+            </div>
+            <div class="tc-name">Gallery</div>
+            <div class="tc-desc">Card fan hand, 6 cards with 3D depth</div>
+          </div>
+          <div class="theme-card" data-theme="float">
+            <div class="tc-diagram">
+              <div class="tc-pano"></div>
+              <div class="tc-float-pill"></div>
+              <div class="tc-ctrl"></div>
+            </div>
+            <div class="tc-name">Float</div>
+            <div class="tc-desc">Glass pill at bottom, horizontal cards</div>
+          </div>
+          <div class="theme-card" data-theme="hamburger">
+            <div class="tc-diagram">
+              <div class="tc-pano"></div>
+              <div class="tc-hamburger-menu"></div>
+              <div class="tc-ctrl"></div>
+            </div>
+            <div class="tc-name">Hamburger</div>
+            <div class="tc-desc">Clean sliding panel, thumbnail-only</div>
+          </div>
+          <div class="theme-card" data-theme="center-bar">
+            <div class="tc-diagram">
+              <div class="tc-pano"></div>
+              <div class="tc-center-bar-bottom"></div>
+              <div class="tc-ctrl"></div>
+            </div>
+            <div class="tc-name">Center Bar</div>
+            <div class="tc-desc">Bottom bar with thumbnails, controls pill</div>
+          </div>
         </div>
       </div>
 
@@ -633,7 +623,7 @@
       </div>
 
       <div class="project-settings-section">
-        <label class="ps-section-label">Floorplan / Minimap</label>
+        <label class="ps-section-label">Floorplan &amp; Minimap</label>
         <div class="form-group toggle-group">
           <label>Enable Minimap</label>
           <input type="checkbox" id="ps-minimap">
@@ -678,12 +668,58 @@
       </button>
     </div>
 
-    <div class="panel-position" id="panel-position">
-      <span>yaw: <span id="pos-yaw">0.00</span></span>
-      <span>pitch: <span id="pos-pitch">0.00</span></span>
-    </div>
-  </div>
-</div>
+        </div>
+
+      </div>
 <!-- /pano-wrapper -->
 </div><!-- /editor-main -->
-</div><!-- /workspace-view -->`);s.remove()})();
+</div><!-- /workspace-view -->
+
+<!-- Custom Color Picker -->
+<div id="xeno-color-picker" class="xcp-overlay" style="display:none;">
+  <div class="xcp-panel">
+    <span class="xcp-ornament"></span>
+    <span class="xcp-ornament br"></span>
+    <div class="xcp-header">
+      <span class="xcp-title">COLOR</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="xcp-dropper" id="xcp-eyedropper" title="Pick from screen">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/></svg>
+        </button>
+        <button class="xcp-close" id="xcp-close">&times;</button>
+      </div>
+    </div>
+    <div class="xcp-body">
+      <div class="xcp-main">
+        <div class="xcp-sv-box">
+          <canvas id="xcp-sv-canvas" width="200" height="200"></canvas>
+          <div class="xcp-sv-cursor" id="xcp-sv-cursor"></div>
+        </div>
+        <div class="xcp-hue-bar">
+          <canvas id="xcp-hue-canvas" width="20" height="200"></canvas>
+          <div class="xcp-hue-cursor" id="xcp-hue-cursor"></div>
+        </div>
+      </div>
+      <div class="xcp-preview-row">
+        <div class="xcp-preview-old" id="xcp-preview-old"></div>
+        <div class="xcp-preview-new" id="xcp-preview-new"></div>
+        <input type="text" class="hs-hex-input" id="xcp-hex" maxlength="7" value="#ffffff" style="flex:1;min-width:0;">
+      </div>
+      <div class="xcp-presets" id="xcp-presets">
+        <div class="xcp-preset" data-color="#ffffff" style="background:#fff;" title="White"></div>
+        <div class="xcp-preset" data-color="#e11d48" style="background:#e11d48;" title="Red"></div>
+        <div class="xcp-preset" data-color="#f97316" style="background:#f97316;" title="Orange"></div>
+        <div class="xcp-preset" data-color="#eab308" style="background:#eab308;" title="Yellow"></div>
+        <div class="xcp-preset" data-color="#22c55e" style="background:#22c55e;" title="Green"></div>
+        <div class="xcp-preset" data-color="#06b6d4" style="background:#06b6d4;" title="Cyan"></div>
+        <div class="xcp-preset" data-color="#3b82f6" style="background:#3b82f6;" title="Blue"></div>
+        <div class="xcp-preset" data-color="#8b5cf6" style="background:#8b5cf6;" title="Purple"></div>
+        <div class="xcp-preset" data-color="#ec4899" style="background:#ec4899;" title="Pink"></div>
+      </div>
+      <div class="xcp-recent" id="xcp-recent">
+        <span class="xcp-recent-label">Recent</span>
+        <div class="xcp-recent-swatches" id="xcp-recent-list"></div>
+      </div>
+    </div>
+  </div>
+</div>`);s.remove()})();
