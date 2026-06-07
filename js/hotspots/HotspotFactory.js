@@ -167,7 +167,7 @@
 
       if (hotspotData.animation && hotspotData.animation !== 'none') {
         var animClass = 'hs-anim-' + hotspotData.animation;
-        var animTarget = element.querySelector('.link-icon-wrapper') || element.querySelector('.link-icon') || element.querySelector('.icon_wrapper') || element.querySelector('.out') || element.querySelector('.text-content') || element;
+        var animTarget = element.querySelector('.link-icon-wrapper') || element.querySelector('.link-icon') || element.querySelector('.icon_wrapper') || element.querySelector('.out') || element.querySelector('.text-label-inner') || element;
         animTarget.classList.add(animClass);
       }
 

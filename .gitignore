@@ -2,31 +2,31 @@
 node_modules/
 package-lock.json
 
-# Local Environment
+# Environment
 .env
 .env.local
 .env.production
+config.js
+
+# OS
 .DS_Store
+Thumbs.db
 *.log
+
+# IDE
 .vscode/
 .idea/
-.gemini/
-Thumbs.db
 
 # Engine Dev Artifacts
-engine.jshintrc
 jsdoc-conf.json
-jsdoc.md
 testem.json
 test.js
 dist/
 
-# Local config (contains production keys)
-config.js
-
-# Exported tours & temp files
+# Exported tours
 export/
 *.zip
+*.xeno
+
+# Temp
 temp/
-*.csv
-*.tsv

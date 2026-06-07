@@ -85,27 +85,27 @@
 
 /* Type Specific Accent Variables */
 .xeno-hotspot-dot.hs-navigate {
-  --hotspot-accent: var(--accent-blue);
-  --hotspot-accent-glow: rgba(230,46,90, 0.45);
+  --hotspot-accent: var(--hs-navigate);
+  --hotspot-accent-glow: rgba(225,29,72, 0.45);
 }
 .xeno-hotspot-dot.hs-info {
-  --hotspot-accent: var(--accent-yellow);
+  --hotspot-accent: var(--hs-info);
   --hotspot-accent-glow: rgba(245, 158, 11, 0.45);
 }
 .xeno-hotspot-dot.hs-url {
-  --hotspot-accent: var(--accent-green);
+  --hotspot-accent: var(--hs-url);
   --hotspot-accent-glow: rgba(16, 185, 129, 0.45);
 }
 .xeno-hotspot-dot.hs-image {
-  --hotspot-accent: var(--accent-purple);
+  --hotspot-accent: var(--hs-image);
   --hotspot-accent-glow: rgba(139, 92, 246, 0.45);
 }
 .xeno-hotspot-dot.hs-video {
-  --hotspot-accent: var(--accent-red);
+  --hotspot-accent: var(--hs-video);
   --hotspot-accent-glow: rgba(239, 68, 68, 0.45);
 }
 .xeno-hotspot-dot.hs-audio {
-  --hotspot-accent: var(--accent-cyan);
+  --hotspot-accent: var(--hs-audio);
   --hotspot-accent-glow: rgba(6, 182, 212, 0.45);
 }
 

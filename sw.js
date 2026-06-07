@@ -64,6 +64,8 @@ self.addEventListener('fetch', function(e) {
     return;
   }
   if (e.request.method !== 'GET') return;
+  var url = e.request.url;
+  if (url.indexOf('http:') !== 0 && url.indexOf('https:') !== 0) return;
   e.respondWith(
     fetch(e.request).then(function(res) {
       if (res && res.status === 200) {

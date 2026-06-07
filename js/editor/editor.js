@@ -111,13 +111,6 @@
     window.xenoViewer = S.viewer;
     window.xenoScenes = S.scenes;
 
-    var autorotateOpts = {
-      yawSpeed: (data.settings && data.settings.autorotateSpeed) || 0.03,
-      targetPitch: 0, targetFov: Math.PI / 2
-    };
-    S.autorotate = window.Xeno.autorotate(autorotateOpts);
-    S.autorotateEnabled = false;
-
     (data.scenes || []).forEach(function(sData) {
       var source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
       var geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);

@@ -20,21 +20,19 @@
           : window.xIcon('chevron-left', 14);
         sidebarCollapse.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
       }
-      function syncCollapseButtonPos() {
-        var collapsed = document.body.classList.contains('sidebar-collapsed');
-        sidebarCollapse.style.left = collapsed ? '0px' : (sidebar.offsetWidth) + 'px';
-      }
       sidebarCollapse.addEventListener('click', function() {
         document.body.classList.toggle('sidebar-collapsed');
         updateSidebarCollapseIcon();
-        syncCollapseButtonPos();
+        sidebarCollapse.style.left = ''; // clear inline so CSS transition works
         setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
       });
-      // Keep button in sync when sidebar is resized by drag
-      var resizeObs = new MutationObserver(syncCollapseButtonPos);
-      resizeObs.observe(sidebar, { attributes: true, attributeFilter: ['style'] });
       updateSidebarCollapseIcon();
-      syncCollapseButtonPos();
+      // After sidebar transition, sync inline position for resizer tracking
+      sidebar.addEventListener('transitionend', function(e) {
+        if (e.propertyName === 'width') {
+          sidebarCollapse.style.left = sidebar.offsetWidth + 'px';
+        }
+      });
     }
 
     if (leftResizer) {

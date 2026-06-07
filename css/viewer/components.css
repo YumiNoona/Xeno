@@ -359,43 +359,48 @@ body[data-layout-theme="float"] #controls .ctrl-btn {
 body[data-layout-theme="float"] #controls .ctrl-btn svg { width: 18px; height: 18px; }
 body[data-layout-theme="float"] #controls { bottom: 110px; }
 
-/* Hamburger — 3-line icon on left edge, hover reveals rounded-card panel */
+/* Hamburger — clean thumbnail list sliding from left, no container */
 body[data-layout-theme="hamburger"] #titleBar { display: none; }
 body[data-layout-theme="hamburger"] #sceneList {
   position: fixed;
-  width: 240px; height: auto; max-height: 70%;
+  width: auto; height: auto; max-height: 70%;
   top: 50%; bottom: auto; left: 0;
-  padding: 14px 12px;
+  padding: 16px 10px;
   transform: translateX(-100%) translateY(-50%);
-  border-right: 1px solid var(--border-glass);
-  border-top: none;
-  flex-direction: column; display: flex; gap: 8px;
+  border: none;
+  flex-direction: column; display: flex; gap: 14px;
   overflow-y: auto; overflow-x: hidden;
-  background: rgba(0,0,0,0.6); backdrop-filter: blur(16px);
-  border-radius: 0 16px 16px 0;
-  box-shadow: 4px 0 30px rgba(0,0,0,0.4);
+  background: none; backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 0;
+  box-shadow: none;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 body[data-layout-theme="hamburger"] #sceneList.enabled { transform: translateY(-50%); pointer-events: auto; }
 body[data-layout-theme="hamburger"] #sceneList .scene {
-  flex-direction: row; gap: 10px; padding: 10px 12px;
-  min-width: 0; border-left: 3px solid transparent;
-  border-radius: 12px; flex-shrink: 0;
-  background: rgba(255,255,255,0.04); transition: all 0.2s;
+  flex-direction: row; gap: 8px; padding: 0;
+  min-width: 0; border: none;
+  border-radius: 0; flex-shrink: 0;
+  background: none; transition: all 0.2s;
+  align-items: center;
 }
-body[data-layout-theme="hamburger"] #sceneList .scene:hover { background: rgba(255,255,255,0.1); }
-body[data-layout-theme="hamburger"] #sceneList .scene.current {
-  background: rgba(225,29,72,0.15);
-  border-left-color: var(--accent);
+body[data-layout-theme="hamburger"] #sceneList .scene:hover { background: none; }
+body[data-layout-theme="hamburger"] #sceneList .scenes {
+  display: flex; flex-direction: column; gap: 16px;
+}
+body[data-layout-theme="hamburger"] #sceneList .scene.current { background: none; border-color: transparent; }
+body[data-layout-theme="hamburger"] #sceneList .scene.current .scene-thumb {
+  box-shadow: 0 0 0 3px var(--accent), 0 0 12px var(--accent-glow);
 }
 body[data-layout-theme="hamburger"] #sceneList .scene .scene-thumb {
-  width: 44px; height: 44px; border-radius: 10px;
-  object-fit: cover; border: 1px solid rgba(255,255,255,0.08);
+  width: 64px; height: 64px; border-radius: 8px;
+  object-fit: cover; border: none;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 body[data-layout-theme="hamburger"] #sceneList .scene .scene-name {
   font-size: var(--type-sm); text-align: left;
-  max-width: 140px; overflow: hidden; text-overflow: ellipsis;
+  max-width: 150px; overflow: hidden; text-overflow: ellipsis;
   white-space: nowrap; align-self: center;
 }
 body[data-layout-theme="hamburger"] #controls { bottom: 20px; right: 20px; }

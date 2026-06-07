@@ -48,7 +48,12 @@
 
     var tooltip = document.createElement('div');
     tooltip.classList.add('link-tooltip');
-    tooltip.textContent = hotspot.title || hotspot.label || 'Link';
+    var targetScene = null;
+    try { if (hotspot.target && findSceneByIdFn) targetScene = findSceneByIdFn(hotspot.target); } catch(e) {}
+    var displayName = (targetScene && targetScene.data && targetScene.data.name) 
+      ? targetScene.data.name.replace(/\.[^/.]+$/, '') 
+      : (hotspot.title || hotspot.label || 'Link');
+    tooltip.textContent = displayName;
 
     wrapper.appendChild(iconWrapper);
     wrapper.appendChild(tooltip);

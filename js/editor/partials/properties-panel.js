@@ -403,7 +403,8 @@
           <option value="Georgia, serif">Georgia</option>
           <option value="'Times New Roman', serif">Times New Roman</option>
           <option value="'Courier New', monospace">Courier</option>
-          <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+          <option value="Verdana, sans-serif">Verdana</option>
+          <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
           <option value="Impact, fantasy">Impact</option>
           <option value="'Comic Sans MS', cursive">Comic Sans</option>
         </select>

@@ -33,4 +33,31 @@
   </div>
 
   <div id="project-grid" class="project-grid"></div>
+
+  <!-- Share Modal -->
+  <div id="share-modal" class="share-modal-overlay" style="display:none;">
+    <div class="share-modal">
+      <div class="share-modal-header">
+        <h3>Share Project</h3>
+        <button class="share-modal-close" id="btn-close-share">&times;</button>
+      </div>
+      <div class="share-modal-body">
+        <p style="color:var(--text-muted);margin-bottom:20px;text-align:center;">Your project has been downloaded. Share it directly:</p>
+        <div class="share-buttons">
+          <a class="share-btn share-whatsapp" id="share-whatsapp" target="_blank">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            WhatsApp
+          </a>
+          <a class="share-btn share-telegram" id="share-telegram" target="_blank">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.2 3.1l-19 7.4c-.9.3-.8 1.5.1 1.7l4.9 1.6 1.4 4.6c.2.7 1.1.8 1.5.2l2.3-3.6 4.9 3.6c.6.4 1.4 0 1.6-.6l3.9-14.2c.2-.8-.5-1.5-1.3-1.2z"/><line x1="9.5" y1="12.5" x2="21.2" y2="3.1"/></svg>
+            Telegram
+          </a>
+          <a class="share-btn share-wetransfer" id="share-wetransfer" target="_blank">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            WeTransfer
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>`);s.remove()})();

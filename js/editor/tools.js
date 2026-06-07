@@ -179,34 +179,9 @@
         hideModeBadge();
         D.panoWrapper.classList.remove('move-mode');
       }
-    } else if (tool === 'autorotate') {
-      btnEl.classList.toggle('active');
-      S.autorotateEnabled = !S.autorotateEnabled;
-      if (!window.data.settings) window.data.settings = {};
-      window.data.settings.autorotateEnabled = S.autorotateEnabled;
-      if (S.autorotateEnabled) {
-        S.viewer.startMovement(S.autorotate);
-        S.viewer.setIdleMovement((window.data.settings && window.data.settings.autorotateInactivityDelay) || 3000, S.autorotate);
-      } else {
-        S.viewer.stopMovement();
-        S.viewer.setIdleMovement(Infinity);
-      }
-      E.debouncedSave();
-    } else if (tool === 'minimap') {
-      btnEl.classList.toggle('active');
-      if (!window.data.settings) window.data.settings = {};
-      window.data.settings.showMinimap = btnEl.classList.contains('active');
-      var minimapEl = document.getElementById('xeno-minimap');
-      if (window.data.settings.showMinimap) {
-        if (window.initMinimap) window.initMinimap();
-        if (minimapEl) minimapEl.style.display = 'block';
-      } else {
-        if (minimapEl) minimapEl.style.display = 'none';
-      }
-      E.debouncedSave();
     }
-  }
 
+  }; // end handleToolClick
   function setActiveTool(tool) {
     S.editorState.activeTool = tool;
     D.pillTools.forEach(function(p) {

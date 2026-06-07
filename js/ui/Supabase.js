@@ -25,6 +25,7 @@
       };
       req.onsuccess = function(e) { resolve(e.target.result); };
       req.onerror = function(e) { _db = null; reject(e.target.error); };
+      req.onblocked = function() { _db = null; reject(new Error('IndexedDB blocked')); };
     });
     return _db;
   }
@@ -36,6 +37,7 @@
         tx.objectStore(STORE_NAME).put(blob, key);
         tx.oncomplete = function() { resolve(); };
         tx.onerror = function(e) { reject(e.target.error); };
+        tx.onabort = function() { reject(new Error('Transaction aborted')); };
       });
     });
   }
@@ -47,6 +49,7 @@
         var req = tx.objectStore(STORE_NAME).get(key);
         req.onsuccess = function() { resolve(req.result || null); };
         req.onerror = function(e) { reject(e.target.error); };
+        tx.onabort = function() { reject(new Error('Transaction aborted')); };
       });
     });
   }
@@ -58,6 +61,7 @@
         tx.objectStore(STORE_NAME).delete(key);
         tx.oncomplete = function() { resolve(); };
         tx.onerror = function(e) { reject(e.target.error); };
+        tx.onabort = function() { reject(new Error('Transaction aborted')); };
       });
     });
   }

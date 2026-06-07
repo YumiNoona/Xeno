@@ -23,6 +23,10 @@
       Preview
     </button>
     <div class="topbar-sep"></div>
+    <button class="btn btn-publish" id="btn-publish">
+      ${xIcon('upload', 16)}
+      Publish
+    </button>
     <button class="btn btn-publish" id="btn-export">
       ${xIcon('download', 16)}
       Export Zip

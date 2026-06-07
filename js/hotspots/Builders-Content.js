@@ -206,29 +206,33 @@
     var label = document.createElement('div');
     label.classList.add('text-label');
 
+    var inner = document.createElement('div');
+    inner.classList.add('text-label-inner');
+
     var content = document.createElement('span');
     content.textContent = hotspot.text || hotspot.title || 'Text';
     content.classList.add('text-content');
-    label.appendChild(content);
+    inner.appendChild(content);
+    label.appendChild(inner);
 
     var hasBg = hotspot.bgColor && hotspot.bgColor !== 'transparent';
     content.style.color = hotspot.textColor || '#ffffff';
     content.style.fontSize = (hotspot.fontSize || 14) + 'px';
-    content.style.fontFamily = hotspot.fontFamily || 'inherit';
-    content.style.fontWeight = hotspot.bold ? 'bold' : 'normal';
+    content.style.setProperty('font-family', hotspot.fontFamily || 'inherit', 'important');
+    content.style.fontWeight = hotspot.bold ? '900' : 'normal';
     content.style.fontStyle = hotspot.italic ? 'italic' : 'normal';
     content.style.textDecoration = hotspot.underline ? 'underline' : 'none';
     if (hotspot.rotation) {
-      label.style.transform = 'translate(-50%, -50%) rotate(' + hotspot.rotation + 'deg)';
+      inner.style.transform = 'rotate(' + hotspot.rotation + 'deg)';
     }
     if (hasBg) {
-      label.style.backgroundColor = hotspot.bgColor;
-      label.style.padding = '6px 12px';
-      label.style.borderRadius = '6px';
+      inner.style.backgroundColor = hotspot.bgColor;
+      inner.style.padding = '6px 12px';
+      inner.style.borderRadius = '6px';
     } else {
-      label.style.backgroundColor = 'transparent';
-      label.style.padding = '0';
-      label.style.borderRadius = '0';
+      inner.style.backgroundColor = 'transparent';
+      inner.style.padding = '0';
+      inner.style.borderRadius = '0';
     }
     wrapper.appendChild(label);
     return wrapper;

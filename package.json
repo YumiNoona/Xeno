@@ -12,6 +12,7 @@
     "engine:build": "browserify --noparse=node_modules/**/*.js -s Marzipano engine/src/index.js | uglifyjs -c -m > build/marzipano.js"
   },
   "dependencies": {
+    "@vercel/blob": "^2.4.0",
     "bowser": "1.9.4",
     "gl-matrix": "3.3.0",
     "hammerjs": "2.0.4",

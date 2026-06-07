@@ -47,7 +47,7 @@
 }
 
 .sidebar-collapsed #sidebar-collapse-btn {
-  left: 0;
+  left: 0 !important;
   border-left: 1px solid var(--border);
 }
 

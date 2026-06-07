@@ -110,15 +110,17 @@
         'body[data-layout-theme="float"] #controls .ctrl-btn{width:42px;height:42px;background:rgba(0,0,0,0.45);border-color:var(--border-glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3)}',
         'body[data-layout-theme="float"] #controls .ctrl-btn svg{width:18px;height:18px}',
         'body[data-layout-theme="float"] #controls{position:fixed;bottom:80px;right:20px;flex-direction:column}',
-        // ── Hamburger: side-pull from left, toggle at vertical center, controls bottom-right ──
+        // ── Hamburger: clean thumbnails sliding from left, no container ──
         'body[data-layout-theme="hamburger"] #titleBar{display:none}',
-        'body[data-layout-theme="hamburger"] #sceneList{position:fixed;width:240px;height:auto;max-height:70%;top:50%;bottom:auto;left:0;padding:14px 12px;transform:translateX(-100%) translateY(-50%);border-right:1px solid var(--border-glass);border-top:none;flex-direction:column;display:flex;gap:8px;overflow-y:auto;overflow-x:hidden;background:rgba(0,0,0,0.6);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-radius:0 16px 16px 0;box-shadow:4px 0 30px rgba(0,0,0,0.4);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1)}',
+        'body[data-layout-theme="hamburger"] #sceneList{position:fixed;width:auto;height:auto;max-height:70%;top:50%;bottom:auto;left:0;padding:16px 10px;transform:translateX(-100%) translateY(-50%);border:none;flex-direction:column;display:flex;gap:14px;overflow-y:auto;overflow-x:hidden;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;border-radius:0;box-shadow:none;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1)}',
         'body[data-layout-theme="hamburger"] #sceneList.enabled{transform:translateY(-50%);pointer-events:auto}',
-        'body[data-layout-theme="hamburger"] #sceneList .scene{flex-direction:row;gap:10px;padding:10px 12px;min-width:0;border-left:3px solid transparent;border-radius:12px;flex-shrink:0;background:rgba(255,255,255,0.04);transition:all 0.2s}',
-        'body[data-layout-theme="hamburger"] #sceneList .scene:hover{background:rgba(255,255,255,0.1)}',
-        'body[data-layout-theme="hamburger"] #sceneList .scene.current{background:rgba(225,29,72,0.15);border-left-color:var(--accent)}',
-        'body[data-layout-theme="hamburger"] #sceneList .scene .scene-thumb{width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,0.08);flex-shrink:0}',
-        'body[data-layout-theme="hamburger"] #sceneList .scene .scene-name{font-size:var(--type-sm);text-align:left;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;align-self:center}',
+        'body[data-layout-theme="hamburger"] #sceneList .scene{flex-direction:row;gap:8px;padding:0;min-width:0;border:none;border-radius:0;flex-shrink:0;background:none;transition:all 0.2s;align-items:center}',
+        'body[data-layout-theme="hamburger"] #sceneList .scene:hover{background:none}',
+        'body[data-layout-theme="hamburger"] #sceneList .scenes{display:flex;flex-direction:column;gap:16px}',
+        'body[data-layout-theme="hamburger"] #sceneList .scene.current{background:none;border-color:transparent}',
+        'body[data-layout-theme="hamburger"] #sceneList .scene.current .scene-thumb{box-shadow:0 0 0 3px var(--accent),0 0 12px var(--accent-glow)}',
+        'body[data-layout-theme="hamburger"] #sceneList .scene .scene-thumb{width:64px;height:64px;border-radius:8px;object-fit:cover;border:none;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.3)}',
+        'body[data-layout-theme="hamburger"] #sceneList .scene .scene-name{font-size:var(--type-sm);text-align:left;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;align-self:center}',
         'body[data-layout-theme="hamburger"] #controls{position:fixed;bottom:20px;right:20px;flex-direction:column}',
         // ── Center Bar: full-width bottom bar always visible, controls pill above it ──
         'body[data-layout-theme="center-bar"] #titleBar{display:none}',
@@ -309,7 +311,7 @@
 
     // Create scenes.
     var scenes = (data.scenes || []).map(function (sceneData) {
-      if (!sceneData || !sceneData.mediaUrl) return null;
+      if (!sceneData || !sceneData.mediaUrl || sceneData.mediaUrl.indexOf('media_') === 0) return null;
       var source = buildSource(sceneData);
       var geometry = buildGeometry(sceneData);
 
@@ -764,12 +766,12 @@
     tourData.scenes.forEach(function (scene) {
       if (isMediaId(scene.mediaUrl)) {
         promises.push(resolveMediaIdOrUrl(scene.mediaUrl).then(function (blobUrl) {
-          scene.mediaUrl = blobUrl;
+          if (blobUrl) scene.mediaUrl = blobUrl;
         }));
       }
       if (isMediaId(scene.thumbnailUrl)) {
         promises.push(resolveMediaIdOrUrl(scene.thumbnailUrl).then(function (blobUrl) {
-          scene.thumbnailUrl = blobUrl;
+          if (blobUrl) scene.thumbnailUrl = blobUrl;
         }));
       }
       var allHotspots = (scene.hotspots || []).concat(scene.linkHotspots || [], scene.infoHotspots || [], scene.mediaHotspots || []);
@@ -777,7 +779,7 @@
         var src = hs.content && hs.content.src;
         if (isMediaId(src)) {
           promises.push(resolveMediaIdOrUrl(src).then(function (blobUrl) {
-            hs.content.src = blobUrl;
+            if (blobUrl) hs.content.src = blobUrl;
           }));
         }
       });
@@ -802,7 +804,25 @@
   }
 
   // ── Startup ──────────────────────────────────────────────────
-  if (!window.isExported) {
+  var remoteLoadUrl = new URLSearchParams(window.location.search).get('load');
+  if (remoteLoadUrl) {
+    // Load from remote URL (shared project)
+    fetch(remoteLoadUrl)
+      .then(function(r) { if (!r.ok) throw new Error('Project not found'); return r.json(); })
+      .then(function(bundle) {
+        var tourData = bundle.project || bundle;
+        return resolveAllMedia(tourData).then(function() { return tourData; });
+      })
+      .then(function(tourData) {
+        return preloadSceneImages(tourData);
+      })
+      .then(function(tourData) {
+        initViewer(tourData);
+      })
+      .catch(function(err) {
+        alert('Failed to load shared project: ' + err.message);
+      });
+  } else if (!window.isExported) {
     var previewSlug = new URLSearchParams(window.location.search).get('project') || 'sample-tour';
     window.XenoSupabase.loadTour(previewSlug)
       .then(function (savedData) {

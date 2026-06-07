@@ -16,8 +16,6 @@
     mediaPickerCallback: null,
     saveTimeout: null,
     viewReadLoop: null,
-    autorotate: null,
-    autorotateEnabled: false,
     projectSlug: null,
     contextTarget: null,
     selectedSceneIds: new Set(),
@@ -33,10 +31,23 @@
     S.saveTimeout = setTimeout(function() {
       if (S.projectSlug && window.XenoSupabase) {
         if (S.scenes && S.scenes.length) window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
-        window.XenoEditor.restoreMediaIds(window.data); window.XenoSupabase.saveTour(S.projectSlug, window.data);
+        window.XenoEditor.restoreMediaIds(window.data);
+        try { window.XenoSupabase.saveTour(S.projectSlug, window.data); } catch(e) {}
       }
     }, 500);
   };
+
+  // Emergency flush on tab close to prevent data loss
+  window.addEventListener('beforeunload', function() {
+    if (S.saveTimeout) clearTimeout(S.saveTimeout);
+    if (S.projectSlug && window.XenoSupabase && S.scenes && S.scenes.length) {
+      try {
+        window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
+        window.XenoEditor.restoreMediaIds(window.data);
+        window.XenoSupabase.saveTour(S.projectSlug, window.data);
+      } catch(e) {}
+    }
+  });
 
   // ─── DOM refs (editor layout) ───────────────────────────
   E.dom = {};
@@ -59,18 +70,9 @@
   D.topbarThemeToggle    = $('topbar-theme-toggle');
 
   // Media Manager DOM
-  D.mediaGrid        = $('media-grid');
-  D.albumGrid        = $('album-grid');
+  D.mediaGridEl      = $('media-grid');
   D.mediaUploadArea  = $('media-upload-area');
   D.mediaFileInput   = $('media-file-input');
-  D.mediaSearchInput = $('media-search-input');
-  D.mediaSearchClear = $('media-search-clear');
-  D.mediaAlbumName   = $('media-album-name');
-  D.btnCreateAlbum   = $('btn-create-album');
-  D.btnBackToAlbums  = $('btn-back-to-albums');
-  D.btnDeleteAlbum   = $('btn-delete-album');
-  D.btnRenameAlbum   = $('btn-rename-album');
-  D.btnMoveMedia     = $('btn-move-media');
   D.mediaActionBar   = $('media-action-bar');
   D.btnAddSelected   = $('btn-add-selected');
   D.btnDeleteSelected = $('btn-delete-selected');
@@ -85,7 +87,6 @@
 
   // Media manager v2
   D.albumListEl      = document.querySelector('.album-list');
-  D.mediaGridEl      = $('media-grid');
 
   // Properties panel fields
   D.propType         = $('prop-type');
@@ -105,8 +106,6 @@
   D.propUrlOpenIn    = $('prop-url-open-in');
   D.posYaw           = $('pos-yaw');
   D.posPitch         = $('pos-pitch');
-  D.propRoomLabel    = $('prop-room-label');
-  D.sceneNameLabel   = $('scene-name-label');
   D.propFloorplanUrl = $('prop-floorplan-url');
   D.btnPickFloorplan = $('btn-pick-floorplan');
   D.propFloorplanEnabled = $('prop-floorplan-enabled');

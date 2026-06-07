@@ -52,7 +52,7 @@
     var btnImport = document.getElementById('btn-import-project');
     var importInput = document.createElement('input');
     importInput.type = 'file';
-    importInput.accept = '.json,.xeno';
+    importInput.accept = '.xeno,.json';
     importInput.style.display = 'none';
     document.body.appendChild(importInput);
 
@@ -118,8 +118,9 @@
               var blob = new Blob([JSON.stringify(bundle)], { type: 'application/json' });
               var a = document.createElement('a');
               a.href = URL.createObjectURL(blob);
-              a.download = slug + '.xeno.json';
+              a.download = slug + '.xeno';
               a.click();
+              showShareModal(slug);
             }).catch(function(err) {
               alert('Export failed: ' + err.message);
             });
@@ -136,6 +137,26 @@
 
     loadDashboard();
   };
+
+  function showShareModal(slug) {
+    var modal = document.getElementById('share-modal');
+    var shareWhatsApp = document.getElementById('share-whatsapp');
+    var shareTelegram = document.getElementById('share-telegram');
+    var shareWeTransfer = document.getElementById('share-wetransfer');
+    var closeBtn = document.getElementById('btn-close-share');
+    if (!modal) return;
+
+    var msg = encodeURIComponent('Check out my 360\u00B0 virtual tour project: ' + slug);
+    var fileMsg = encodeURIComponent('I created a 360\u00B0 virtual tour called "' + slug + '" with Xeno. Download the .xeno file and import it at https://xeno-tour.com to view or edit!');
+
+    if (shareWhatsApp) shareWhatsApp.href = 'https://wa.me/?text=' + fileMsg;
+    if (shareTelegram) shareTelegram.href = 'https://t.me/share/url?url=https://xeno-tour.com&text=' + msg;
+    if (shareWeTransfer) shareWeTransfer.href = 'https://wetransfer.com/';
+
+    modal.style.display = 'flex';
+    if (closeBtn) closeBtn.onclick = function() { modal.style.display = 'none'; };
+    modal.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
+  }
 
   function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
 

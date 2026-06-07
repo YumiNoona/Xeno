@@ -5,6 +5,47 @@
   var D = E.dom;
 
   E.setupExport = function() {
+    // ─── Publish to web ──────────────────────────────────
+    var btnPublish = document.getElementById('btn-publish');
+    if (btnPublish && window.XenoSupabase) {
+      btnPublish.addEventListener('click', function() {
+        if (!S.projectSlug) { alert('No project to publish.'); return; }
+        var pubBtn = this;
+        var origText = pubBtn.innerHTML;
+        pubBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Publishing...';
+        pubBtn.disabled = true;
+
+        window.XenoSupabase.exportProject(S.projectSlug).then(function(bundle) {
+          return fetch('/api/publish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bundle)
+          }).then(function(r) {
+            if (!r.ok) throw new Error('Publish failed');
+            return r.json();
+          });
+        }).then(function(result) {
+          var shareUrl = result.shareUrl || ('https://xeno.venusapp.in/t/' + result.slug);
+          prompt('Share this link with your client:', shareUrl);
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(shareUrl).then(function() {
+              alert('Link copied to clipboard!\n\n' + shareUrl);
+            }).catch(function() {});
+          }
+        }).catch(function(err) {
+          // Fallback: show localhost preview URL
+          var previewUrl = window.location.origin + '/preview.html?project=' + S.projectSlug;
+          prompt('Publish API not available (local dev). Share this:', previewUrl);
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(previewUrl).then(function() {}).catch(function() {});
+          }
+        }).finally(function() {
+          pubBtn.innerHTML = origText;
+          pubBtn.disabled = false;
+        });
+      });
+    }
+
     var btnExport = document.getElementById('btn-export');
     if (!btnExport) return;
 
