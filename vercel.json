@@ -1,5 +1,7 @@
 {
   "rewrites": [
-    { "source": "/t/:slug", "destination": "/api/tour?slug=:slug" }
+    { "source": "/t/:slug",          "destination": "/api/tour?slug=:slug"   },
+    { "source": "/api/delete/:slug", "destination": "/api/delete?slug=:slug" },
+    { "source": "/api/load/:slug",   "destination": "/api/load?slug=:slug"   }
   ]
 }

@@ -3,9 +3,13 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = async function handler(req, res) {
-  const url = new URL(req.url, 'https://xeno.venusapp.in');
-  const slug = url.searchParams.get('slug');
+  const slug = req.query && req.query.slug
+    ? req.query.slug
+    : new URL(req.url, 'https://' + (req.headers.host || 'localhost')).searchParams.get('slug');
   if (!slug) {
+
+(Showing lines 5-9 of api/tour.js. Use offset=0 to continue.)
+
     return res.status(400).send('Missing slug');
   }
 
@@ -14,7 +18,7 @@ module.exports = async function handler(req, res) {
     let html = fs.readFileSync(htmlPath, 'utf8');
 
     // Inject the load URL before the viewer.js script loads
-    const injectScript = '<script>window.XENO_LOAD_URL="/api/load/' + slug + '";</script>';
+    const injectScript = '<script>window.XENO_LOAD_URL="/api/load?slug=' + slug + '";</script>';
     html = html.replace('</head>', injectScript + '\n</head>');
 
     res.setHeader('Content-Type', 'text/html');

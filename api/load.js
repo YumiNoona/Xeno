@@ -2,8 +2,9 @@
 const { list, del, put } = require('@vercel/blob');
 
 module.exports = async function handler(req, res) {
-  const url = new URL(req.url, 'https://xeno.venusapp.in');
-  const slug = url.searchParams.get('slug');
+  const slug = req.query && req.query.slug
+    ? req.query.slug
+    : new URL(req.url, 'https://' + (req.headers.host || 'localhost')).searchParams.get('slug');
   if (!slug) {
     return res.status(400).json({ error: 'Missing slug' });
   }

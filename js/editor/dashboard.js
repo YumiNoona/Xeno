@@ -124,7 +124,7 @@
             if (confirm('Delete project "' + title + '"?')) {
               window.XenoSupabase.deleteTour(slug).then(function() {
                 // Also delete published blob if it exists
-                fetch('/api/delete/' + slug).catch(function() {});
+                fetch('/api/delete?slug=' + encodeURIComponent(slug)).catch(function() {});
                 loadDashboard();
               }).catch(function(err) { alert('Failed: ' + err.message); });
             }
