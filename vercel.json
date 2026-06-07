@@ -1,4 +1,6 @@
 {
+  "buildCommand": null,
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/t/:slug",          "destination": "/api/tour?slug=:slug"   },
     { "source": "/api/delete/:slug", "destination": "/api/delete?slug=:slug" },
