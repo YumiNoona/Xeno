@@ -304,3 +304,9 @@
 .share-telegram:hover { background: #0077b3; }
 .share-wetransfer { background: #6046ff; }
 .share-wetransfer:hover { background: #5035e6; }
+
+#share-embed-code {
+  font-family: var(--font-mono) !important;
+  font-size: 10px !important;
+  height: 36px !important;
+}

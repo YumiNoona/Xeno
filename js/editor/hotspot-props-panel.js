@@ -78,9 +78,12 @@
       var el = document.getElementById('fields-' + type);
       if (el) el.style.display = 'block';
       var gen = document.getElementById('group-hotspot-generic');
-      if (gen) gen.style.display = type === 'text' ? 'none' : '';
+      var isAudio = type === 'narrator' || type === 'ambient' || type === 'text';
+      if (gen) gen.style.display = isAudio ? 'none' : '';
       var title = document.getElementById('group-hotspot-title');
-      if (title) title.style.display = type === 'text' ? 'none' : '';
+      if (title) title.style.display = type === 'text' || type === 'narrator' || type === 'ambient' ? 'none' : '';
+      var anim = document.getElementById('group-hotspot-animation');
+      if (anim) anim.style.display = type === 'narrator' || type === 'ambient' ? 'none' : '';
     }
 
     function fillTypeFields(hsData) {
@@ -130,6 +133,14 @@
       D.propTextUnderline.checked = hsData.underline === true;
       D.propTextRotation.value = hsData.rotation || 0;
       D.propTextRotLabel.textContent = (hsData.rotation || 0) + '\u00B0';
+      D.propNarratorAudio.value = hsData.narratorAudio || '';
+      D.propNarratorText.value = hsData.narratorText || '';
+      D.propNarratorDuration.value = hsData.sceneDuration || 10;
+      D.propAmbientAudio.value = hsData.ambientAudio || '';
+      D.propAmbientLoop.checked = hsData.ambientLoop !== false;
+      D.propAmbientVolume.value = hsData.ambientVolume || 70;
+      D.propAmbientRadius.value = hsData.ambientRadius || 30;
+      D.propAmbientAutoplay.checked = hsData.ambientAutoplay !== false;
     }
 
     function toggleCustomIconGroup() {
@@ -357,6 +368,16 @@
         S.selectedHotspotData.italic = D.propTextItalic.checked;
         S.selectedHotspotData.underline = D.propTextUnderline.checked;
         S.selectedHotspotData.rotation = parseInt(D.propTextRotation.value) || 0;
+      } else if (S.selectedHotspotData.type === 'narrator') {
+        S.selectedHotspotData.narratorAudio = D.propNarratorAudio.value || null;
+        S.selectedHotspotData.narratorText = D.propNarratorText.value || '';
+        S.selectedHotspotData.sceneDuration = parseInt(D.propNarratorDuration.value) || 10;
+      } else if (S.selectedHotspotData.type === 'ambient') {
+        S.selectedHotspotData.ambientAudio = D.propAmbientAudio.value || null;
+        S.selectedHotspotData.ambientLoop = D.propAmbientLoop.checked;
+        S.selectedHotspotData.ambientVolume = parseInt(D.propAmbientVolume.value) || 70;
+        S.selectedHotspotData.ambientRadius = parseInt(D.propAmbientRadius.value) || 30;
+        S.selectedHotspotData.ambientAutoplay = D.propAmbientAutoplay.checked;
       }
       E.renderSceneHotspots();
       E.closePropertiesPanel();

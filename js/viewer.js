@@ -491,6 +491,11 @@
       stopAutorotate();
       sceneCtx.view.setParameters(sceneCtx.data.initialViewParameters);
 
+      // Cleanup ambient audios from previous scene
+      (sceneCtx.data.hotspots || []).forEach(function(h) {
+        if (h.__ambientAudio) { h.__ambientAudio.pause(); h.__ambientAudio = null; }
+      });
+
       transOpts = transOpts || {};
       var transType = transOpts.transition || sceneCtx.data.transition || data.settings.defaultTransition || 'opacity';
       var transTime = transOpts.transitionDuration || sceneCtx.data.transitionDuration || data.settings.defaultTransitionDuration || 1000;
@@ -502,6 +507,56 @@
       sceneCtx.scene.switchTo({ transitionDuration: transTime, transitionUpdate: transUpdate }, function () {
         startAutorotate();
       });
+
+      // ── Narrator auto-tour ─────────────────────────
+      clearTimeout(sceneCtx.__narratorTimer);
+      var narratorHs = (sceneCtx.data.hotspots || []).find(function(h) { return h.type === 'narrator' && h.narratorAudio; });
+      if (narratorHs) {
+        // Show captions overlay
+        var capEl = document.getElementById('narrator-caption');
+        if (!capEl) {
+          capEl = document.createElement('div');
+          capEl.id = 'narrator-caption';
+          capEl.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:12px;font-size:16px;max-width:80vw;text-align:center;z-index:200;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,0.5);font-family:inherit;';
+          document.body.appendChild(capEl);
+        }
+        capEl.textContent = narratorHs.narratorText || '';
+        capEl.style.display = 'block';
+
+        // Play narration audio
+        var audio = new Audio(narratorHs.narratorAudio);
+        audio.volume = 0.8;
+        audio.play().catch(function() {});
+
+        // Auto-advance after duration
+        var duration = (narratorHs.sceneDuration || 10) * 1000;
+        var currentIndex = scenes.indexOf(sceneCtx);
+        var nextIndex = currentIndex + 1;
+        sceneCtx.__narratorTimer = setTimeout(function() {
+          capEl.style.display = 'none';
+          if (nextIndex < scenes.length) {
+            switchScene(scenes[nextIndex]);
+          } else {
+            // End of tour
+            capEl.textContent = 'Thank you for watching!';
+            capEl.style.display = 'block';
+            capEl.style.bottom = '50%';
+            capEl.style.transform = 'translate(-50%, 50%)';
+            capEl.style.fontSize = '24px';
+            setTimeout(function() { capEl.style.display = 'none'; }, 5000);
+          }
+        }, duration);
+
+        // Disable user navigation
+        var ctrlBtns = document.querySelectorAll('#controls .ctrl-btn, #sceneList .scene');
+        ctrlBtns.forEach(function(b) { b.style.pointerEvents = 'none'; b.style.opacity = '0.3'; });
+        clearTimeout(sceneCtx.__narratorTimer + '_unlock');
+      } else {
+        var capEl = document.getElementById('narrator-caption');
+        if (capEl) capEl.style.display = 'none';
+        var ctrlBtns = document.querySelectorAll('#controls .ctrl-btn, #sceneList .scene');
+        ctrlBtns.forEach(function(b) { b.style.pointerEvents = ''; b.style.opacity = ''; });
+      }
 
       if (window.colorEffects) applyColorEffects(sceneCtx);
       updateSceneName(sceneCtx);
@@ -567,6 +622,79 @@
       }
       return null;
     }
+
+    // ── Gaze-based hotspot activation ──────────────────
+    var _gazeHotspot = null;
+    var _gazeTimer = 0;
+    var GAZE_THRESHOLD = 6; // degrees
+    var GAZE_TIME = 2000;   // ms to activate
+
+    setInterval(function() {
+      if (!scenes.length) return;
+      var current = scenes.find(function(s) { return s.scene.isActive && s.scene.isActive(); });
+      if (!current) return;
+      // Skip gaze when narrator auto-tour is active
+      if (current.__narratorTimer) return;
+      var view = current.scene.viewer().view();
+      var params = view.parameters();
+      var gazeYaw = params.yaw;
+      var gazePitch = params.pitch;
+
+      // Find closest navigate/info hotspot + adjust ambient audio
+      var closest = null;
+      var closestDist = Infinity;
+      var container = current.scene.hotspotContainer();
+      if (!container) return;
+      var hotspots = container.listHotspots();
+
+      hotspots.forEach(function(hs) {
+        var dom = hs.domElement();
+        if (!dom || !dom.__hsData) return;
+        var hd = dom.__hsData;
+        var hy = hd.yaw;
+        var hp = hd.pitch;
+        if (hy == null || hp == null) return;
+        var dy = Math.abs(gazeYaw - hy);
+        if (dy > Math.PI) dy = 2 * Math.PI - dy;
+        var dp = Math.abs(gazePitch - hp);
+        var dist = Math.sqrt(dy * dy + dp * dp) * 180 / Math.PI;
+
+        // Ambient audio: adjust volume based on distance (only if autoplay is on)
+        if (hd.type === 'ambient' && hd.ambientAudio && hd.ambientAutoplay !== false) {
+          if (!hd.__ambientAudio) {
+            hd.__ambientAudio = new Audio(hd.ambientAudio);
+            hd.__ambientAudio.loop = hd.ambientLoop !== false;
+            hd.__ambientAudio.volume = 0;
+            hd.__ambientAudio.play().catch(function() {});
+          }
+          var radius = hd.ambientRadius || 30;
+          var maxVol = (hd.ambientVolume || 70) / 100;
+          var vol = dist < radius ? maxVol * (1 - dist / radius) : 0;
+          hd.__ambientAudio.volume = Math.max(0, vol);
+          return;
+        }
+
+        // Navigate/info: gaze activation
+        if (hd.type === 'navigate' || hd.type === 'info') {
+          if (dist < GAZE_THRESHOLD && dist < closestDist) {
+            closestDist = dist;
+            closest = dom;
+          }
+        }
+      });
+
+      if (closest === _gazeHotspot) {
+        _gazeTimer += 200;
+        if (_gazeTimer >= GAZE_TIME && _gazeHotspot) {
+          _gazeHotspot.click();
+          _gazeTimer = 0;
+          _gazeHotspot = null;
+        }
+      } else {
+        _gazeHotspot = closest;
+        _gazeTimer = 0;
+      }
+    }, 200);
 
     // ── Button references ────────────────────────────────────────
     var gyroToggle = document.querySelector('#gyroToggle');
@@ -804,7 +932,7 @@
   }
 
   // ── Startup ──────────────────────────────────────────────────
-  var remoteLoadUrl = new URLSearchParams(window.location.search).get('load');
+  var remoteLoadUrl = window.XENO_LOAD_URL || new URLSearchParams(window.location.search).get('load');
   if (remoteLoadUrl) {
     // Load from remote URL (shared project)
     fetch(remoteLoadUrl)

@@ -123,6 +123,8 @@
           } else if (action === 'delete-project') {
             if (confirm('Delete project "' + title + '"?')) {
               window.XenoSupabase.deleteTour(slug).then(function() {
+                // Also delete published blob if it exists
+                fetch('/api/delete/' + slug).catch(function() {});
                 loadDashboard();
               }).catch(function(err) { alert('Failed: ' + err.message); });
             }
@@ -148,6 +150,23 @@
     if (shareWhatsApp) shareWhatsApp.href = 'https://wa.me/?text=' + fileMsg;
     if (shareTelegram) shareTelegram.href = 'https://t.me/share/url?url=https://xeno-tour.com&text=' + msg;
     if (shareWeTransfer) shareWeTransfer.href = 'https://wetransfer.com/';
+
+    var embedUrl = window.location.origin + '/t/' + slug;
+    var embedCode = document.getElementById('share-embed-code');
+    if (embedCode) embedCode.value = '<iframe src="' + embedUrl + '" width="100%" height="600" frameborder="0" allowfullscreen></iframe>';
+
+    var btnCopyEmbed = document.getElementById('btn-copy-embed');
+    if (btnCopyEmbed) {
+      btnCopyEmbed.onclick = function() {
+        if (embedCode) {
+          embedCode.select();
+          navigator.clipboard.writeText(embedCode.value).then(function() {
+            btnCopyEmbed.textContent = 'Copied!';
+            setTimeout(function() { btnCopyEmbed.textContent = 'Copy'; }, 2000);
+          }).catch(function() {});
+        }
+      };
+    }
 
     modal.style.display = 'flex';
     if (closeBtn) closeBtn.onclick = function() { modal.style.display = 'none'; };

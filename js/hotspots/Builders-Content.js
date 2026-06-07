@@ -238,6 +238,44 @@
     return wrapper;
   };
 
+  builders.narrator = function(hotspot) {
+    var wrapper = document.createElement('div');
+    wrapper.classList.add('xeno-hotspot-narrator');
+
+    var iconWrapper = document.createElement('div');
+    iconWrapper.classList.add('link-icon-wrapper');
+    
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '26');
+    svg.setAttribute('height', '26');
+    svg.style.color = hotspot.iconColor || '#ffffff';
+    svg.innerHTML = getIconSvg(hotspot.iconStyle || 'narrator');
+    iconWrapper.appendChild(svg);
+    
+    wrapper.appendChild(iconWrapper);
+    return wrapper;
+  };
+
+  builders.ambient = function(hotspot) {
+    var wrapper = document.createElement('div');
+    wrapper.classList.add('xeno-hotspot-ambient');
+
+    var iconWrapper = document.createElement('div');
+    iconWrapper.classList.add('link-icon-wrapper');
+
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '26');
+    svg.setAttribute('height', '26');
+    svg.style.color = hotspot.iconColor || '#ffffff';
+    svg.innerHTML = getIconSvg(hotspot.iconStyle || 'soundwave');
+    iconWrapper.appendChild(svg);
+
+    wrapper.appendChild(iconWrapper);
+    return wrapper;
+  };
+
   builders.image = function(hotspot) {
     var wrapper = document.createElement('div');
     wrapper.classList.add('xeno-hotspot-link');

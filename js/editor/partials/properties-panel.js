@@ -21,13 +21,15 @@
         <option value="embed">Embedded (YouTube/Maps)</option>
         <option value="quad">Surface (4-Point)</option>
         <option value="text">Text Label</option>
+        <option value="narrator">Narrator (Auto Tour)</option>
+        <option value="ambient">Ambient Audio</option>
       </select>
     </div>
     <div class="form-group" id="group-hotspot-title">
       <label>Label / Title</label>
       <input type="text" id="prop-title" placeholder="Hotspot title">
     </div>
-    <div class="form-group">
+    <div class="form-group" id="group-hotspot-animation">
       <label>Animation</label>
       <select id="prop-animation">
         <option value="none">None</option>
@@ -419,6 +421,58 @@
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
           <input type="checkbox" id="prop-text-underline"><u>U</u>
         </label>
+      </div>
+    </div>
+
+    <!-- Narrator fields -->
+    <div class="type-fields" id="fields-narrator" style="display:none;">
+      <div class="form-group">
+        <label>Audio URL</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="prop-narrator-audio" placeholder="Narration audio URL\u2026" style="flex:1;">
+          <button class="btn btn-secondary" id="btn-pick-narrator-audio"
+            style="padding:0 10px;border-radius:var(--radius-sm);">
+            ${xIcon('folder', 14)}
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Caption Text</label>
+        <textarea id="prop-narrator-text" placeholder="Welcome to the tour\u2026" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Scene Duration (seconds)</label>
+        <input type="number" id="prop-narrator-duration" min="3" max="120" value="10" step="1">
+      </div>
+    </div>
+
+    <!-- Ambient fields -->
+    <div class="type-fields" id="fields-ambient" style="display:none;">
+      <div class="form-group">
+        <label>Audio URL</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="prop-ambient-audio" placeholder="Ambient sound URL\u2026" style="flex:1;">
+          <button class="btn btn-secondary" id="btn-pick-ambient-audio"
+            style="padding:0 10px;border-radius:var(--radius-sm);">
+            ${xIcon('folder', 14)}
+          </button>
+        </div>
+      </div>
+      <div class="form-group toggle-group">
+        <label>Auto-play on enter</label>
+        <input type="checkbox" id="prop-ambient-autoplay" checked>
+      </div>
+      <div class="form-group toggle-group">
+        <label>Loop Audio</label>
+        <input type="checkbox" id="prop-ambient-loop" checked>
+      </div>
+      <div class="form-group">
+        <label>Max Volume <span id="prop-ambient-vol-label">70%</span></label>
+        <input type="range" id="prop-ambient-volume" min="10" max="100" value="70" step="5">
+      </div>
+      <div class="form-group">
+        <label>Fade Radius (degrees)</label>
+        <input type="range" id="prop-ambient-radius" min="10" max="90" value="30" step="5">
       </div>
     </div>
 

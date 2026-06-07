@@ -67,7 +67,7 @@
         style: S.editorState.activeTool,
         yaw: coords.yaw, pitch: coords.pitch,
         title: 'New ' + S.editorState.activeTool, text: '',
-        animation: 'none', iconStyle: {navigate:'arrow',info:'info',image:'photo',video:'camera',audio:'volume',url:'link',text:'default'}[S.editorState.activeTool] || 'default', iconSize: 44,
+        animation: 'none', iconStyle: {navigate:'arrow',info:'info',image:'photo',video:'camera',audio:'volume',url:'link',text:'default',narrator:'narrator',ambient:'soundwave'}[S.editorState.activeTool] || 'default', iconSize: 44,
         target: null, transition: 'opacity', transitionDuration: 800,
         linkUrl: '', linkType: 'external', linkTarget: null, linkLabel: '',
         urlHref: '', urlLabel: 'Open link', urlOpenIn: 'newtab',

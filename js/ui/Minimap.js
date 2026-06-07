@@ -90,6 +90,14 @@
         radar.classList.add('minimap-radar');
         dot.appendChild(radar);
 
+        // View direction arrow
+        var viewArrow = document.createElement('div');
+        viewArrow.className = 'minimap-view-arrow';
+        viewArrow.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12"><polygon points="6,0 9,12 6,9 3,12" fill="#e11d48"/></svg>';
+        viewArrow.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:none;width:24px;height:24px;z-index:2;pointer-events:none;';
+        dot.appendChild(viewArrow);
+        dot.__viewArrow = viewArrow;
+
         dot.addEventListener('click', function(e) {
           if (dot.classList.contains('dragging')) return;
           if (window.switchSceneById) {
@@ -217,16 +225,30 @@
       // Remove active class from all
       Object.keys(dotElements).forEach(function(id) {
         dotElements[id].classList.remove('active');
+        if (dotElements[id].__viewArrow) dotElements[id].__viewArrow.style.display = 'none';
       });
       
       // Add active class to current
       var currentId = currentSceneCtx.data.id;
       if (dotElements[currentId]) {
         dotElements[currentId].classList.add('active');
+        if (dotElements[currentId].__viewArrow) dotElements[currentId].__viewArrow.style.display = '';
       }
 
       updateHotspotCount(currentSceneCtx);
     };
+
+    // View direction arrow rotation loop
+    setInterval(function() {
+      if (!viewer || !scenes) return;
+      var active = scenes.find(function(s) { return s.scene.isActive && s.scene.isActive(); });
+      if (!active) return;
+      var dot = dotElements[active.data.id];
+      var arrow = dot && dot.__viewArrow;
+      if (!arrow || arrow.style.display === 'none') return;
+      var yawDeg = active.view.yaw() * 180 / Math.PI;
+      arrow.style.transform = 'translate(-50%, -50%) rotate(' + yawDeg + 'deg)';
+    }, 100);
 
     // Initial count
     var firstVisible = scenes.find(function(s) { return !s.data.hidden; }) || scenes[0];

@@ -48,6 +48,8 @@
       link: p('M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71') + p('M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71'),
       photo: p('M2 4h20v16H2z') + p('M2 16l5-5 3 3 4-4 6 6') + '<circle cx="8.5" cy="8.5" r="1.5" ' + c + '/>',
       volume: p('M8 8h3l5-5v18l-5-5H8z') + p('M14 11v4M17 8v8M20 5v14') + '<line x1="8" y1="8" x2="8" y2="16" ' + s + ' ' + sw + ' ' + lc + '/>',
+      narrator: p('M8 9h3m-3 4h6') + p('M10 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4a2 2 0 01-2-2V5a2 2 0 012-2z') + p('M5 7H4a2 2 0 00-2 2v6a2 2 0 002 2h1') + p('M19 7h1a2 2 0 012 2v6a2 2 0 01-2 2h-1'),
+      soundwave: p('M2 12h2M6 8v8M10 6v12M14 4v16M18 6v12M22 8v8'),
     };
     return icons[style] || icons.default;
   }
@@ -123,6 +125,11 @@
 
       var element = builder(hotspotData, switchSceneFn, findSceneByIdFn);
       stopTouchAndScrollEventPropagation(element);
+
+      // Narrator + ambient: visible only in editor
+      if (isEditor && (baseType === 'narrator' || baseType === 'ambient' || style === 'narrator' || style === 'ambient')) {
+        element.style.opacity = '1';
+      }
 
       if (hotspotData.iconSize && hotspotData.iconSize >= 24) {
         var size = hotspotData.iconSize;

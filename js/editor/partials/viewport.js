@@ -52,6 +52,13 @@
     <div class="pill-tool" data-tool="text" title="Text">
       ${xIcon('type', 16)}
     </div>
+    <div class="pill-sep"></div>
+    <div class="pill-tool" data-tool="narrator" title="Narrator (Auto Tour)">
+      ${xIcon('narrator', 16)}
+    </div>
+    <div class="pill-tool" data-tool="ambient" title="Ambient Audio">
+      ${xIcon('soundwave', 16)}
+    </div>
   </div>
 
   <div class="resizer right-resizer" id="right-resizer"></div>`);s.remove()})();

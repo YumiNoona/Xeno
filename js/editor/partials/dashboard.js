@@ -57,6 +57,13 @@
             WeTransfer
           </a>
         </div>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+          <p style="color:var(--text-muted);font-size:var(--type-xs);margin-bottom:8px;">Embed on your website:</p>
+          <div style="display:flex;gap:6px;">
+            <textarea id="share-embed-code" readonly style="flex:1;font-size:10px;resize:none;height:36px;background:var(--bg-base);border:1px solid var(--border);color:var(--text-primary);padding:8px;border-radius:6px;font-family:monospace;"></textarea>
+            <button class="btn btn-secondary" id="btn-copy-embed" style="padding:4px 10px;font-size:var(--type-xs);flex-shrink:0;">Copy</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -288,5 +288,32 @@
       E.renderSceneHotspots();
       E.debouncedSave();
     });
+
+    // ─── Narrator fields ─────────────────────────────
+    D.propNarratorAudio.addEventListener('change', function() {
+      if (S.selectedHotspotData) { S.selectedHotspotData.narratorAudio = this.value; E.debouncedSave(); }
+    });
+    D.propNarratorText.addEventListener('input', function() {
+      if (S.selectedHotspotData) { S.selectedHotspotData.narratorText = this.value; E.debouncedSave(); }
+    });
+    D.propNarratorDuration.addEventListener('change', function() {
+      if (S.selectedHotspotData) { S.selectedHotspotData.sceneDuration = parseInt(this.value) || 10; E.debouncedSave(); }
+    });
+    // ─── Ambient fields ──────────────────────────────
+    D.propAmbientAudio.addEventListener('change', function() {
+      if (S.selectedHotspotData) { S.selectedHotspotData.ambientAudio = this.value; E.debouncedSave(); }
+    });
+    D.propAmbientLoop.addEventListener('change', function() {
+      if (S.selectedHotspotData) { S.selectedHotspotData.ambientLoop = this.checked; E.debouncedSave(); }
+    });
+    D.propAmbientAutoplay.addEventListener('change', function() {
+      if (S.selectedHotspotData) { S.selectedHotspotData.ambientAutoplay = this.checked; E.debouncedSave(); }
+    });
+    D.propAmbientVolume.addEventListener('input', function() {
+      if (S.selectedHotspotData) { S.selectedHotspotData.ambientVolume = parseInt(this.value); E.debouncedSave(); }
+    });
+    D.propAmbientRadius.addEventListener('input', function() {
+      if (S.selectedHotspotData) { S.selectedHotspotData.ambientRadius = parseInt(this.value); E.debouncedSave(); }
+    });
   };
 })();

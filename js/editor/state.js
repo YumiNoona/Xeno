@@ -252,6 +252,16 @@
   D.propTextUnderline = $('prop-text-underline');
   D.propTextRotation = $('prop-text-rotation');
   D.propTextRotLabel = $('prop-text-rot-label');
+  D.propNarratorAudio = $('prop-narrator-audio');
+  D.propNarratorText  = $('prop-narrator-text');
+  D.propNarratorDuration = $('prop-narrator-duration');
+  D.propAmbientAudio  = $('prop-ambient-audio');
+  D.propAmbientLoop   = $('prop-ambient-loop');
+  D.propAmbientAutoplay = $('prop-ambient-autoplay');
+  D.propAmbientVolume = $('prop-ambient-volume');
+  D.propAmbientRadius = $('prop-ambient-radius');
+  D.btnPickNarratorAudio = $('btn-pick-narrator-audio');
+  D.btnPickAmbientAudio  = $('btn-pick-ambient-audio');
 
   // Editor panels
   D.fieldsSceneSettings = $('fields-scene-settings');
@@ -292,7 +302,7 @@
   D.albumCtxTarget   = null;
   D.mediaCtxTarget   = null;
 
-  var HOTSPOT_TOOLS = ['navigate', 'info', 'url', 'image', 'video', 'audio', 'embed', 'quad', 'text'];
+  var HOTSPOT_TOOLS = ['navigate', 'info', 'url', 'image', 'video', 'audio', 'embed', 'quad', 'text', 'narrator', 'ambient'];
   var TOGGLE_TOOLS  = ['select', 'move'];
 
   E.HOTSPOT_TOOLS = HOTSPOT_TOOLS;

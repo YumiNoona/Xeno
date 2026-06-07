@@ -506,7 +506,12 @@ input[type="number"] {
 }
 .theme-card.selected {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 16px var(--accent-dim);
+  animation: themeCardGlow 2s ease-in-out infinite;
+}
+@keyframes themeCardGlow {
+  0%, 100% { box-shadow: 0 0 0 1px var(--accent), 0 0 16px var(--accent-dim); }
+  50% { box-shadow: 0 0 0 2px var(--accent), 0 0 24px var(--accent-glow); }
 }
 .tc-diagram {
   position: relative;

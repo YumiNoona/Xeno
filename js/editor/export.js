@@ -10,6 +10,16 @@
     if (btnPublish && window.XenoSupabase) {
       btnPublish.addEventListener('click', function() {
         if (!S.projectSlug) { alert('No project to publish.'); return; }
+
+        // Expiry picker
+        var expiry = prompt('How long should this tour stay online?\n\n1 = 1 day\n7 = 7 days\n0 or blank = forever', '0');
+        if (expiry === null) return; // cancelled
+        expiry = expiry.trim();
+        var expiryValue = 'forever';
+        if (expiry === '1') expiryValue = '1d';
+        else if (expiry === '7') expiryValue = '7d';
+        else if (expiry && expiry !== '0') expiryValue = 'forever';
+
         var pubBtn = this;
         var origText = pubBtn.innerHTML;
         pubBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Publishing...';
@@ -19,21 +29,25 @@
           return fetch('/api/publish', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(bundle)
+            body: JSON.stringify({ project: bundle, expiry: expiryValue })
           }).then(function(r) {
             if (!r.ok) throw new Error('Publish failed');
             return r.json();
           });
         }).then(function(result) {
           var shareUrl = result.shareUrl || ('https://xeno.venusapp.in/t/' + result.slug);
-          prompt('Share this link with your client:', shareUrl);
+          var embedCode = '<iframe src="' + shareUrl + '" width="100%" height="600" frameborder="0" allowfullscreen></iframe>';
+          var msg = 'Share this link with your client:';
+          if (result.expiresAt) msg += '\n(Expires: ' + new Date(result.expiresAt).toLocaleDateString() + ')';
+          prompt(msg, shareUrl);
           if (navigator.clipboard) {
             navigator.clipboard.writeText(shareUrl).then(function() {
-              alert('Link copied to clipboard!\n\n' + shareUrl);
+              if (confirm('Link copied!\n\nDo you want to copy the embed code too?')) {
+                navigator.clipboard.writeText(embedCode);
+              }
             }).catch(function() {});
           }
         }).catch(function(err) {
-          // Fallback: show localhost preview URL
           var previewUrl = window.location.origin + '/preview.html?project=' + S.projectSlug;
           prompt('Publish API not available (local dev). Share this:', previewUrl);
           if (navigator.clipboard) {
