@@ -57,6 +57,7 @@
     hotspots.forEach(function(hs) {
       var src = hs.content && hs.content.src;
       if (isMediaId(src) && window.XenoSupabase) {
+        hs.content._srcId = hs.content.src;
         resolvePromises.push(window.XenoSupabase.resolveMediaId(src).then(function(blobUrl) {
           if (blobUrl) hs.content.src = blobUrl;
         }));

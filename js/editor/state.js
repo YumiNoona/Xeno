@@ -91,7 +91,11 @@
     rebuildViewerFromData(window.data);
   };
 
+  var _isRebuilding = false;
+
   function rebuildViewerFromData(data) {
+    if (_isRebuilding) return;
+    _isRebuilding = true;
     // Cancel running read loop before destroying viewer
     if (S.viewReadLoop) { cancelAnimationFrame(S.viewReadLoop); S.viewReadLoop = null; }
     // Clear stale hotspot references
@@ -107,14 +111,23 @@
     S.viewer.destroy();
     S.viewer = new window.Xeno.Viewer(D.panoEl, { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } });
     window.xenoViewer = S.viewer;
-    // Resolve media_ IDs before building scenes
     var resolved = resolveSnapshotMedia(data);
     resolved.then(function(rData) {
       (rData.scenes || []).forEach(function(sData) {
-        var source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
-        var geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
-        var limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
-        var view = new window.Xeno.RectilinearView(sData.initialViewParameters || {}, limiter);
+        var source, geometry, view, limiter;
+        if (sData.type === 'video' && window.XenoVideoAsset) {
+          var asset = new window.XenoVideoAsset();
+          if (sData.videoOptions) asset.setVideo(sData.mediaUrl, sData.videoOptions);
+          else asset.setVideo(sData.mediaUrl);
+          source = new window.Xeno.SingleAssetSource(asset);
+          geometry = new window.Xeno.EquirectGeometry([{ width: 1 }]);
+          limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+        } else {
+          source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
+          geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
+          limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+        }
+        view = new window.Xeno.RectilinearView(sData.initialViewParameters || {}, limiter);
         var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
         S.scenes.push({ data: sData, scene: scene, view: view });
       });
@@ -125,9 +138,11 @@
         E.renderSceneGrid();
         E.renderSceneHotspots();
       }
-      // Restart view read loop
       if (E.startViewReadLoop) E.startViewReadLoop();
       E.debouncedSave();
+      _isRebuilding = false;
+    }).catch(function() {
+      _isRebuilding = false;
     });
   }
 
@@ -139,13 +154,14 @@
     var promises = [];
     clone.scenes.forEach(function(s) {
       if (isMediaId(s.mediaUrl) && window.XenoSupabase) {
+        s._mediaId = s.mediaUrl;
         promises.push(
           window.XenoSupabase.resolveMediaId(s.mediaUrl).then(function(b) {
             if (b) s.mediaUrl = b;
           }).catch(function() {})
         );
       }
-      if (isMediaId(s.thumbnailUrl) && s.thumbnailUrl !== s.mediaUrl && window.XenoSupabase) {
+      if (isMediaId(s.thumbnailUrl) && s.thumbnailUrl !== s.mediaUrl && s.thumbnailUrl !== s._mediaId && window.XenoSupabase) {
         (function(capture) {
           promises.push(
             window.XenoSupabase.resolveMediaId(capture).then(function(b) {
@@ -161,6 +177,7 @@
   // Ctrl+Z / Ctrl+Shift+Z
   document.addEventListener('keydown', function(e) {
     if (!e.ctrlKey && !e.metaKey) return;
+    if (_isRebuilding) return;
     if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); E.performUndo(); }
     if (e.key === 'Z' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); E.performRedo(); }
   });
@@ -174,7 +191,7 @@
         var saveData = JSON.parse(JSON.stringify(window.data));
         window.XenoEditor.restoreMediaIds(saveData);
         // Synchronous localStorage fallback (survives iOS page freeze)
-        try { localStorage.setItem('xeno_emergency_' + S.projectSlug, JSON.stringify(saveData)); } catch(lsErr) {}
+        try { localStorage.setItem('xeno_emergency_' + S.projectSlug, JSON.stringify({ data: saveData, savedAt: Date.now() })); } catch(lsErr) {}
         window.XenoSupabase.saveTour(S.projectSlug, saveData);
       } catch(e) {}
     }

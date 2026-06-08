@@ -143,6 +143,7 @@
       var exportBtn = this;
       var originalText = exportBtn.innerHTML;
       var mediaFailures = 0;
+      var bundleFailures = 0;
       exportBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Exporting...';
       exportBtn.disabled = true;
 
@@ -468,13 +469,15 @@
       var fetchPromises = filesToBundle.map(function(path) {
         return fetch(path)
           .then(function(res) { if (!res.ok) throw new Error('Failed to fetch ' + path); return res.text(); })
-          .then(function(content) { zip.file(path, content); });
+          .then(function(content) { zip.file(path, content); })
+          .catch(function(err) { bundleFailures++; console.warn(err); });
       });
 
       var imagePromises = imagesToBundle.map(function(path) {
         return fetch(path)
           .then(function(res) { if (!res.ok) throw new Error('Failed to fetch ' + path); return res.blob(); })
-          .then(function(blob) { zip.file(path, blob); });
+          .then(function(blob) { zip.file(path, blob); })
+          .catch(function(err) { bundleFailures++; console.warn(err); });
       });
 
       var previewPromise = fetch('preview.html')
@@ -499,8 +502,11 @@
           setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
           exportBtn.innerHTML = originalText;
           exportBtn.disabled = false;
-          if (mediaFailures > 0) {
-            alert('Warning: ' + mediaFailures + ' media file(s) could not be included. The exported tour may not display correctly.');
+          if (mediaFailures > 0 || bundleFailures > 0) {
+            var msg = [];
+            if (mediaFailures > 0) msg.push(mediaFailures + ' media file(s) could not be included');
+            if (bundleFailures > 0) msg.push(bundleFailures + ' static asset(s) failed to bundle');
+            alert('Warning: ' + msg.join('. ') + '. The exported tour may not display correctly.');
           }
           setTimeout(function() { if (window.showDonatePopup) window.showDonatePopup(); }, 600);
         })
