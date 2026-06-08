@@ -308,3 +308,10 @@
 
 .media-audio-waves span {
   display: block;
+  width: 3px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: audioWave 1.2s ease-in-out infinite;
+  transform-origin: center bottom;
+}
