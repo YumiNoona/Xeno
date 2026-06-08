@@ -5,6 +5,20 @@
   var D = E.dom;
 
   E.setupSceneSettings = function() {
+    // ─── Save current view as default ──────────────────────
+    var btnSaveView = document.getElementById('btn-save-view');
+    if (btnSaveView) {
+      btnSaveView.addEventListener('click', function() {
+        if (!S.currentSceneCtx) return;
+        S.currentSceneCtx.data.initialViewParameters = {
+          yaw: S.currentSceneCtx.view.yaw(),
+          pitch: S.currentSceneCtx.view.pitch(),
+          fov: S.currentSceneCtx.view.fov()
+        };
+        E.debouncedSave();
+      });
+    }
+
     // ─── Bottom bar camera readout ───────────────────────
     E.startViewReadLoop = function() {
       if (S.viewReadLoop) return;

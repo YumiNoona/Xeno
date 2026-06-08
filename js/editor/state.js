@@ -349,6 +349,7 @@
 
   // Editor panels
   D.fieldsHotspotProperties = $('fields-hotspot-properties');
+  D.fieldsSceneSettings = $('fields-scene-settings');
   D.fieldsProjectSettings = $('fields-project-settings');
   D.panelActionsHotspot = $('panel-actions-hotspot');
 
