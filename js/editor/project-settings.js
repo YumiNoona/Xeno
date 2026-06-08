@@ -53,7 +53,7 @@
 
     // Floorplan
     var fp = window.data.floorplan || {};
-    if (D.psFloorplanEnabled) D.psFloorplanEnabled.checked = fp.enabled === true;
+    if (D.psMinimap) D.psMinimap.checked = fp.enabled === true;
     if (D.psFloorplanUrl) D.psFloorplanUrl.value = fp.imageUrl || '';
 
     renderHotspotOverview();
@@ -94,7 +94,7 @@
 
     // Floorplan
     var fp = window.data.floorplan || {};
-    fp.enabled = D.psFloorplanEnabled ? D.psFloorplanEnabled.checked : false;
+    fp.enabled = D.psMinimap ? D.psMinimap.checked : false;
     fp.imageUrl = D.psFloorplanUrl ? D.psFloorplanUrl.value : '';
     window.data.floorplan = fp;
 

@@ -420,7 +420,7 @@
       if (!confirm('Delete this hotspot?')) return;
       var arr = S.currentSceneCtx.data.hotspots || [];
       var idx = arr.indexOf(S.selectedHotspotData);
-      if (idx !== -1) arr.splice(idx, 1);
+      if (idx !== -1) { E.pushUndo(); arr.splice(idx, 1); }
       E.renderSceneHotspots();
       E.closePropertiesPanel();
       E.debouncedSave();

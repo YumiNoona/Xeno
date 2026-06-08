@@ -142,20 +142,22 @@
 
       var exportBtn = this;
       var originalText = exportBtn.innerHTML;
+      var mediaFailures = 0;
       exportBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Exporting...';
       exportBtn.disabled = true;
 
       var zip = new window.JSZip();
 
       var filesToBundle = [
-        'css/tokens.css', 'css/viewer/layout.css', 'css/viewer/components.css',
+        'css/tokens.css', 'css/viewer/layout.css',
+        'css/viewer/components-controls.css', 'css/viewer/components-themes.css', 'css/viewer/components-overlays.css',
         'css/editor/buttons.css',
-        'css/hotspots/types.css', 'css/hotspots/animations.css', 'css/hotspots/dots.css',
+        'css/hotspots/types-standard.css', 'css/hotspots/types-content.css', 'css/hotspots/animations.css', 'css/hotspots/dots.css',
         'css/lib/minimap.css', 'css/lib/hint.css',
         'js/lib/screenfull.js', 'js/lib/webvr-polyfill.js', 'js/engine/xeno.js',
         'js/engine/transitions.js', 'js/engine/VideoAsset.js', 'js/engine/DeviceOrientation.js',
         'js/engine/colorEffects.js', 'js/hotspots/HotspotFactory.js',
-        'js/hotspots/Builders-Nav.js', 'js/hotspots/Builders-Content.js',
+        'js/hotspots/Builders-Nav.js', 'js/hotspots/Builders-Content.js', 'js/hotspots/Builders-Content-adv.js',
         'js/ui/Minimap.js', 'js/ui/SceneList.js', 'js/ui/Supabase.js', 'js/vr/XenoVR.js',
         'js/viewer.js'
       ];
@@ -226,6 +228,7 @@
               hs.content.src = path;
             });
           }).catch(function(err) {
+            mediaFailures++;
             console.warn('Could not bundle hotspot media for scene ' + sceneId, err);
             hs.content.src = null;
           });
@@ -250,6 +253,7 @@
               hs[field] = path;
             });
           }).catch(function(err) {
+            mediaFailures++;
             console.warn('Could not bundle audio for scene ' + sceneId, err);
             hs[field] = null;
           });
@@ -275,9 +279,12 @@
             sceneData.mediaUrl = path;
             if (sceneData.thumbnailUrl && (sceneData.thumbnailUrl.indexOf('blob:') === 0 || sceneData.thumbnailUrl === origUrl || sceneData.thumbnailUrl === mediaId)) {
               sceneData.thumbnailUrl = path;
+            } else if (sceneData.thumbnailUrl && sceneData.thumbnailUrl.indexOf('media_') === 0) {
+              sceneData.thumbnailUrl = path;
             }
           });
         }).catch(function(err) {
+          mediaFailures++;
           console.warn('Could not bundle media for scene ' + sceneData.name, err);
           sceneData.mediaUrl = null;
           sceneData.thumbnailUrl = null;
@@ -492,6 +499,9 @@
           setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
           exportBtn.innerHTML = originalText;
           exportBtn.disabled = false;
+          if (mediaFailures > 0) {
+            alert('Warning: ' + mediaFailures + ' media file(s) could not be included. The exported tour may not display correctly.');
+          }
           setTimeout(function() { if (window.showDonatePopup) window.showDonatePopup(); }, 600);
         })
         .catch(function(err) {

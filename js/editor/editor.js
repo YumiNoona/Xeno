@@ -37,11 +37,27 @@
       if (isMediaId(s.mediaUrl)) {
         s._mediaId = s.mediaUrl;
         promises.push(window.XenoSupabase.resolveMediaId(s.mediaUrl).then(function(b) {
-          if (b) { s.mediaUrl = b; if (isMediaId(s.thumbnailUrl)) s.thumbnailUrl = b; }
+          if (b) s.mediaUrl = b;
         }));
       }
+      if (isMediaId(s.thumbnailUrl) && s.thumbnailUrl !== s.mediaUrl && s.thumbnailUrl !== s._mediaId) {
+        (function(capture) {
+          promises.push(window.XenoSupabase.resolveMediaId(capture).then(function(b) {
+            if (b) s.thumbnailUrl = b;
+          }));
+        })(s.thumbnailUrl);
+      } else if (isMediaId(s.thumbnailUrl) && s.thumbnailUrl === s._mediaId) {
+        // thumbnailUrl same as mediaUrl — will be resolved with mediaUrl above
+        s.thumbnailUrl = null; // will be set equal to mediaUrl after resolution
+      }
     });
-    return Promise.all(promises).then(function() { return clone; });
+    return Promise.all(promises).then(function() {
+      // Set thumbnailUrl to match mediaUrl where appropriate
+      clone.scenes.forEach(function(s) {
+        if (!s.thumbnailUrl && s.mediaUrl) s.thumbnailUrl = s.mediaUrl;
+      });
+      return clone;
+    });
   }
 
   window.XenoEditor.restoreMediaIds = function restoreMediaIds(data) {

@@ -171,6 +171,8 @@
       E.renderSceneGrid();
       E.renderSceneHotspots();
       E.closePropertiesPanel();
+      S.selectedHotspotData = null;
+      S.selectedHotspotElement = null;
       if (window.updateMinimap) window.updateMinimap(sceneCtx);
     };
 
@@ -188,7 +190,7 @@
         var action = this.getAttribute('data-action');
         if (action === 'rename') {
           var newName = prompt('Rename scene:', S.contextTarget.data.name);
-          if (newName) { S.contextTarget.data.name = newName; E.renderSceneGrid(); E.debouncedSave(); }
+          if (newName) { E.pushUndo(); S.contextTarget.data.name = newName; E.renderSceneGrid(); E.debouncedSave(); }
         } else if (action === 'set-default') {
           var idx = S.scenes.indexOf(S.contextTarget);
           if (idx > 0) {
@@ -223,6 +225,7 @@
         } else if (action === 'delete') {
           if (S.scenes.length <= 1) { alert('Cannot delete the only scene.'); return; }
           if (!confirm('Delete "' + S.contextTarget.data.name + '"?')) return;
+          E.pushUndo();
           var dIdx = S.scenes.indexOf(S.contextTarget);
           S.scenes.splice(dIdx, 1);
           window.data.scenes.splice(dIdx, 1);
@@ -272,6 +275,7 @@
       if (S.selectedSceneIds.size === 0) return;
       if (S.scenes.length - S.selectedSceneIds.size < 1) { alert('Cannot delete all scenes.'); return; }
       if (!confirm('Delete ' + S.selectedSceneIds.size + ' selected scenes?')) return;
+      E.pushUndo();
       var wasDeleted = S.selectedSceneIds.has(S.currentSceneCtx.data.id);
       S.scenes = S.scenes.filter(function(s) { return !S.selectedSceneIds.has(s.data.id); });
       window.data.scenes = S.scenes.map(function(s) { return s.data; });
@@ -330,6 +334,7 @@
         };
         if (isVideo) sData.videoOptions = { autoplay: true, loop: true, muted: true };
 
+        E.pushUndo();
         window.data.scenes.push(sData);
         var source, geometry, view, limiter;
         if (isVideo) {
