@@ -105,13 +105,26 @@
     var mediaIds = {};
     var list = getLocalMedia();
     list.forEach(function(m) { mediaIds[m.id] = true; });
+    // Scan all tour data for media references to prevent cross-project deletion
+    var tourRefs = {};
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k.indexOf(LOCAL_STORAGE_PREFIX) !== 0) continue;
+      try {
+        var tourData = JSON.parse(localStorage.getItem(k)).data;
+        (tourData.scenes || []).forEach(function(s) {
+          if (s.mediaUrl) tourRefs[s.mediaUrl] = true;
+          if (s.thumbnailUrl) tourRefs[s.thumbnailUrl] = true;
+        });
+      } catch(e) {}
+    }
     dbOpen().then(function(db) {
       var tx = db.transaction(STORE_NAME, 'readonly');
       var store = tx.objectStore(STORE_NAME);
       var req = store.getAllKeys();
       req.onsuccess = function() {
         var keys = req.result || [];
-        var orphanKeys = keys.filter(function(k) { return !mediaIds[k]; });
+        var orphanKeys = keys.filter(function(k) { return !mediaIds[k] && !tourRefs[k]; });
         if (!orphanKeys.length) return;
         var delTx = db.transaction(STORE_NAME, 'readwrite');
         var delStore = delTx.objectStore(STORE_NAME);
@@ -137,6 +150,15 @@
       list.forEach(function(m) { delete m._blobUrl; });
       return list;
     }
+
+  function getMediaRecord(id) {
+    if (!id) return null;
+    var list = getLocalMedia();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) return list[i];
+    }
+    return null;
+  }
     catch (e) { return []; }
   }
   function saveLocalMedia(m) {
@@ -423,7 +445,7 @@
     fetchTours: fetchTours, deleteTour: deleteTour,
     uploadFile: uploadFile, downloadAsFile: downloadAsFile,
     fetchAlbums: fetchAlbums, createAlbum: createAlbum,
-    fetchMedia: fetchMedia, uploadAndRecordMedia: uploadAndRecordMedia,
+    fetchMedia: fetchMedia, uploadAndRecordMedia: uploadAndRecordMedia, getMediaRecord: getMediaRecord,
     renameAlbum: renameAlbum, deleteAlbum: deleteAlbum,
     renameMedia: renameMedia, deleteMedia: deleteMedia, moveMedia: moveMedia,
     resolveMediaId: resolveMediaId,

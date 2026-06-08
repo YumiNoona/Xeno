@@ -175,7 +175,7 @@
   }
   window.showShareModal = showShareModal;
 
-  function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
+  function isMediaId(v) { return window.XenoEditor.isMediaId(v); }
 
   function resolveThumbUrl(firstScene, settings) {
     if (!firstScene && !settings) return Promise.resolve(null);

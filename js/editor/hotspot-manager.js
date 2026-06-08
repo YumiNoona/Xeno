@@ -31,28 +31,31 @@
     return el;
   };
 
+  var _hotspotGen = 0;
+
   E.renderSceneHotspots = function() {
     if (!S.currentSceneCtx) return;
-    var container = S.currentSceneCtx.scene.hotspotContainer();
+    var sceneCtx = S.currentSceneCtx;
+    var container = sceneCtx.scene.hotspotContainer();
     var existing = container.listHotspots();
     for (var i = 0; i < existing.length; i++) {
       container.destroyHotspot(existing[i]);
     }
 
-    var hotspots = (S.currentSceneCtx.data.hotspots || []).slice();
+    var hotspots = (sceneCtx.data.hotspots || []).slice();
     // Legacy hotspot compatibility
-    (S.currentSceneCtx.data.linkHotspots || []).forEach(function(h) {
+    (sceneCtx.data.linkHotspots || []).forEach(function(h) {
       var c = Object.assign({}, h); c.type = c.type || 'navigate'; c.style = c.style || 'link'; hotspots.push(c);
     });
-    (S.currentSceneCtx.data.infoHotspots || []).forEach(function(h) {
+    (sceneCtx.data.infoHotspots || []).forEach(function(h) {
       var c = Object.assign({}, h); c.type = c.type || 'info'; c.style = c.style || 'info'; hotspots.push(c);
     });
-    (S.currentSceneCtx.data.mediaHotspots || []).forEach(function(h) {
+    (sceneCtx.data.mediaHotspots || []).forEach(function(h) {
       var c = Object.assign({}, h); c.type = c.type || 'image'; c.style = c.style || 'media'; hotspots.push(c);
     });
 
     // Resolve media IDs in hotspot content.src
-    function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
+    var isMediaId = window.XenoEditor.isMediaId;
     var resolvePromises = [];
     hotspots.forEach(function(hs) {
       var src = hs.content && hs.content.src;
@@ -64,7 +67,10 @@
       }
     });
 
+    var thisGen = ++_hotspotGen;
     Promise.all(resolvePromises).then(function() {
+      if (thisGen !== _hotspotGen) return; // Stale generation — scene switched
+      if (S.currentSceneCtx !== sceneCtx) return;
       hotspots.forEach(function(hsData) { E.createVisualHotspot(hsData); });
     });
 

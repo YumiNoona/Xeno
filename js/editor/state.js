@@ -146,6 +146,9 @@
         E.renderSceneGrid();
         E.renderSceneHotspots();
       }
+      S.selectedHotspotData = null;
+      S.selectedHotspotElement = null;
+      E.closePropertiesPanel();
       if (E.startViewReadLoop) E.startViewReadLoop();
       E.debouncedSave();
       _isRebuilding = false;
@@ -154,7 +157,7 @@
     });
   }
 
-  function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
+  function isMediaId(v) { return window.XenoEditor.isMediaId(v); }
 
   function resolveSnapshotMedia(data) {
     if (!data || !data.scenes) return Promise.resolve(data);
@@ -373,12 +376,6 @@
 
   // Media manager state (shared)
   D.currentAlbumId   = null;
-  D.selectedMediaIds = new Set();
-  D.selectedMediaMap = {};
-  D.lastClickedMediaIndex = null;
-  D.mediaListCache   = [];
-  D.albumCtxTarget   = null;
-  D.mediaCtxTarget   = null;
 
   var HOTSPOT_TOOLS = ['navigate', 'info', 'url', 'image', 'video', 'audio', 'embed', 'quad', 'text', 'narrator', 'ambient'];
   var TOGGLE_TOOLS  = ['select', 'move'];

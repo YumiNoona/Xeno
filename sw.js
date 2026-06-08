@@ -1,7 +1,6 @@
 var CACHE = 'xeno-v2';
-var BLOB_CACHE = 'xeno-blobs';
 var PRECACHE = [
-  '/', '/editor.html', '/preview.html', '/index.html', '/data.js',
+  '/', '/editor.html', '/preview.html', '/index.html',
   '/css/tokens.css',
   '/css/editor/base.css', '/css/editor/buttons.css', '/css/editor/topbar.css',
   '/css/editor/sidebar.css', '/css/editor/viewport.css',
@@ -51,26 +50,14 @@ self.addEventListener('activate', function(e) {
   // Cleanup old caches
   caches.keys().then(function(keys) {
     return Promise.all(
-      keys.filter(function(k) { return k !== CACHE && k !== BLOB_CACHE; })
+      keys.filter(function(k) { return k !== CACHE; })
         .map(function(k) { return caches.delete(k); })
     );
   });
 });
 
-// Fetch: intercept xeno-media blobs, then network-first for everything else
+// Fetch: network-first, fallback to cache
 self.addEventListener('fetch', function(e) {
-  if (e.request.url.indexOf('/xeno-media/') !== -1) {
-    e.respondWith(
-      caches.open(BLOB_CACHE).then(function(cache) {
-        return cache.match(e.request).then(function(cached) {
-          return cached || fetch(e.request).catch(function() {
-            return new Response('', { status: 404, statusText: 'Not Found' });
-          });
-        });
-      })
-    );
-    return;
-  }
   if (e.request.method !== 'GET') return;
   var url = e.request.url;
   if (url.indexOf('http:') !== 0 && url.indexOf('https:') !== 0) return;

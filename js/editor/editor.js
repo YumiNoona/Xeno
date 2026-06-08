@@ -28,6 +28,8 @@
 
   function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
 
+  window.XenoEditor.isMediaId = function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; };
+
   function resolveSceneMedia(data) {
     if (!data || !data.scenes) return Promise.resolve(null);
     // Clone to avoid mutating the canonical data (preserve media IDs for saving)
@@ -137,7 +139,7 @@
       });
       topbarName.addEventListener('blur', function() {
         if (!this.textContent.trim()) this.textContent = 'Untitled Tour';
-        if (projectSlug) { if (S.scenes && S.scenes.length) window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); }); var sd = JSON.parse(JSON.stringify(window.data)); window.XenoEditor.restoreMediaIds(sd); window.XenoSupabase.saveTour(projectSlug, sd); }
+        E.debouncedSave();
       });
       topbarName.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); this.blur(); }

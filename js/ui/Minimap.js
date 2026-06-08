@@ -51,10 +51,16 @@
 
     // Build the DOM map
     var mapImage = document.createElement('img');
-    if (!data.floorplan.imageUrl) {
+    var floorplanUrl = data.floorplan.imageUrl;
+    if (!floorplanUrl) {
       mapImage.src = generateAutoMap(scenes, 400, 280);
+    } else if (typeof floorplanUrl === 'string' && floorplanUrl.indexOf('media_') === 0 && window.XenoSupabase) {
+      mapImage.src = generateAutoMap(scenes, 400, 280);
+      window.XenoSupabase.resolveMediaId(floorplanUrl).then(function(resolved) {
+        if (resolved) mapImage.src = resolved;
+      }).catch(function() {});
     } else {
-      mapImage.src = data.floorplan.imageUrl || '';
+      mapImage.src = floorplanUrl;
     }
     mapImage.style.width = '100%';
     mapImage.style.height = '100%';

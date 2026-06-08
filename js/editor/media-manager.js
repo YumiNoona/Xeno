@@ -11,6 +11,7 @@
   var mediaCache = [];
   var albumCtx = null;
   var mediaCtx = null;
+  var _loadPending = false;
 
   // ─── Albums ──────────────────────────────────────────
   function loadAlbums() {
@@ -152,8 +153,6 @@
     loadAlbums();
     loadMedia(currentAlbumId);
   };
-
-  var _loadPending = false;
 
   // ─── Setup event listeners (called from editor.js) ────
   E.setupMediaManager = function() {

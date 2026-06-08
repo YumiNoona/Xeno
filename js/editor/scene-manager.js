@@ -5,6 +5,8 @@
   var D = E.dom;
 
   E.setupSceneManager = function() {
+    if (E._sceneManagerSetupDone) return;
+    E._sceneManagerSetupDone = true;
     // ─── Scene Grid ──────────────────────────────────────
     E.renderSceneGrid = function() {
       D.sceneGridEl.innerHTML = '';
@@ -312,7 +314,7 @@
     });
 
     // ─── Add Scene Helpers ───────────────────────────────
-    function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
+    function isMediaId(v) { return window.XenoEditor.isMediaId(v); }
 
     function createSceneFromUrl(url, name, forceVideo) {
       var newId = 'scene_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);

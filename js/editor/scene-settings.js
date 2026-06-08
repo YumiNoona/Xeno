@@ -34,10 +34,22 @@
         if (!canvas) { alert('No canvas found'); return; }
         try {
           var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-          S.currentSceneCtx.data.thumbnailUrl = dataUrl;
-          E.renderSceneGrid();
-          E.debouncedSave();
-          alert('Thumbnail captured from current view!');
+          // Convert to Blob and upload through media system to avoid base64 storage bloat
+          var parts = dataUrl.split(',');
+          var mime = parts[0].match(/:(.*?);/)[1];
+          var binary = atob(parts[1]);
+          var bytes = new Uint8Array(binary.length);
+          for (var j = 0; j < binary.length; j++) bytes[j] = binary.charCodeAt(j);
+          var blob = new Blob([bytes], { type: mime });
+          var fakeFile = new File([blob], 'thumb_' + Date.now() + '.jpg', { type: mime });
+          window.XenoSupabase.uploadAndRecordMedia(fakeFile, null).then(function(mediaId) {
+            S.currentSceneCtx.data.thumbnailUrl = mediaId;
+            E.renderSceneGrid();
+            E.debouncedSave();
+            alert('Thumbnail captured!');
+          }).catch(function(err) {
+            alert('Failed to save thumbnail: ' + err.message);
+          });
         } catch(e) {
           alert('Capture failed: ' + e.message);
         }
