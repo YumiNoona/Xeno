@@ -70,31 +70,24 @@
         <option value="pin">Map Pin</option>
         <option value="info">Info Circle</option>
         <option value="map">Map</option>
-        <option value="compass">Compass</option>
         <option value="star">Star</option>
         <option value="question">Question</option>
         <option value="warning">Warning</option>
         <option value="stairs">Stairs</option>
         <option value="expand">Expand</option>
-        <option value="360">360\u00B0 View</option>
-        <option value="restroom">Restroom</option>
-        <option value="elevator">Elevator</option>
-        <option value="escalator">Escalator</option>
-        <option value="parking">Parking</option>
-        <option value="food">Food / Dining</option>
-        <option value="shop">Shop</option>
         <option value="custom">Custom Image</option>
       </select>
     </div>
 
     <div class="form-group">
       <div style="display:flex;gap:10px;align-items:flex-start;">
-        <div>
+        <div id="group-icon-color">
           <label>Color</label>
             <label style="display:block;width:32px;height:32px;border:2px solid var(--border);cursor:pointer;position:relative;">
               <input type="color" id="prop-icon-color" value="#ffffff" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
               <span id="prop-icon-color-swatch" style="display:block;width:100%;height:100%;background:#fff;"></span>
             </label>
+
         </div>
         <div style="flex:1;margin-left:12px;">
           <label>Size</label>

@@ -54,7 +54,7 @@
       var c = Object.assign({}, h); c.type = c.type || 'image'; c.style = c.style || 'media'; hotspots.push(c);
     });
 
-    // Resolve media IDs in hotspot content.src
+    // Resolve media IDs in hotspot content.src and customIconUrl
     var isMediaId = window.XenoEditor.isMediaId;
     var resolvePromises = [];
     hotspots.forEach(function(hs) {
@@ -64,6 +64,14 @@
         resolvePromises.push(window.XenoSupabase.resolveMediaId(src).then(function(blobUrl) {
           if (blobUrl) hs.content.src = blobUrl;
         }));
+      }
+      if (isMediaId(hs.customIconUrl) && window.XenoSupabase) {
+        (function(capture) {
+          hs._customIconId = capture;
+          resolvePromises.push(window.XenoSupabase.resolveMediaId(capture).then(function(blobUrl) {
+            if (blobUrl) hs.customIconUrl = blobUrl;
+          }));
+        })(hs.customIconUrl);
       }
     });
 

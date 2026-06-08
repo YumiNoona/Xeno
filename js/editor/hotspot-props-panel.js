@@ -155,7 +155,10 @@
     }
 
     function toggleCustomIconGroup() {
-      D.groupCustomIcon.style.display = D.propIconStyle.value === 'custom' ? 'block' : 'none';
+      var isCustom = D.propIconStyle.value === 'custom';
+      D.groupCustomIcon.style.display = isCustom ? 'block' : 'none';
+      var colorGroup = document.getElementById('group-icon-color');
+      if (colorGroup) colorGroup.style.display = isCustom ? 'none' : '';
     }
 
     function toggleInfoSceneTarget() {

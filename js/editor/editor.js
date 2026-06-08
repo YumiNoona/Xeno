@@ -75,6 +75,10 @@
           h.content.src = h.content._srcId;
           delete h.content._srcId;
         }
+        if (h._customIconId) {
+          h.customIconUrl = h._customIconId;
+          delete h._customIconId;
+        }
       });
     });
   };

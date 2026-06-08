@@ -3,6 +3,8 @@
 (function() {
 
   var builders = window.HotspotFactory.builders;
+  var _ = window.HotspotFactory._;
+  var getIconSvg = _.getIconSvg;
 
   builders.ambient = function(hotspot) {
     var wrapper = document.createElement('div');
