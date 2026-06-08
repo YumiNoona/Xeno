@@ -30,3 +30,18 @@ export/
 
 # Temp
 temp/
+
+# OpenCode
+.opencode/
+
+# Vercel
+.vercel
+
+# Editor backups
+*~
+
+# Old single CSS files (split into modules)
+css/editor/panels.css
+css/viewer/components.css
+css/hotspots/types.css
+css/editor/media.css
