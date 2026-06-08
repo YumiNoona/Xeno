@@ -159,7 +159,7 @@
         'js/engine/transitions.js', 'js/engine/VideoAsset.js', 'js/engine/DeviceOrientation.js',
         'js/engine/colorEffects.js', 'js/engine/homography.js', 'js/hotspots/HotspotFactory.js',
         'js/hotspots/Builders-Nav.js', 'js/hotspots/Builders-Content.js', 'js/hotspots/Builders-Content-adv.js',
-        'js/ui/Minimap.js', 'js/ui/SceneList.js', 'js/vr/XenoVR.js',
+        'js/ui/Minimap.js', 'js/ui/SceneList.js', 'js/ui/Supabase.js', 'js/vr/XenoVR.js',
         'js/viewer.js'
       ];
 
