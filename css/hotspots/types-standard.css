@@ -1,0 +1,274 @@
+/*
+ * Xeno — Hotspots CSS: Type Styles
+ * Styles for each hotspot type: link, info, tooltip, expand, hintspot, reveal, rotate, textinfo.
+ */
+
+/* ─── 1. Link Hotspot ────────────────────────────────────── */
+.xeno-hotspot-link {
+  width: 60px;
+  height: 60px;
+  margin-left: -30px;
+  margin-top: -30px;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+.no-touch .xeno-hotspot-link:hover {
+  opacity: 1;
+}
+.mobile .xeno-hotspot-link {
+  width: 70px;
+  height: 70px;
+  margin-top: -35px;
+  margin-left: -35px;
+}
+.xeno-hotspot-link .link-icon {
+  width: 100%;
+  height: 100%;
+}
+.xeno-hotspot-link .link-tooltip {
+  position: absolute;
+  left: 100%;
+  top: 14px;
+  margin-left: 3px;
+  font-size: var(--type-lg);
+  max-width: 300px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  background-color: rgba(58,68,84,0.8);
+  color: #fff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: transform 0.3s, opacity 0.3s;
+  pointer-events: none;
+}
+.mobile .xeno-hotspot-link .link-tooltip {
+  top: 19px;
+}
+.no-touch .xeno-hotspot-link:hover .link-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+}
+
+/* ─── 2. Info Hotspot ────────────────────────────────────── */
+.xeno-hotspot-info {
+  width: 66px;
+  height: 66px;
+  margin-left: -33px;
+  margin-top: -33px;
+  z-index: 1;
+}
+.xeno-hotspot-info.expanded {
+  z-index: 2;
+}
+.xeno-hotspot-info .icon_wrapper {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+.xeno-hotspot-info .icon_wrapper:hover {
+  transform: scale(1.1);
+}
+.xeno-hotspot-info .icon {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  position: relative;
+  transition: border-color 0.2s ease-in-out;
+}
+.xeno-hotspot-info .icon_wrapper:hover .icon {
+  border-color: rgba(255,255,255,0.6);
+}
+.xeno-hotspot-info .inner_icon {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.xeno-hotspot-info .closeIcon {
+  transform: rotate(45deg);
+}
+.xeno-hotspot-info .icon1 {
+  width: 4px;
+  height: 24px;
+  position: absolute;
+  top: 14px;
+  left: 24px;
+  border-radius: 10px;
+  background-color: #fff;
+}
+.xeno-hotspot-info .icon2 {
+  width: 24px;
+  height: 4px;
+  position: absolute;
+  top: 24px;
+  left: 14px;
+  border-radius: 10px;
+  background-color: #fff;
+}
+.xeno-hotspot-info .tip, .xeno-hotspot-info .content {
+  position: absolute;
+  left: 80px;
+  top: 10px;
+  width: 280px;
+  background-color: white;
+  color: black;
+  padding: 1em;
+  border-radius: 5px;
+}
+.xeno-hotspot-info .content {
+  padding: 0;
+  transform: scaleY(0);
+  transition: transform 0.2s, opacity 0.2s;
+  transform-origin: top center;
+  opacity: 0;
+  pointer-events: none;
+}
+.xeno-hotspot-info.expanded .content {
+  transform: scaleY(1);
+  opacity: 1;
+  pointer-events: all;
+}
+.xeno-hotspot-info .tip {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  transform-origin: -2em 50%;
+  transform: translate3d(0,0,0) rotate3d(1,1,1,30deg);
+}
+.xeno-hotspot-info:hover .tip {
+  opacity: 1;
+  transform: translate3d(0,0,0) rotate3d(0,0,0,0);
+}
+.xeno-hotspot-info.expanded:hover .tip {
+  opacity: 0;
+}
+.xeno-hotspot-info .tip::before {
+  content: '';
+  position: absolute;
+  right: 99%;
+  height: 100%;
+  width: 3em;
+}
+.xeno-hotspot-info .tip::after {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  margin-top: -9px;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-right: 14px solid white;
+}
+.xeno-hotspot-info h2 {
+  padding: 15px;
+  margin: 0;
+  background: var(--accent);
+  color: #000;
+  font-size: var(--type-lg);
+  border-radius: 5px 5px 0 0;
+}
+.xeno-hotspot-info .content-text {
+  padding: 15px;
+  color: #333;
+}
+.xeno-hotspot-info .close {
+  width: 100%;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border: none;
+  border-top: 1px solid #ddd;
+  cursor: pointer;
+  border-radius: 0 0 5px 5px;
+}
+
+/* ─── 3. Tooltip Hotspot ─────────────────────────────────── */
+.xeno-hotspot-tooltip {
+  width: 60px;
+  height: 60px;
+  margin-left: -30px;
+  margin-top: -30px;
+  transition: opacity 0.2s;
+  perspective: 500px;
+}
+.xeno-hotspot-tooltip:hover {
+  z-index: 3;
+}
+.xeno-hotspot-tooltip .tip {
+  position: absolute;
+  left: 80px;
+  top: 0;
+  width: 200px;
+  background-color: white;
+  color: black;
+  border-radius: 5px;
+  opacity: 0;
+  pointer-events: none;
+  transform: rotateZ(5deg) rotateY(40deg);
+  transform-origin: left center;
+  transition: all 0.25s;
+}
+.xeno-hotspot-tooltip:hover .tip {
+  opacity: 1;
+  pointer-events: all;
+  transform: none;
+}
+.xeno-hotspot-tooltip .tip p {
+  font-size: var(--type-md);
+  padding: .5em;
+  text-align: center;
+  background-color: var(--accent);
+  border-radius: 5px;
+  color: #000;
+  margin: 0;
+}
+.xeno-hotspot-tooltip .out {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  padding: 5px;
+  border: 5px solid rgba(255,255,255,0);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border .3s ease-in-out;
+}
+.xeno-hotspot-tooltip .in {
+  width: 100%;
+  height: 100%;
+  background-color: var(--accent);
+  border-radius: 50%;
+  transition: background-color .3s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.xeno-hotspot-tooltip .in .image {
+  width: 24px;
+  height: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='12' y1='16' x2='12' y2='12'/%3E%3Cline x1='12' y1='8' x2='12.01' y2='8'/%3E%3C/svg%3E");
+  background-size: cover;
+}
+.xeno-hotspot-tooltip .out:hover {
+  border: 5px solid #fff;
+}
+.xeno-hotspot-tooltip .out:hover .in {
+  background-color: #fff;
+}
+
+/* ─── 4. Expand Hotspot ──────────────────────────────────── */
+.xeno-hotspot-expand {
+  width: 70px;
+  height: 70px;
+  margin-left: -35px;
+  margin-top: -35px;
+  background-color: #fff;
+  color: #000;

@@ -27,9 +27,15 @@
   <link rel="stylesheet" href="css/editor/topbar.css">
   <link rel="stylesheet" href="css/editor/sidebar.css">
   <link rel="stylesheet" href="css/editor/viewport.css">
-  <link rel="stylesheet" href="css/editor/panels.css">
+  <link rel="stylesheet" href="css/editor/panels-controls.css">
+  <link rel="stylesheet" href="css/editor/panels-base.css">
+  <link rel="stylesheet" href="css/editor/panels-settings.css">
+  <link rel="stylesheet" href="css/editor/panels-theme.css">
+  <link rel="stylesheet" href="css/editor/panels-hotspot.css">
+  <link rel="stylesheet" href="css/editor/panels-colorpicker.css">
   <link rel="stylesheet" href="css/editor/menus.css">
-  <link rel="stylesheet" href="css/editor/media.css">
+  <link rel="stylesheet" href="css/editor/media-grid.css">
+  <link rel="stylesheet" href="css/editor/media-modal.css">
   <link rel="stylesheet" href="css/editor/dashboard.css">
   <link rel="stylesheet" href="css/editor/theme.css">
   <!-- Critical: inline font lock — fires before external CSS, kills Times New Roman -->
@@ -38,9 +44,12 @@
   </style>
   <!-- Viewer CSS — split -->
   <link rel="stylesheet" href="css/viewer/layout.css">
-  <link rel="stylesheet" href="css/viewer/components.css">
+  <link rel="stylesheet" href="css/viewer/components-controls.css">
+  <link rel="stylesheet" href="css/viewer/components-themes.css">
+  <link rel="stylesheet" href="css/viewer/components-overlays.css">
   <!-- Hotspots CSS — split -->
-  <link rel="stylesheet" href="css/hotspots/types.css">
+  <link rel="stylesheet" href="css/hotspots/types-standard.css">
+  <link rel="stylesheet" href="css/hotspots/types-content.css">
   <link rel="stylesheet" href="css/hotspots/animations.css">
   <link rel="stylesheet" href="css/hotspots/dots.css">
   <!-- Inline SVG icon system — zero CDN dependency -->
@@ -179,6 +188,7 @@
   <script src="js/hotspots/HotspotFactory.js"></script>
   <script src="js/hotspots/Builders-Nav.js"></script>
   <script src="js/hotspots/Builders-Content.js"></script>
+  <script src="js/hotspots/Builders-Content-adv.js"></script>
   <script src="js/ui/Minimap.js"></script>
   <script src="js/ui/Supabase.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -197,6 +207,75 @@
   <script src="js/editor/export.js"></script>
   <script src="js/editor/ui.js"></script>
   <script src="js/editor/editor.js"></script>
+
+  <!-- Donate modal -->
+  <style>
+    .dnt-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    .dnt-modal { background:var(--bg-panel); border:3px solid var(--border); max-width:480px; width:90%; padding:0; }
+    .dnt-header { display:flex; justify-content:center; align-items:center; padding:18px 22px; border-bottom:2px solid var(--border); position:relative; }
+    .dnt-header h3 { text-transform:uppercase; letter-spacing:0.06em; margin:0; color:var(--text-primary); font-size:var(--type-lg); }
+    .dnt-header button { position:absolute; right:18px; background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; padding:0; line-height:1; }
+    .dnt-body { padding:28px 22px; text-align:center; }
+    .dnt-desc { font-size:var(--type-sm); color:var(--text-secondary); margin-bottom:20px; line-height:1.6; }
+    .dnt-qr-img { width:180px; height:180px; border:2px solid var(--border); margin-bottom:8px; }
+    .dnt-qr-label { font-size:var(--type-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:18px; }
+    .dnt-upi { background:var(--bg-raised); border:2px solid var(--border); padding:14px; margin-bottom:16px; }
+    .dnt-upi-label { font-size:var(--type-2xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:6px; }
+    .dnt-upi-row { display:flex; align-items:center; gap:8px; }
+    .dnt-upi-id { font-family:var(--font-mono); font-size:var(--type-sm); color:var(--accent); flex:1; word-break:break-all; }
+    .dnt-copy { background:var(--bg-base); border:2px solid var(--border); color:var(--text-muted); cursor:pointer; padding:4px 6px; display:flex; align-items:center; flex-shrink:0; }
+    .dnt-copy:hover { border-color:var(--accent); color:var(--accent); }
+    .dnt-thanks { font-size:var(--type-2xs); color:var(--text-muted); margin-bottom:16px; }
+    .dnt-byline { font-size:var(--type-2xs); color:var(--text-disabled); text-transform:uppercase; letter-spacing:0.1em; padding-top:12px; border-top:1px solid var(--border); }
+    .dnt-skip { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:14px; cursor:pointer; font-size:var(--type-2xs); color:var(--text-muted); }
+    .dnt-skip input { accent-color:var(--accent); }
+  </style>
+  <div class="dnt-overlay" id="dnt-overlay">
+    <div class="dnt-modal">
+      <div class="dnt-header"><h3>Support Xeno</h3><button id="dnt-close">&times;</button></div>
+      <div class="dnt-body">
+        <p class="dnt-desc">If you like our service, please consider donating to keep these tools free forever.</p>
+        <img src="public/Donate.jpeg" alt="QR Code" class="dnt-qr-img">
+        <span class="dnt-qr-label">Veily UPI QR Code</span>
+        <div class="dnt-upi">
+          <span class="dnt-upi-label">Direct UPI Payment</span>
+          <div class="dnt-upi-row">
+            <code class="dnt-upi-id">rushikeshingale2001@okicici</code>
+            <button class="dnt-copy" id="dnt-copy" title="Copy">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+        <p class="dnt-thanks">Every donation, no matter how small, helps cover hosting and AI API costs.</p>
+        <p class="dnt-byline">Built with 💙 Made by Veil</p>
+        <label class="dnt-skip"><input type="checkbox" id="dnt-skip-today"> Don't show again today</label>
+      </div>
+    </div>
+  </div>
+  <script>
+    window.showDonatePopup = function(force) {
+      var today = new Date().toDateString();
+      if (!force && localStorage.getItem('dnt_skip_date') === today) return;
+      var overlay = document.getElementById('dnt-overlay');
+      var close = document.getElementById('dnt-close');
+      overlay.style.display = 'flex';
+      close.onclick = function() { overlay.style.display = 'none'; };
+      overlay.onclick = function(e) { if (e.target === overlay) overlay.style.display = 'none'; };
+      document.getElementById('dnt-skip-today').onchange = function() {
+        if (this.checked) localStorage.setItem('dnt_skip_date', today);
+        else localStorage.removeItem('dnt_skip_date');
+      };
+      var copyBtn = document.getElementById('dnt-copy');
+      if (copyBtn) {
+        copyBtn.onclick = function() {
+          navigator.clipboard.writeText('rushikeshingale2001@okicici').then(function() {
+            copyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+            setTimeout(function() { copyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'; }, 1500);
+          }).catch(function(){});
+        };
+      }
+    };
+  </script>
 </body>
 
 </html>

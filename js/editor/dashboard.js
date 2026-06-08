@@ -208,8 +208,15 @@
       var card = document.createElement('div');
       card.className = 'project-card';
       if (isMediaId(thumbUrl)) card.dataset.thumbId = thumbUrl;
-      var views = (tour.data && tour.data.settings && tour.data.settings.views) || null;
-      var statusText = views ? (views + ' view' + (views !== 1 ? 's' : '')) : 'Published';
+      var published = (tour.data && tour.data.settings && tour.data.settings.published) || false;
+      var statusText = published ? 'Public' : '';
+      var dateStr = tour.created_at ? new Date(tour.created_at).toLocaleDateString() : '';
+      var metaHtml = (statusText || dateStr)
+        ? '<div class="project-card-meta">' +
+            '<span class="project-card-status">' + statusText + '</span>' +
+            '<span class="project-card-date">' + dateStr + '</span>' +
+          '</div>'
+        : '';
       card.innerHTML =
         '<div class="project-card-thumb-wrapper">' +
           '<img class="project-card-thumb" src="' + initialSrc + '" alt="Tour Thumbnail">' +
@@ -217,10 +224,7 @@
         '</div>' +
         '<div class="project-card-info">' +
           '<h4 class="project-card-title">' + title + '</h4>' +
-          '<div class="project-card-meta">' +
-            '<span class="project-card-status">' + statusText + '</span>' +
-            '<span class="project-card-date">' + new Date(tour.updated_at).toLocaleDateString() + '</span>' +
-          '</div>' +
+          metaHtml +
         '</div>' +
         '<div class="project-card-actions">' +
           '<button class="btn-delete-project" title="Delete Project"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>' +

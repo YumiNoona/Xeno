@@ -107,6 +107,10 @@
 [data-theme="light"] #btn-publish svg {
   color: #000;
 }
+[data-theme="light"] #btn-publish:hover {
+  background: var(--bg-raised);
+  border-color: var(--border-hover);
+}
 
 #btn-export {
   background: transparent;
@@ -129,7 +133,7 @@
 .btn-icon {
   width: 36px;
   height: 36px;
-  border: 2px solid transparent;
+  border: 3px solid var(--border);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;

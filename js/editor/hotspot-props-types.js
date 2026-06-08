@@ -5,6 +5,37 @@
   var D = E.dom;
 
   E.setupHotspotTypeListeners = function() {
+    // ─── Navigate fields ─────────────────────────────────
+    D.propTargetScene.addEventListener('change', function() {
+      if (!S.selectedHotspotData) return;
+      S.selectedHotspotData.target = this.value;
+      var cur = D.propTitle.value.trim();
+      if (!cur || cur.toLowerCase().indexOf('new ') === 0 || cur === '') {
+        if (this.value) {
+          var ts = S.scenes.find(function(s) { return s.data.id === D.propTargetScene.value; });
+          if (ts) {
+            var sn = ts.data.name || '';
+            D.propTitle.value = sn;
+            S.selectedHotspotData.title = sn;
+            S.selectedHotspotData.label = sn;
+            E.renderSceneHotspots();
+          }
+        }
+      }
+      E.debouncedSave();
+    });
+
+    D.propTransition.addEventListener('change', function() {
+      if (S.selectedHotspotData) S.selectedHotspotData.transition = this.value;
+      E.debouncedSave();
+    });
+
+    D.propTransDuration.addEventListener('input', function() {
+      D.propTransDurLabel.textContent = this.value + 'ms';
+      if (S.selectedHotspotData) S.selectedHotspotData.transitionDuration = parseInt(this.value) || 0;
+      E.debouncedSave();
+    });
+
     // ─── Info fields ─────────────────────────────────────
     D.propBodyText.addEventListener('input', function() {
       if (S.selectedHotspotData) S.selectedHotspotData.text = this.value;
@@ -118,15 +149,18 @@
       S.selectedHotspotData.autoplay = this.checked;
       E.debouncedSave();
     });
-    D.propAudioLabel.addEventListener('change', function() {
+    D.propAudioMuted.addEventListener('change', function() {
       if (!S.selectedHotspotData) return;
-      S.selectedHotspotData.showPlayerLabel = this.checked;
+      S.selectedHotspotData.muted = this.checked;
+      if (D.groupAudioVolume) D.groupAudioVolume.style.display = this.checked ? 'none' : '';
       E.debouncedSave();
     });
-    D.propAudioNarration.addEventListener('change', function() {
-      if (!S.selectedHotspotData) return;
-      S.selectedHotspotData.narration = this.checked;
-      E.debouncedSave();
+    D.propAudioVolume.addEventListener('input', function() {
+      D.propAudioVolLabel.textContent = this.value + '%';
+      if (S.selectedHotspotData) {
+        S.selectedHotspotData.volume = parseInt(this.value) || 0;
+        E.debouncedSave();
+      }
     });
 
     // ─── Embed fields ────────────────────────────────────
@@ -210,6 +244,7 @@
     });
     D.propTextBg.addEventListener('change', function() {
       if (S.selectedHotspotData) S.selectedHotspotData.bgColor = this.checked ? (D.propTextBgColor.value || 'rgba(0,0,0,0.7)') : 'transparent';
+      if (D.groupTextBgColor) D.groupTextBgColor.style.display = this.checked ? '' : 'none';
       E.renderSceneHotspots();
       E.debouncedSave();
     });

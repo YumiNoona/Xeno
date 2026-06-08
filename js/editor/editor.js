@@ -99,7 +99,7 @@
       });
       topbarName.addEventListener('blur', function() {
         if (!this.textContent.trim()) this.textContent = 'Untitled Tour';
-        if (projectSlug) { if (S.scenes && S.scenes.length) window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); }); window.XenoEditor.restoreMediaIds(window.data); window.XenoSupabase.saveTour(projectSlug, window.data); }
+        if (projectSlug) { if (S.scenes && S.scenes.length) window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); }); var sd = JSON.parse(JSON.stringify(window.data)); window.XenoEditor.restoreMediaIds(sd); window.XenoSupabase.saveTour(projectSlug, sd); }
       });
       topbarName.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); this.blur(); }

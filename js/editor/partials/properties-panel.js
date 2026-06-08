@@ -110,7 +110,7 @@
       </div>
     </div>
 
-    <div class="form-group toggle-group" style="padding-top:20px;">
+    <div class="form-group toggle-group" style="padding-top:20px;" id="group-outer-ring">
       <label>Outer Ring</label>
       <input type="checkbox" id="prop-ring-enabled" checked>
     </div>
@@ -177,6 +177,35 @@
       </div>
     </div>
     </div><!-- /group-hotspot-generic -->
+
+    <!-- Navigate fields -->
+    <div class="type-fields" id="fields-navigate">
+      <div class="form-group">
+        <label>Target Scene</label>
+        <select id="prop-target-scene"></select>
+      </div>
+      <div class="form-group">
+        <label>Transition</label>
+        <select id="prop-transition">
+          <option value="opacity">Opacity</option>
+          <option value="fromRight">From Right</option>
+          <option value="throughBlack">Through Black</option>
+          <option value="fromCenter">From Center</option>
+          <option value="fromWhite">From White</option>
+          <option value="fromLeft">From Left</option>
+          <option value="iris">Iris</option>
+          <option value="throughWhite">Through White</option>
+          <option value="curtain">Curtain</option>
+          <option value="fromCorner">From Corner</option>
+          <option value="splitHorizontal">Split</option>
+          <option value="zoomOut">Zoom Out</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Duration <span id="prop-trans-dur-label">800ms</span></label>
+        <input type="range" id="prop-trans-duration" min="300" max="2000" value="800" step="100">
+      </div>
+    </div>
 
     <!-- Info fields -->
     <div class="type-fields" id="fields-info" style="display:none;">
@@ -299,12 +328,12 @@
         <input type="checkbox" id="prop-audio-autoplay">
       </div>
       <div class="form-group toggle-group">
-        <label>Show Player Label</label>
-        <input type="checkbox" id="prop-audio-label" checked>
+        <label>Mute</label>
+        <input type="checkbox" id="prop-audio-muted">
       </div>
-      <div class="form-group toggle-group">
-        <label>Narration (auto-play on enter)</label>
-        <input type="checkbox" id="prop-audio-narration">
+      <div class="form-group" id="group-audio-volume">
+        <label>Volume <span id="prop-audio-vol-label">100%</span></label>
+        <input type="range" id="prop-audio-volume" min="0" max="100" value="100" step="5">
       </div>
     </div>
 
@@ -387,12 +416,16 @@
         <input type="checkbox" id="prop-text-bg" checked>
       </div>
       <div class="form-group">
-        <label>Text Color</label>
-        <input type="color" id="prop-text-color" value="#ffffff">
-      </div>
-      <div class="form-group">
-        <label>Background Color</label>
-        <input type="color" id="prop-text-bg-color" value="#000000">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="flex:1;">
+            <label>Text Color</label>
+            <input type="color" id="prop-text-color" value="#ffffff">
+          </div>
+          <div style="flex:1;" id="group-text-bg-color">
+            <label>Background Color</label>
+            <input type="color" id="prop-text-bg-color" value="#000000">
+          </div>
+        </div>
       </div>
       <div class="form-group">
         <label>Font Size <span id="prop-text-size-label">14px</span></label>

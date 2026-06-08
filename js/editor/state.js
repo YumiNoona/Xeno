@@ -34,8 +34,9 @@
           E.pushUndo();
           window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
         }
-        window.XenoEditor.restoreMediaIds(window.data);
-        try { window.XenoSupabase.saveTour(S.projectSlug, window.data); } catch(e) {}
+        var saveData = JSON.parse(JSON.stringify(window.data));
+        window.XenoEditor.restoreMediaIds(saveData);
+        try { window.XenoSupabase.saveTour(S.projectSlug, saveData); } catch(e) {}
       }
     }, 500);
   };
@@ -179,6 +180,10 @@
   D.propTitle        = $('prop-title');
   D.propAnimation    = $('prop-animation');
   D.propIconStyle    = $('prop-icon-style');
+  D.propTargetScene  = $('prop-target-scene');
+  D.propTransition   = $('prop-transition');
+  D.propTransDuration = $('prop-trans-duration');
+  D.propTransDurLabel = $('prop-trans-dur-label');
   D.propBodyText     = $('prop-body-text');
   D.propLinkUrl      = $('prop-link-url');
   D.propLinkLabel    = $('prop-link-label');
@@ -238,12 +243,15 @@
   D.propVideoLoop    = $('prop-video-loop');
   D.propVideoMuted   = $('prop-video-muted');
   D.propAudioAutoplay = $('prop-audio-autoplay');
-  D.propAudioLabel   = $('prop-audio-label');
-  D.propAudioNarration = $('prop-audio-narration');
+  D.propAudioMuted   = $('prop-audio-muted');
+  D.propAudioVolume  = $('prop-audio-volume');
+  D.propAudioVolLabel = $('prop-audio-vol-label');
+  D.groupAudioVolume = $('group-audio-volume');
   D.propTextContent  = $('prop-text-content');
   D.propTextBg       = $('prop-text-bg');
   D.propTextColor    = $('prop-text-color');
   D.propTextBgColor  = $('prop-text-bg-color');
+  D.groupTextBgColor = $('group-text-bg-color');
   D.propTextSize     = $('prop-text-size');
   D.propTextSizeLabel = $('prop-text-size-label');
   D.propTextFont     = $('prop-text-font');

@@ -130,6 +130,10 @@
     if (D.dashboardThemeToggle) {
       D.dashboardThemeToggle.addEventListener('click', toggleTheme);
     }
+    var dashDonate = document.getElementById('dashboard-donate-btn');
+    if (dashDonate) {
+      dashDonate.addEventListener('click', function() { if (window.showDonatePopup) window.showDonatePopup(true); });
+    }
     if (D.topbarThemeToggle) {
       D.topbarThemeToggle.addEventListener('click', toggleTheme);
     }

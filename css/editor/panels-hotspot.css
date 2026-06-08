@@ -1,0 +1,206 @@
+/* ── Hotspot Properties: Brutal Retro Overhaul ─────── */
+
+/* All selects in hotspot panel */
+#prop-type,
+#prop-animation,
+#prop-icon-style,
+#prop-target-scene,
+#prop-transition,
+#prop-text-font {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 10px 36px 10px 14px;
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  background: #0a0a0a;
+  border: 2px solid var(--border);
+  border-radius: 0;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e11d48' stroke-width='2.5' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+#prop-type:hover, #prop-animation:hover, #prop-icon-style:hover,
+#prop-target-scene:hover, #prop-transition:hover,
+#prop-text-font:hover { border-color: var(--accent); }
+#prop-type:focus, #prop-animation:focus, #prop-icon-style:focus,
+#prop-target-scene:focus, #prop-transition:focus,
+#prop-text-font:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim), 0 0 12px var(--accent-glow);
+  outline: none;
+}
+#prop-type option, #prop-animation option, #prop-icon-style option,
+#prop-target-scene option, #prop-transition option,
+#prop-text-font option {
+  background: #0a0a0a;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+  padding: 10px 14px;
+  text-transform: none;
+}
+#prop-type option:hover, #prop-animation option:hover, #prop-icon-style option:hover {
+  background: #1a1a1a;
+  color: var(--accent-text);
+}
+
+/* Text inputs in hotspot panel */
+#prop-title, #prop-custom-icon-url,
+[id^="prop-"]:where([type="text"]) {
+  background: #0a0a0a;
+  border: 2px solid var(--border) !important;
+  border-radius: 0 !important;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+  padding: 10px 14px !important;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+#prop-title:focus, #prop-custom-icon-url:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-dim), 0 0 12px var(--accent-glow) !important;
+}
+
+/* Textareas in hotspot panel */
+#prop-body-text, #prop-text-content, #prop-narrator-text,
+[id^="prop-"]:where(textarea) {
+  background: #0a0a0a;
+  border: 2px solid var(--border) !important;
+  border-radius: 0 !important;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+  padding: 10px 14px !important;
+  resize: vertical;
+}
+#prop-body-text:focus, #prop-text-content:focus, #prop-narrator-text:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-dim), 0 0 12px var(--accent-glow) !important;
+}
+
+/* Ring toggle as switch */
+#prop-ring-enabled {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 40px; height: 22px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  position: relative; cursor: pointer;
+  transition: all 0.2s; flex-shrink: 0;
+  padding: 0; margin: 0;
+}
+#prop-ring-enabled::after {
+  content: ''; position: absolute;
+  top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  background: var(--text-muted);
+  border-radius: 50%; transition: all 0.2s;
+}
+#prop-ring-enabled:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+#prop-ring-enabled:checked::after {
+  left: 20px; background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* Color inputs */
+[id^="prop-"]:where([type="color"]) {
+  width: 36px; height: 36px;
+  border: 2px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: #0a0a0a !important;
+  cursor: pointer; padding: 2px !important;
+}
+[id^="prop-"]:where([type="color"]):hover {
+  border-color: var(--accent) !important;
+}
+
+/* Ring count buttons */
+.ring-count-btn {
+  border: 2px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: #0a0a0a !important;
+  color: var(--text-muted) !important;
+  font-family: var(--font-mono) !important;
+  font-weight: var(--weight-bold) !important;
+  font-size: var(--type-sm) !important;
+  padding: 8px 0 !important;
+  transition: all 0.15s;
+}
+.ring-count-btn:hover {
+  border-color: var(--accent) !important;
+  color: var(--text-primary) !important;
+}
+.ring-count-btn.active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* Range sliders in hotspot panel */
+[id^="prop-"]:where([type="range"]) {
+  width: 100%; height: 8px;
+  -webkit-appearance: none; appearance: none;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px; outline: none;
+  margin: 10px 0; cursor: pointer;
+}
+[id^="prop-"]:where([type="range"])::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+[id^="prop-"]:where([type="range"])::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+[id^="prop-"]:where([type="range"])::-moz-range-track {
+  height: 8px; border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+/* Hotspot section cards */
+#fields-hotspot-properties {
+  margin-top: 4px;
+}
+
+/* Hex color inputs */
+.hs-hex-input {
+  background: #0a0a0a !important;
+  border: 2px solid var(--border) !important;
+  border-radius: 0 !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-mono) !important;
+  font-size: var(--type-sm) !important;
+  padding: 8px 10px !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: border-color 0.15s;
+}
+.hs-hex-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-dim) !important;
+  outline: none;
+}
+

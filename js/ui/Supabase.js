@@ -183,7 +183,7 @@
       if (k.indexOf(LOCAL_STORAGE_PREFIX) !== 0) continue;
       try {
         var r = JSON.parse(localStorage.getItem(k));
-        t.push({ slug: k.substring(LOCAL_STORAGE_PREFIX.length), data: r.data, updated_at: r.updated_at });
+        t.push({ slug: k.substring(LOCAL_STORAGE_PREFIX.length), data: r.data, created_at: r.created_at, updated_at: r.updated_at });
       } catch (e) {}
     }
     t.sort(function(a, b) { return new Date(b.updated_at) - new Date(a.updated_at); });
@@ -198,7 +198,13 @@
   }
 
   function saveTour(slug, tourData) {
-    var payload = { data: tourData, updated_at: new Date().toISOString() };
+    var raw = localStorage.getItem(LOCAL_STORAGE_PREFIX + slug);
+    var existing = raw ? JSON.parse(raw) : {};
+    var payload = {
+      data: tourData,
+      created_at: existing.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
     try {
       localStorage.setItem(LOCAL_STORAGE_PREFIX + slug, JSON.stringify(payload));
     } catch(e) {
@@ -364,7 +370,13 @@
     if (!bundle || bundle.type !== 'xeno-project') return Promise.reject(new Error('Invalid project file'));
     var slug = bundle.project.slug;
     // Save tour data
-    var payload = { data: bundle.project, updated_at: new Date().toISOString() };
+    var raw = localStorage.getItem(LOCAL_STORAGE_PREFIX + slug);
+    var existing = raw ? JSON.parse(raw) : {};
+    var payload = {
+      data: bundle.project,
+      created_at: existing.created_at || bundle.project.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
     localStorage.setItem(LOCAL_STORAGE_PREFIX + slug, JSON.stringify(payload));
     // Merge albums
     if (bundle.albums && bundle.albums.length) {

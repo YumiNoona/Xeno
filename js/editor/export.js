@@ -36,17 +36,20 @@
           });
         }).then(function(result) {
           var shareUrl = result.shareUrl || ('https://xeno.venusapp.in/t/' + result.slug);
-          // Save view count to project settings
+          // Save view count + published flag to project settings
           if (result.views !== undefined) {
             if (!window.data.settings) window.data.settings = {};
             window.data.settings.views = result.views;
           }
+          window.data.settings.published = true;
+          window.data.settings.publishedAt = new Date().toISOString();
           if (window.showShareModal) {
             window.showShareModal(result.slug, shareUrl);
           } else {
             prompt('Share this link:', shareUrl);
             if (navigator.clipboard) navigator.clipboard.writeText(shareUrl).catch(function() {});
           }
+          setTimeout(function() { if (window.showDonatePopup) window.showDonatePopup(); }, 800);
         }).catch(function(err) {
           var previewUrl = window.location.origin + '/preview.html?project=' + S.projectSlug;
           prompt('Publish API not available (local dev). Share this:', previewUrl);
@@ -418,6 +421,7 @@
           setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
           exportBtn.innerHTML = originalText;
           exportBtn.disabled = false;
+          setTimeout(function() { if (window.showDonatePopup) window.showDonatePopup(); }, 600);
         })
         .catch(function(err) {
           alert('ZIP export failed: ' + err.message);

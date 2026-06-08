@@ -1,0 +1,186 @@
+/* ── Theme Cards ─────────────────────────────────────────── */
+.theme-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.theme-card {
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  background: var(--bg-raised);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  min-width: 0;
+}
+.theme-card:hover {
+  border-color: var(--border-hover);
+}
+.theme-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 16px var(--accent-dim);
+  animation: themeCardGlow 2s ease-in-out infinite;
+}
+@keyframes themeCardGlow {
+  0%, 100% { box-shadow: 0 0 0 1px var(--accent), 0 0 16px var(--accent-dim); }
+  50% { box-shadow: 0 0 0 2px var(--accent), 0 0 24px var(--accent-glow); }
+}
+.tc-diagram {
+  position: relative;
+  width: 100%;
+  height: 52px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.tc-pano {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-base);
+}
+/* Default theme */
+.tc-sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 30%;
+  background: rgba(0,0,0,0.3);
+  border-right: 1px solid var(--border);
+}
+/* Gallery theme */
+.tc-gallery-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  background: rgba(0,0,0,0.35);
+  border-top: 1px solid var(--border);
+  border-radius: 4px 4px 0 0;
+}
+/* Float theme */
+.tc-float-pill {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 55%;
+  height: 10px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+/* Hamburger theme */
+.tc-hamburger-menu {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 16px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 0 3px 3px 0;
+}
+/* Center bar theme */
+.tc-center-bar-bottom {
+  position: absolute;
+  bottom: 2px;
+  left: 10%;
+  right: 10%;
+  height: 12px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.tc-ctrl {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  z-index: 2;
+}
+.tc-name {
+  font-size: var(--type-2xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.tc-desc {
+  font-size: 9px;
+  color: var(--text-muted);
+  line-height: 1.3;
+  margin-top: 1px;
+}
+
+/* ── Brutal Retro Selects ────────────────────────────── */
+#ps-transition,
+#ps-minimap-pos {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 10px 36px 10px 14px;
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  background: #0a0a0a;
+  border: 2px solid var(--border);
+  border-radius: 0;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e11d48' stroke-width='2.5' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+#ps-transition:hover,
+#ps-minimap-pos:hover {
+  border-color: var(--accent);
+}
+
+#ps-transition:focus,
+#ps-minimap-pos:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim), 0 0 12px var(--accent-glow);
+  outline: none;
+}
+
+#ps-transition option,
+#ps-minimap-pos option {
+  background: #0a0a0a;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+#ps-transition option:hover,
+#ps-minimap-pos option:hover {
+  background: #1a1a1a;
+  color: var(--accent-text);
+}
+
+#ps-transition option:checked,
+#ps-minimap-pos option:checked {
+  background: var(--accent-dim);
+  color: var(--accent-text);
+  font-weight: var(--weight-bold);
+}
+
+/* Also style all select dropdown panels via focus-within */
+#ps-minimap-pos:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim), 0 0 16px var(--accent-glow);
+}
+

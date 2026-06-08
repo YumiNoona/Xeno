@@ -1,0 +1,129 @@
+/* ── View Controls Bar ───────────────────────────────────── */
+#view-controls-bar {
+  position: absolute;
+  bottom: 82px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 7px 10px 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-lg);
+}
+
+.view-control-field {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.view-control-field span {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.view-control-field input[type="number"] {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  width: 44px;
+  padding: 3px 4px;
+  font-size: var(--type-xs);
+  font-family: var(--font);
+  outline: none;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.view-control-field input[type="number"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.view-control-sep {
+  width: 1px;
+  height: 20px;
+  background: rgba(128, 128, 128, 0.3);
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+#btn-save-view {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+#btn-save-view svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#btn-save-view:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+#btn-save-view:active {
+  transform: scale(0.92);
+}
+
+#btn-save-view::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  padding: 3px 8px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  font-family: var(--font);
+  letter-spacing: 0.04em;
+  z-index: 200;
+}
+
+#btn-save-view:hover::after {
+  opacity: 1;
+}
+
