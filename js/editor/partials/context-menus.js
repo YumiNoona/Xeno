@@ -14,7 +14,7 @@
   </div>
   <div class="ctx-item" data-action="scene-thumbnail">
     ${xIcon('photo', 14)}
-    Set Thumbnail
+    Change Thumbnail
   </div>
   <div class="ctx-sep"></div>
   <div class="ctx-item ctx-danger" data-action="delete">

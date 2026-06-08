@@ -13,20 +13,20 @@
     var sidebarCollapse = document.getElementById('sidebar-collapse-btn');
 
     if (sidebarCollapse) {
-      function updateSidebarCollapseIcon() {
+      E.updateSidebarCollapseIcon = function() {
         var collapsed = document.body.classList.contains('sidebar-collapsed');
         sidebarCollapse.innerHTML = collapsed
           ? window.xIcon('chevron-right', 14)
           : window.xIcon('chevron-left', 14);
         sidebarCollapse.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
-      }
+      };
       sidebarCollapse.addEventListener('click', function() {
         document.body.classList.toggle('sidebar-collapsed');
-        updateSidebarCollapseIcon();
+        E.updateSidebarCollapseIcon();
         sidebarCollapse.style.left = ''; // clear inline so CSS transition works
         setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
       });
-      updateSidebarCollapseIcon();
+      E.updateSidebarCollapseIcon();
       // After sidebar transition, sync inline position for resizer tracking
       sidebar.addEventListener('transitionend', function(e) {
         if (e.propertyName === 'width') {
@@ -132,7 +132,7 @@
     }
     var dashDonate = document.getElementById('dashboard-donate-btn');
     if (dashDonate) {
-      dashDonate.addEventListener('click', function() { if (window.showDonatePopup) window.showDonatePopup(true); });
+      dashDonate.addEventListener('click', function() { if (window.showDonatePopup) window.showDonatePopup(); });
     }
     if (D.topbarThemeToggle) {
       D.topbarThemeToggle.addEventListener('click', toggleTheme);

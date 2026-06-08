@@ -1,4 +1,4 @@
-var CACHE = 'xeno-v2';
+var CACHE = 'xeno-v4';
 var PRECACHE = [
   '/', '/editor.html', '/preview.html', '/index.html',
   '/css/tokens.css',

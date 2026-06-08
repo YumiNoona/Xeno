@@ -270,9 +270,6 @@
   D.propUrlHref      = $('prop-url-href');
   D.propUrlLabel     = $('prop-url-label');
   D.propUrlOpenIn    = $('prop-url-open-in');
-  D.propFloorplanUrl = $('prop-floorplan-url');
-  D.btnPickFloorplan = $('btn-pick-floorplan');
-  D.propFloorplanEnabled = $('prop-floorplan-enabled');
   D.bottomViewYaw    = $('bottom-view-yaw');
   D.bottomViewPitch  = $('bottom-view-pitch');
   D.bottomViewFov    = $('bottom-view-fov');
@@ -351,7 +348,6 @@
   D.btnPickAmbientAudio  = $('btn-pick-ambient-audio');
 
   // Editor panels
-  D.fieldsSceneSettings = $('fields-scene-settings');
   D.fieldsHotspotProperties = $('fields-hotspot-properties');
   D.fieldsProjectSettings = $('fields-project-settings');
   D.panelActionsHotspot = $('panel-actions-hotspot');

@@ -172,8 +172,6 @@
       var initialSceneId = new URLSearchParams(window.location.search).get('scene') || S.scenes[0].data.id;
       E.switchSceneById(initialSceneId);
       E.startViewReadLoop();
-    } else {
-      E.openSceneSettingsPanel();
     }
   }
 })();

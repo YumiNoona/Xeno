@@ -151,9 +151,8 @@
           </div>
         </div>
         <div class="scene-search-wrap">
-          <svg class="scene-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="scene-search" class="scene-search" placeholder="Search scenes\u2026" spellcheck="false">
-          <span class="scene-search-hint">/</span>
+          <svg class="scene-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="scene-search" class="scene-search" placeholder="Search Scenes" spellcheck="false">
         </div>
         <div id="scene-grid"></div>
       </div>
@@ -211,63 +210,35 @@
   <script src="js/editor/editor.js"></script>
 
   <!-- Donate modal -->
-  <style>
-    .dnt-overlay { display:none; position:fixed; inset:0; background:var(--overlay); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(var(--overlay-blur)); }
-    .dnt-modal { background:var(--bg-panel); border:3px solid var(--border); max-width:480px; width:90%; padding:0; }
-    .dnt-header { display:flex; justify-content:center; align-items:center; padding:18px 22px; border-bottom:2px solid var(--border); position:relative; }
-    .dnt-header h3 { text-transform:uppercase; letter-spacing:0.06em; margin:0; color:var(--text-primary); font-size:var(--type-lg); }
-    .dnt-header button { position:absolute; right:18px; background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; padding:0; line-height:1; }
-    .dnt-body { padding:28px 22px; text-align:center; }
-    .dnt-desc { font-size:var(--type-sm); color:var(--text-secondary); margin-bottom:20px; line-height:1.6; }
-    .dnt-qr-img { width:180px; height:180px; border:2px solid var(--border); margin-bottom:8px; }
-    .dnt-qr-label { font-size:var(--type-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:18px; }
-    .dnt-upi { background:var(--bg-raised); border:2px solid var(--border); padding:14px; margin-bottom:16px; }
-    .dnt-upi-label { font-size:var(--type-2xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:6px; }
-    .dnt-upi-row { display:flex; align-items:center; gap:8px; }
-    .dnt-upi-id { font-family:var(--font-mono); font-size:var(--type-sm); color:var(--accent); flex:1; word-break:break-all; }
-    .dnt-copy { background:var(--bg-base); border:2px solid var(--border); color:var(--text-muted); cursor:pointer; padding:4px 6px; display:flex; align-items:center; flex-shrink:0; }
-    .dnt-copy:hover { border-color:var(--accent); color:var(--accent); }
-    .dnt-thanks { font-size:var(--type-2xs); color:var(--text-muted); margin-bottom:16px; }
-    .dnt-byline { font-size:var(--type-2xs); color:var(--text-disabled); text-transform:uppercase; letter-spacing:0.1em; padding-top:12px; border-top:1px solid var(--border); }
-    .dnt-skip { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:14px; cursor:pointer; font-size:var(--type-2xs); color:var(--text-muted); }
-    .dnt-skip input { accent-color:var(--accent); }
-  </style>
-  <div class="dnt-overlay" id="dnt-overlay">
-    <div class="dnt-modal">
-      <div class="dnt-header"><h3>Support Xeno</h3><button id="dnt-close">&times;</button></div>
-      <div class="dnt-body">
-        <p class="dnt-desc">If you like our service, please consider donating to keep these tools free forever.</p>
-        <img src="public/Donate.jpeg" alt="QR Code" class="dnt-qr-img">
-        <span class="dnt-qr-label">Veily UPI QR Code</span>
-        <div class="dnt-upi">
-          <span class="dnt-upi-label">Direct UPI Payment</span>
-          <div class="dnt-upi-row">
-            <code class="dnt-upi-id">rushikeshingale2001@okicici</code>
-            <button class="dnt-copy" id="dnt-copy" title="Copy">
+  <div class="donate-overlay" id="donate-overlay">
+    <div class="donate-modal">
+      <div class="donate-header"><h3>Support Xeno</h3><button id="donate-close">&times;</button></div>
+      <div class="donate-body">
+        <p class="donate-desc">If you like our service, please consider donating to keep these tools free forever.</p>
+        <img src="public/Donate.jpeg" alt="QR Code" class="donate-qr-img">
+        <span class="donate-qr-label">Veily UPI QR Code</span>
+        <div class="donate-upi">
+          <span class="donate-upi-label">Direct UPI Payment</span>
+          <div class="donate-upi-row">
+            <code class="donate-upi-id">rushikeshingale2001@okicici</code>
+            <button class="donate-copy-btn" id="donate-copy" title="Copy">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             </button>
           </div>
         </div>
-        <p class="dnt-thanks">Every donation, no matter how small, helps cover hosting and AI API costs.</p>
-        <p class="dnt-byline">Built with 💙 Made by Veil</p>
-        <label class="dnt-skip"><input type="checkbox" id="dnt-skip-today"> Don't show again today</label>
+        <p class="donate-thanks">Every donation, no matter how small, helps cover hosting and AI API costs.</p>
+        <p class="donate-byline">Built with 💙 Made by Veil</p>
       </div>
     </div>
   </div>
   <script>
-    window.showDonatePopup = function(force) {
-      var today = new Date().toDateString();
-      if (!force && localStorage.getItem('dnt_skip_date') === today) return;
-      var overlay = document.getElementById('dnt-overlay');
-      var close = document.getElementById('dnt-close');
+    window.showDonatePopup = function() {
+      var overlay = document.getElementById('donate-overlay');
+      var close = document.getElementById('donate-close');
       overlay.style.display = 'flex';
       close.onclick = function() { overlay.style.display = 'none'; };
       overlay.onclick = function(e) { if (e.target === overlay) overlay.style.display = 'none'; };
-      document.getElementById('dnt-skip-today').onchange = function() {
-        if (this.checked) localStorage.setItem('dnt_skip_date', today);
-        else localStorage.removeItem('dnt_skip_date');
-      };
-      var copyBtn = document.getElementById('dnt-copy');
+      var copyBtn = document.getElementById('donate-copy');
       if (copyBtn) {
         copyBtn.onclick = function() {
           navigator.clipboard.writeText('rushikeshingale2001@okicici').then(function() {

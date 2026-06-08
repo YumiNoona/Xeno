@@ -72,6 +72,15 @@
     _loadPending = true;
     window.XenoSupabase.fetchMedia(albumId).then(function(list) {
       _loadPending = false;
+      
+      // Filter by search input
+      var q = D.mediaSearchInput ? D.mediaSearchInput.value.toLowerCase().trim() : '';
+      if (q) {
+        list = list.filter(function(m) {
+          return m.filename.toLowerCase().indexOf(q) !== -1;
+        });
+      }
+
       mediaCache = list;
       D.mediaGridEl.innerHTML = '';
       if (list.length === 0) {

@@ -63,8 +63,7 @@
       if (ps) ps.style.display = 'none';
       var pa = document.getElementById('panel-actions-project');
       if (pa) pa.style.display = 'none';
-      D.fieldsHotspotProperties.style.display = 'none';
-      D.fieldsSceneSettings.style.display = 'none';
+      if (D.fieldsHotspotProperties) D.fieldsHotspotProperties.style.display = 'none';
       D.propsPanel.classList.remove('visible');
       setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
     };
