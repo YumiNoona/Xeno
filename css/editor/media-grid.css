@@ -5,11 +5,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.92);
+  background: var(--overlay);
   z-index: 200;
   display: none;
   flex-direction: column;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(var(--overlay-blur));
   animation: mediaModalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

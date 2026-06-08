@@ -28,8 +28,6 @@
 
   function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
 
-  window.XenoEditor.isMediaId = function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; };
-
   function resolveSceneMedia(data) {
     if (!data || !data.scenes) return Promise.resolve(null);
     // Clone to avoid mutating the canonical data (preserve media IDs for saving)

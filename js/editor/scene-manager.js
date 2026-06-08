@@ -192,8 +192,9 @@
         if (!S.contextTarget) return;
         var action = this.getAttribute('data-action');
         if (action === 'rename') {
-          var newName = prompt('Rename scene:', S.contextTarget.data.name);
-          if (newName) { E.pushUndo(); S.contextTarget.data.name = newName; E.renderSceneGrid(); E.debouncedSave(); }
+          E.prompt('Rename scene:', S.contextTarget.data.name, 'Rename Scene').then(function(newName) {
+            if (newName) { E.pushUndo(); S.contextTarget.data.name = newName; E.renderSceneGrid(); E.debouncedSave(); }
+          });
         } else if (action === 'set-default') {
           var idx = S.scenes.indexOf(S.contextTarget);
           if (idx > 0) {
@@ -226,15 +227,17 @@
           };
           E.openMediaModal();
         } else if (action === 'delete') {
-          if (S.scenes.length <= 1) { alert('Cannot delete the only scene.'); return; }
-          if (!confirm('Delete "' + S.contextTarget.data.name + '"?')) return;
-          E.pushUndo();
-          var dIdx = S.scenes.indexOf(S.contextTarget);
-          S.scenes.splice(dIdx, 1);
-          window.data.scenes.splice(dIdx, 1);
-          if (S.currentSceneCtx === S.contextTarget) E.switchSceneById(S.scenes[0].data.id);
-          E.renderSceneGrid();
-          E.debouncedSave();
+          if (S.scenes.length <= 1) { E.alert('Cannot delete the only scene.', 'Operation Denied'); return; }
+          E.confirm('Delete "' + S.contextTarget.data.name + '"?', 'Delete Scene', true).then(function(ok) {
+            if (!ok) return;
+            E.pushUndo();
+            var dIdx = S.scenes.indexOf(S.contextTarget);
+            S.scenes.splice(dIdx, 1);
+            window.data.scenes.splice(dIdx, 1);
+            if (S.currentSceneCtx === S.contextTarget) E.switchSceneById(S.scenes[0].data.id);
+            E.renderSceneGrid();
+            E.debouncedSave();
+          });
         }
         S.contextTarget = null;
       });
@@ -276,18 +279,20 @@
     // ─── Multi-delete scenes ─────────────────────────────
     document.getElementById('btn-delete-scenes').addEventListener('click', function() {
       if (S.selectedSceneIds.size === 0) return;
-      if (S.scenes.length - S.selectedSceneIds.size < 1) { alert('Cannot delete all scenes.'); return; }
-      if (!confirm('Delete ' + S.selectedSceneIds.size + ' selected scenes?')) return;
-      E.pushUndo();
-      var wasDeleted = S.selectedSceneIds.has(S.currentSceneCtx.data.id);
-      S.scenes = S.scenes.filter(function(s) { return !S.selectedSceneIds.has(s.data.id); });
-      window.data.scenes = S.scenes.map(function(s) { return s.data; });
-      if (wasDeleted && S.scenes.length > 0) E.switchSceneById(S.scenes[0].data.id);
-      S.selectedSceneIds.clear();
-      S.lastClickedSceneIndex = null;
-      E.renderSceneGrid();
-      syncSceneSelection();
-      E.debouncedSave();
+      if (S.scenes.length - S.selectedSceneIds.size < 1) { E.alert('Cannot delete all scenes.', 'Operation Denied'); return; }
+      E.confirm('Delete ' + S.selectedSceneIds.size + ' selected scenes?', 'Batch Delete', true).then(function(ok) {
+        if (!ok) return;
+        E.pushUndo();
+        var wasDeleted = S.selectedSceneIds.has(S.currentSceneCtx.data.id);
+        S.scenes = S.scenes.filter(function(s) { return !S.selectedSceneIds.has(s.data.id); });
+        window.data.scenes = S.scenes.map(function(s) { return s.data; });
+        if (wasDeleted && S.scenes.length > 0) E.switchSceneById(S.scenes[0].data.id);
+        S.selectedSceneIds.clear();
+        S.lastClickedSceneIndex = null;
+        E.renderSceneGrid();
+        syncSceneSelection();
+        E.debouncedSave();
+      });
     });
 
     // ─── Clear scene selection ───────────────────────────
@@ -300,17 +305,18 @@
     // ─── Batch rename scenes ──────────────────────────────
     document.getElementById('btn-batch-rename-scenes').addEventListener('click', function() {
       if (S.selectedSceneIds.size === 0) return;
-      var pattern = prompt('Enter name pattern (use # for number):', 'Room #');
-      if (!pattern) return;
-      var count = 1;
-      S.scenes.forEach(function(s) {
-        if (S.selectedSceneIds.has(s.data.id)) {
-          s.data.name = pattern.replace('#', String(count).padStart(2, '0'));
-          count++;
-        }
+      E.prompt('Enter name pattern (use # for number):', 'Room #', 'Batch Rename').then(function(pattern) {
+        if (!pattern) return;
+        var count = 1;
+        S.scenes.forEach(function(s) {
+          if (S.selectedSceneIds.has(s.data.id)) {
+            s.data.name = pattern.replace('#', String(count).padStart(2, '0'));
+            count++;
+          }
+        });
+        E.renderSceneGrid();
+        E.debouncedSave();
       });
-      E.renderSceneGrid();
-      E.debouncedSave();
     });
 
     // ─── Add Scene Helpers ───────────────────────────────

@@ -149,7 +149,8 @@
       var list = JSON.parse(d);
       list.forEach(function(m) { delete m._blobUrl; });
       return list;
-    }
+    } catch(e) { return []; }
+  }
 
   function getMediaRecord(id) {
     if (!id) return null;
@@ -159,8 +160,7 @@
     }
     return null;
   }
-    catch (e) { return []; }
-  }
+
   function saveLocalMedia(m) {
     try { localStorage.setItem('xeno_media', JSON.stringify(m)); } catch (e) { console.error(e); }
   }

@@ -118,13 +118,106 @@
         html += '<div class="hs-overview-list">';
         hotspots.forEach(function (hs, hi) {
           var label = hs.title || hs.label || hs.type || 'hotspot';
-          html += '<div class="hs-overview-item"><span class="hs-overview-type hs-type-' + (hs.type || 'info') + '"></span>' + label + '</div>';
+          html += '<div class="hs-overview-item" data-scene-index="' + si + '" data-hotspot-index="' + hi + '">';
+          html += '<input type="checkbox" class="hs-overview-check" data-scene="' + si + '" data-hotspot="' + hi + '" data-hsid="' + hs.id + '">';
+          html += '<span class="hs-overview-type hs-type-' + (hs.type || 'info') + '"></span>' + label;
+          html += '<button class="hs-overview-delete" title="Delete hotspot">&times;</button>';
+          html += '</div>';
         });
         html += '</div>';
       }
       html += '</div>';
     });
+    html += '<div class="hs-overview-bulk" id="hs-overview-bulk"><span id="hs-bulk-count">0 selected</span><button id="hs-bulk-delete">Delete Selected</button></div>';
     container.innerHTML = html;
+
+    // ── Single delete buttons ──
+    container.querySelectorAll('.hs-overview-delete').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var si = parseInt(this.parentElement.getAttribute('data-scene-index'));
+        var hi = parseInt(this.parentElement.getAttribute('data-hotspot-index'));
+        if (isNaN(si) || isNaN(hi)) return;
+        var sceneData = scenes[si];
+        if (!sceneData || !sceneData.hotspots || !sceneData.hotspots[hi]) return;
+        var hsData = sceneData.hotspots[hi];
+        var label = hsData.title || hsData.label || hsData.type || 'hotspot';
+        E.confirm('Delete hotspot "' + label + '" from ' + (sceneData.name || 'Scene ' + (si + 1)) + '?', 'Delete Hotspot', true).then(function(ok) {
+          if (ok) {
+            deleteHotspotsById([{ id: hsData.id, sceneId: sceneData.id }]);
+            renderHotspotOverview();
+          }
+        });
+      });
+    });
+
+    // ── Bulk select + delete ──
+    var bulkBar = document.getElementById('hs-overview-bulk');
+    var bulkCount = document.getElementById('hs-bulk-count');
+    function updateBulkUI() {
+      var checked = container.querySelectorAll('.hs-overview-check:checked');
+      var count = checked.length;
+      if (bulkBar) bulkBar.classList.toggle('visible', count > 0);
+      if (bulkCount) bulkCount.textContent = count + ' selected';
+    }
+    container.querySelectorAll('.hs-overview-check').forEach(function(cb) {
+      cb.addEventListener('click', function(e) { e.stopPropagation(); updateBulkUI(); });
+    });
+    var bulkDeleteBtn = document.getElementById('hs-bulk-delete');
+    if (bulkDeleteBtn) {
+      bulkDeleteBtn.onclick = function() {
+        var checked = container.querySelectorAll('.hs-overview-check:checked');
+        if (checked.length === 0) return;
+        E.confirm('Delete ' + checked.length + ' selected hotspot(s)?', 'Batch Delete', true).then(function(ok) {
+          if (ok) {
+            var toDelete = [];
+            checked.forEach(function(cb) {
+              toDelete.push({
+                id: cb.getAttribute('data-hsid'),
+                sceneId: scenes[parseInt(cb.getAttribute('data-scene'))].id
+              });
+            });
+            deleteHotspotsById(toDelete);
+            renderHotspotOverview();
+          }
+        });
+      };
+    }
+  }
+
+  function deleteHotspotsById(list) {
+    // Delete from canonical data
+    var scenes = window.data.scenes || [];
+    scenes.forEach(function(scene) {
+      list.forEach(function(item) {
+        if (scene.id !== item.sceneId) return;
+        for (var i = scene.hotspots.length - 1; i >= 0; i--) {
+          if (scene.hotspots[i].id === item.id) scene.hotspots.splice(i, 1);
+        }
+      });
+    });
+    // Delete from live editor state
+    var E = window.XenoEditor;
+    if (E && E.state) {
+      var S = E.state;
+      list.forEach(function(item) {
+        var liveCtx = S.scenes.find(function(s) { return s.data.id === item.sceneId; });
+        if (!liveCtx || !liveCtx.data.hotspots) return;
+        for (var i = liveCtx.data.hotspots.length - 1; i >= 0; i--) {
+          if (liveCtx.data.hotspots[i].id === item.id) {
+            liveCtx.data.hotspots.splice(i, 1);
+            break;
+          }
+        }
+      });
+      if (S.currentSceneCtx && list.some(function(item) { return S.currentSceneCtx.data.id === item.sceneId; })) {
+        S.selectedHotspotData = null;
+        S.selectedHotspotElement = null;
+      }
+      if (E.pushUndo) E.pushUndo();
+      if (E.renderSceneHotspots) E.renderSceneHotspots();
+      if (E.debouncedSave) E.debouncedSave();
+    }
   }
 
   // Wire up event listeners once DOM is ready

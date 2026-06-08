@@ -1,6 +1,7 @@
 (function() {
   'use strict';
   var E = window.XenoEditor = window.XenoEditor || {};
+  E.isMediaId = function(v) { return typeof v === 'string' && v.indexOf('media_') === 0; };
 
   // Shared mutable state — populated by init.js, consumed by all modules
   E.state = {
@@ -157,7 +158,7 @@
     });
   }
 
-  function isMediaId(v) { return window.XenoEditor.isMediaId(v); }
+  var isMediaId = E.isMediaId;
 
   function resolveSnapshotMedia(data) {
     if (!data || !data.scenes) return Promise.resolve(data);

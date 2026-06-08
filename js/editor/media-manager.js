@@ -171,11 +171,12 @@
     var btnAddAlbum = document.getElementById('btn-add-album');
     if (btnAddAlbum) {
       btnAddAlbum.addEventListener('click', function() {
-        var name = prompt('Enter album name:');
-        if (name) {
-          window.XenoSupabase.createAlbum(name).then(function() { loadAlbums(); })
-            .catch(function(err) { alert('Error: ' + err.message); });
-        }
+        E.prompt('Enter album name:', '', 'New Album').then(function(name) {
+          if (name) {
+            window.XenoSupabase.createAlbum(name).then(function() { loadAlbums(); })
+              .catch(function(err) { E.alert('Error: ' + err.message, 'Create Album Error'); });
+          }
+        });
       });
     }
 
@@ -205,16 +206,19 @@
           var ta = albumCtx;
           var action = this.getAttribute('data-action');
           if (action === 'rename-folder') {
-            var n = prompt('Rename Album:', ta.name);
-            if (n && n.trim())
-              window.XenoSupabase.renameAlbum(ta.id, n.trim()).then(loadAlbums).catch(function(err) { alert('Error: ' + err.message); });
+            E.prompt('Rename Album:', ta.name, 'Rename Album').then(function(n) {
+              if (n && n.trim())
+                window.XenoSupabase.renameAlbum(ta.id, n.trim()).then(loadAlbums).catch(function(err) { E.alert('Error: ' + err.message, 'Rename Error'); });
+            });
           } else if (action === 'delete-folder') {
-            if (confirm('Delete album "' + ta.name + '"?'))
-              window.XenoSupabase.deleteAlbum(ta.id).then(function() {
-                if (currentAlbumId === ta.id) currentAlbumId = null;
-                loadAlbums();
-                loadMedia(currentAlbumId);
-              }).catch(function(err) { alert('Error: ' + err.message); });
+            E.confirm('Delete album "' + ta.name + '"?', 'Delete Album', true).then(function(ok) {
+              if (ok)
+                window.XenoSupabase.deleteAlbum(ta.id).then(function() {
+                  if (currentAlbumId === ta.id) currentAlbumId = null;
+                  loadAlbums();
+                  loadMedia(currentAlbumId);
+                }).catch(function(err) { E.alert('Error: ' + err.message, 'Delete Error'); });
+            });
           }
           albumCtx = null;
           if (D.mediaFolderCtx) D.mediaFolderCtx.style.display = 'none';
@@ -257,12 +261,15 @@
           var tm = mediaCtx;
           var action = this.getAttribute('data-action');
           if (action === 'rename-media') {
-            var n = prompt('Rename Media:', tm.filename);
-            if (n && n.trim())
-              window.XenoSupabase.renameMedia(tm.id, n.trim()).then(function() { loadMedia(currentAlbumId); }).catch(function(err) { alert('Error: ' + err.message); });
+            E.prompt('Rename Media:', tm.filename, 'Rename Media').then(function(n) {
+              if (n && n.trim())
+                window.XenoSupabase.renameMedia(tm.id, n.trim()).then(function() { loadMedia(currentAlbumId); }).catch(function(err) { E.alert('Error: ' + err.message, 'Rename Error'); });
+            });
           } else if (action === 'delete-media') {
-            if (confirm('Delete "' + tm.filename + '"?'))
-              window.XenoSupabase.deleteMedia(tm.id).then(function() { loadMedia(currentAlbumId); }).catch(function(err) { alert('Error: ' + err.message); });
+            E.confirm('Delete "' + tm.filename + '"?', 'Delete Media', true).then(function(ok) {
+              if (ok)
+                window.XenoSupabase.deleteMedia(tm.id).then(function() { loadMedia(currentAlbumId); }).catch(function(err) { E.alert('Error: ' + err.message, 'Delete Error'); });
+            });
           } else if (action === 'move-media') {
             openMoveModal();
           } else if (action === 'download-media') {
@@ -292,7 +299,7 @@
           D.moveTargetAlbum.appendChild(o);
         });
         D.moveMediaModal.style.display = 'flex';
-      }).catch(function(err) { alert('Error: ' + err.message); });
+      }).catch(function(err) { E.alert('Error: ' + err.message, 'Fetch Error'); });
     }
 
     function closeMoveModal() {
@@ -307,7 +314,7 @@
         if (!mediaCtx || !D.moveTargetAlbum) return;
         window.XenoSupabase.moveMedia(mediaCtx.id, D.moveTargetAlbum.value || null)
           .then(function() { closeMoveModal(); loadMedia(currentAlbumId); })
-          .catch(function(err) { alert('Error: ' + err.message); });
+          .catch(function(err) { E.alert('Error: ' + err.message, 'Move Error'); });
       });
     }
 
@@ -316,26 +323,28 @@
       D.btnAddSelected.addEventListener('click', function() {
         if (selectedIds.size === 0) return;
         if (!S.projectSlug) {
-          if (confirm('You need to create a project first. Create a new project now?')) {
-            var slug = 'project_' + Date.now();
-            var defaultData = {
-              settings: {
-                title: 'New Tour', name: 'New Tour', mouseViewMode: 'drag',
-                autorotateEnabled: false, showScenes: true, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
-                fullscreenButton: true, sceneListStyle: 'sidebar',
-                showMinimap: false, minimapPosition: 'bottom-left', showControls: true,
-                gyroscopeEnabled: false, vrEnabled: false,
-                defaultTransition: 'opacity', defaultTransitionDuration: 1000, defaultTransitionEasing: 'easeInOut',
-                branding: { logoUrl: null, accentColor: '#e62e5a', logoPosition: 'top-left' },
-                intro: { enabled: false, title: '', subtitle: '', buttonText: 'Enter Tour' }
-              },
-              scenes: [],
-              floorplan: { enabled: false, imageUrl: '', width: 800, height: 600 }
-            };
-            window.XenoSupabase.saveTour(slug, defaultData).then(function() {
-              window.location.href = window.location.pathname + '?project=' + slug;
-            });
-          }
+          E.confirm('You need to create a project first. Create a new project now?', 'No Project', false).then(function(ok) {
+            if (ok) {
+              var slug = 'project_' + Date.now();
+              var defaultData = {
+                settings: {
+                  title: 'New Tour', name: 'New Tour', mouseViewMode: 'drag',
+                  autorotateEnabled: false, showScenes: true, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
+                  fullscreenButton: true, sceneListStyle: 'sidebar',
+                  showMinimap: false, minimapPosition: 'bottom-left', showControls: true,
+                  gyroscopeEnabled: false, vrEnabled: false,
+                  defaultTransition: 'opacity', defaultTransitionDuration: 1000, defaultTransitionEasing: 'easeInOut',
+                  branding: { logoUrl: null, accentColor: '#e62e5a', logoPosition: 'top-left' },
+                  intro: { enabled: false, title: '', subtitle: '', buttonText: 'Enter Tour' }
+                },
+                scenes: [],
+                floorplan: { enabled: false, imageUrl: '', width: 800, height: 600 }
+              };
+              window.XenoSupabase.saveTour(slug, defaultData).then(function() {
+                window.location.href = window.location.pathname + '?project=' + slug;
+              });
+            }
+          });
           return;
         }
         selectedIds.forEach(function(mid) {
@@ -357,17 +366,19 @@
     if (D.btnDeleteSelected) {
       D.btnDeleteSelected.addEventListener('click', function() {
         if (selectedIds.size === 0) return;
-        if (!confirm('Delete ' + selectedIds.size + ' items? This cannot be undone.')) return;
-        var promises = [];
-        selectedIds.forEach(function(mid) {
-          var m = selectedMap[mid];
-          if (m) promises.push(window.XenoSupabase.deleteMedia(m.id));
+        E.confirm('Delete ' + selectedIds.size + ' items? This cannot be undone.', 'Batch Delete', true).then(function(ok) {
+          if (!ok) return;
+          var promises = [];
+          selectedIds.forEach(function(mid) {
+            var m = selectedMap[mid];
+            if (m) promises.push(window.XenoSupabase.deleteMedia(m.id));
+          });
+          Promise.all(promises).then(function() {
+            selectedIds.clear(); selectedMap = {}; lastIndex = null;
+            loadMedia(currentAlbumId);
+            E.showToast('Deleted ' + promises.length + ' items.');
+          }).catch(function(err) { E.alert('Error: ' + err.message, 'Delete Error'); });
         });
-        Promise.all(promises).then(function() {
-          selectedIds.clear(); selectedMap = {}; lastIndex = null;
-          loadMedia(currentAlbumId);
-          showToast('Deleted ' + promises.length + ' items.');
-        }).catch(function(err) { alert('Error: ' + err.message); });
       });
     }
 
@@ -395,8 +406,9 @@
     var legacyBtn = document.getElementById('btn-create-album');
     if (legacyBtn) {
       legacyBtn.addEventListener('click', function() {
-        var n = prompt('Enter new album name:');
-        if (n) window.XenoSupabase.createAlbum(n).then(function() { loadAlbums(); showToast('Album created.'); }).catch(function(err) { alert('Error: ' + err.message); });
+        E.prompt('Enter new album name:', '', 'New Album').then(function(n) {
+          if (n) window.XenoSupabase.createAlbum(n).then(function() { loadAlbums(); E.showToast('Album created.'); }).catch(function(err) { E.alert('Error: ' + err.message, 'Create Error'); });
+        });
       });
     }
   };
@@ -422,7 +434,7 @@
       uploadArea.innerHTML = originalHtml;
       loadMedia(currentAlbumId);
     }).catch(function(err) {
-      alert('Error uploading: ' + err.message);
+      E.alert('Error uploading: ' + err.message, 'Upload Error');
       uploadArea.innerHTML = originalHtml;
     });
   }

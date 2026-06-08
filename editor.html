@@ -37,6 +37,7 @@
   <link rel="stylesheet" href="css/editor/media-grid.css">
   <link rel="stylesheet" href="css/editor/media-modal.css">
   <link rel="stylesheet" href="css/editor/dashboard.css">
+  <link rel="stylesheet" href="css/editor/modals.css">
   <link rel="stylesheet" href="css/editor/theme.css">
   <!-- Critical: inline font lock — fires before external CSS, kills Times New Roman -->
   <style>
@@ -194,6 +195,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <!-- Editor modules -->
   <script src="js/editor/state.js"></script>
+  <script src="js/editor/modals.js"></script>
   <script src="js/editor/tools.js"></script>
   <script src="js/editor/hotspot-manager.js"></script>
   <script src="js/editor/hotspot-props-panel.js"></script>
@@ -210,7 +212,7 @@
 
   <!-- Donate modal -->
   <style>
-    .dnt-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    .dnt-overlay { display:none; position:fixed; inset:0; background:var(--overlay); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(var(--overlay-blur)); }
     .dnt-modal { background:var(--bg-panel); border:3px solid var(--border); max-width:480px; width:90%; padding:0; }
     .dnt-header { display:flex; justify-content:center; align-items:center; padding:18px 22px; border-bottom:2px solid var(--border); position:relative; }
     .dnt-header h3 { text-transform:uppercase; letter-spacing:0.06em; margin:0; color:var(--text-primary); font-size:var(--type-lg); }

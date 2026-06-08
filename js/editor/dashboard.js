@@ -21,28 +21,29 @@
 
     if (btnNewProject) {
       btnNewProject.addEventListener('click', function() {
-        var name = prompt('Enter project name:');
-        if (name && name.trim() !== '') {
-          var slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-          if (!slug) slug = 'project-' + Date.now();
-          var blankData = {
-            settings: {
-              title: name.trim(), name: name.trim(), mouseViewMode: 'drag',
-              autorotateEnabled: false, showScenes: true, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
-              fullscreenButton: true, sceneListStyle: 'sidebar', layoutTheme: 'hamburger',
-              showMinimap: false, minimapPosition: 'bottom-left', showControls: true,
-              gyroscopeEnabled: false, vrEnabled: false,
-              defaultTransition: 'opacity', defaultTransitionDuration: 1000, defaultTransitionEasing: 'easeInOut',
-              branding: { logoUrl: null, accentColor: '#e62e5a', logoPosition: 'top-left' },
-              intro: { enabled: false, title: '', subtitle: '', buttonText: 'Enter Tour' }
-            },
-            scenes: [],
-            floorplan: { enabled: false, imageUrl: '', width: 800, height: 600 }
-          };
-          window.XenoSupabase.saveTour(slug, blankData).then(function() {
-            window.location.search = '?project=' + encodeURIComponent(slug);
-          });
-        }
+        E.prompt('Enter project name:', '', 'New Project').then(function(name) {
+          if (name && name.trim() !== '') {
+            var slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            if (!slug) slug = 'project-' + Date.now();
+            var blankData = {
+              settings: {
+                title: name.trim(), name: name.trim(), mouseViewMode: 'drag',
+                autorotateEnabled: false, showScenes: true, autorotateSpeed: 0.03, autorotateInactivityDelay: 3000,
+                fullscreenButton: true, sceneListStyle: 'sidebar', layoutTheme: 'hamburger',
+                showMinimap: false, minimapPosition: 'bottom-left', showControls: true,
+                gyroscopeEnabled: false, vrEnabled: false,
+                defaultTransition: 'opacity', defaultTransitionDuration: 1000, defaultTransitionEasing: 'easeInOut',
+                branding: { logoUrl: null, accentColor: '#e62e5a', logoPosition: 'top-left' },
+                intro: { enabled: false, title: '', subtitle: '', buttonText: 'Enter Tour' }
+              },
+              scenes: [],
+              floorplan: { enabled: false, imageUrl: '', width: 800, height: 600 }
+            };
+            window.XenoSupabase.saveTour(slug, blankData).then(function() {
+              window.location.search = '?project=' + encodeURIComponent(slug);
+            });
+          }
+        });
       });
     }
 
@@ -64,13 +65,13 @@
           try {
             var bundle = JSON.parse(reader.result);
             window.XenoSupabase.importProject(bundle).then(function(slug) {
-              alert('Project imported successfully!');
+              E.alert('Project imported successfully!', 'Import Success');
               loadDashboard();
             }).catch(function(err) {
-              alert('Import failed: ' + err.message);
+              E.alert('Import failed: ' + err.message, 'Import Error');
             });
           } catch(e) {
-            alert('Invalid project file: ' + e.message);
+            E.alert('Invalid project file: ' + e.message, 'Format Error');
           }
         };
         reader.readAsText(file);
@@ -93,14 +94,15 @@
           var title = (tour.data && tour.data.settings && (tour.data.settings.name || tour.data.settings.title)) || slug;
 
           if (action === 'rename-project') {
-            var newName = prompt('Rename project:', title);
-            if (newName && newName.trim()) {
-              if (!tour.data) tour.data = {};
-              if (!tour.data.settings) tour.data.settings = {};
-              tour.data.settings.name = newName.trim();
-              tour.data.settings.title = newName.trim();
-              window.XenoSupabase.saveTour(slug, tour.data).then(function() { loadDashboard(); });
-            }
+            E.prompt('Rename project:', title, 'Rename Project').then(function(newName) {
+              if (newName && newName.trim()) {
+                if (!tour.data) tour.data = {};
+                if (!tour.data.settings) tour.data.settings = {};
+                tour.data.settings.name = newName.trim();
+                tour.data.settings.title = newName.trim();
+                window.XenoSupabase.saveTour(slug, tour.data).then(function() { loadDashboard(); });
+              }
+            });
           } else if (action === 'thumb-project') {
             E.state.mediaPickerCallback = function(url) {
               if (!tour.data) tour.data = {};
@@ -118,16 +120,18 @@
               a.click();
               showShareModal(slug);
             }).catch(function(err) {
-              alert('Export failed: ' + err.message);
+              E.alert('Export failed: ' + err.message, 'Export Error');
             });
           } else if (action === 'delete-project') {
-            if (confirm('Delete project "' + title + '"?')) {
-              window.XenoSupabase.deleteTour(slug).then(function() {
-                // Also delete published blob if it exists
-                fetch('/api/delete?slug=' + encodeURIComponent(slug)).catch(function() {});
-                loadDashboard();
-              }).catch(function(err) { alert('Failed: ' + err.message); });
-            }
+            E.confirm('Delete project "' + title + '"?', 'Delete Project', true).then(function(ok) {
+              if (ok) {
+                window.XenoSupabase.deleteTour(slug).then(function() {
+                  // Also delete published blob if it exists
+                  fetch('/api/delete?slug=' + encodeURIComponent(slug)).catch(function() {});
+                  loadDashboard();
+                }).catch(function(err) { E.alert('Failed: ' + err.message, 'Error'); });
+              }
+            });
           }
         });
       });
@@ -237,13 +241,15 @@
       var delBtn = card.querySelector('.btn-delete-project');
       delBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        if (confirm('Delete project "' + title + '"?')) {
-          window.XenoSupabase.deleteTour(tour.slug).then(function() {
-            loadDashboard(filterQuery);
-          }).catch(function(err) {
-            alert('Failed to delete project: ' + err.message);
-          });
-        }
+        E.confirm('Delete project "' + title + '"?', 'Delete Project', true).then(function(ok) {
+          if (ok) {
+            window.XenoSupabase.deleteTour(tour.slug).then(function() {
+              loadDashboard(filterQuery);
+            }).catch(function(err) {
+              E.alert('Failed to delete project: ' + err.message, 'Delete Error');
+            });
+          }
+        });
       });
 
       card.addEventListener('contextmenu', function(e) {
@@ -273,6 +279,10 @@
 
   function loadDashboard(filterQuery) {
     if (!window.XenoSupabase) return;
+    var grid = document.getElementById('project-grid');
+    if (grid) {
+      grid.innerHTML = '<div class="dashboard-loading"><svg class="spin" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Searching for tours...</div>';
+    }
     window.XenoSupabase.fetchTours().then(function(tours) {
       if (filterQuery) {
         var q = filterQuery.trim().toLowerCase();
@@ -283,7 +293,26 @@
           return title.toLowerCase().indexOf(q) !== -1;
         });
       }
+      
+      if (tours.length === 0) {
+        if (grid) {
+          grid.innerHTML = '<div class="dashboard-empty">' +
+            '<div class="empty-icon">' + window.xIcon('folder', 48) + '</div>' +
+            '<h3>No tours found</h3>' +
+            '<p>' + (filterQuery ? 'No tours match your search query.' : 'Get started by creating your first 360\u00B0 virtual tour.') + '</p>' +
+            (filterQuery ? '' : '<button class="btn btn-new-project" onclick="document.getElementById(\'btn-new-project\').click()">+ Create New Project</button>') +
+            '</div>';
+        }
+        var countEl = document.getElementById('project-count');
+        if (countEl) countEl.textContent = '0';
+        return;
+      }
+      
       renderProjectGrid(tours, filterQuery);
+    }).catch(function(err) {
+      if (grid) {
+        grid.innerHTML = '<div class="dashboard-error">Failed to load projects: ' + err.message + '</div>';
+      }
     });
   }
 

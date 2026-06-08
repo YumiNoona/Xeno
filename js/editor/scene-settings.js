@@ -31,7 +31,7 @@
         if (!panoEl) return;
         // Capture the WebGL canvas as a data URL
         var canvas = panoEl.querySelector('canvas');
-        if (!canvas) { alert('No canvas found'); return; }
+        if (!canvas) { E.alert('No canvas found', 'Capture Error'); return; }
         try {
           var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
           // Convert to Blob and upload through media system to avoid base64 storage bloat
@@ -46,12 +46,12 @@
             S.currentSceneCtx.data.thumbnailUrl = mediaId;
             E.renderSceneGrid();
             E.debouncedSave();
-            alert('Thumbnail captured!');
+            E.alert('Thumbnail captured!', 'Success');
           }).catch(function(err) {
-            alert('Failed to save thumbnail: ' + err.message);
+            E.alert('Failed to save thumbnail: ' + err.message, 'Save Error');
           });
         } catch(e) {
-          alert('Capture failed: ' + e.message);
+          E.alert('Capture failed: ' + e.message, 'Error');
         }
       });
     }

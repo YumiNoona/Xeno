@@ -100,6 +100,10 @@
   --border: #262626;
   --border-subtle: #1a1a1a;
   --border-hover: #404040;
+  --border-active: #525252;
+
+  --overlay: rgba(0, 0, 0, 0.85);
+  --overlay-blur: 4px;
   --border-focus: var(--accent);
   --border-glass: rgba(255, 255, 255, 0.08);
 
