@@ -69,6 +69,7 @@
   E.pushUndo = function() {
     if (!S.projectSlug) return;
     var snapshot = JSON.parse(JSON.stringify(window.data));
+    window.XenoEditor.restoreMediaIds(snapshot);
     _undoIndex++;
     _undoStack.length = _undoIndex;
     _undoStack.push(snapshot);
@@ -92,6 +93,7 @@
   };
 
   var _isRebuilding = false;
+  S.isRebuilding = function() { return _isRebuilding; };
 
   function rebuildViewerFromData(data) {
     if (_isRebuilding) return;
@@ -108,9 +110,15 @@
       });
     }
     S.scenes = [];
-    S.viewer.destroy();
-    S.viewer = new window.Xeno.Viewer(D.panoEl, { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } });
-    window.xenoViewer = S.viewer;
+    try {
+      S.viewer.destroy();
+      S.viewer = new window.Xeno.Viewer(D.panoEl, { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } });
+      window.xenoViewer = S.viewer;
+    } catch(e) {
+      console.warn('Failed to destroy/create viewer during rebuild', e);
+      _isRebuilding = false;
+      return;
+    }
     var resolved = resolveSnapshotMedia(data);
     resolved.then(function(rData) {
       (rData.scenes || []).forEach(function(sData) {
@@ -162,6 +170,7 @@
         );
       }
       if (isMediaId(s.thumbnailUrl) && s.thumbnailUrl !== s.mediaUrl && s.thumbnailUrl !== s._mediaId && window.XenoSupabase) {
+        s._thumbId = s.thumbnailUrl;
         (function(capture) {
           promises.push(
             window.XenoSupabase.resolveMediaId(capture).then(function(b) {

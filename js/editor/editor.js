@@ -67,7 +67,10 @@
         if (s.thumbnailUrl && s.thumbnailUrl.indexOf('blob:') === 0) s.thumbnailUrl = s._mediaId;
         delete s._mediaId;
       }
-      (s.hotspots || []).forEach(function(h) {
+      if (s._thumbId) { s.thumbnailUrl = s._thumbId; delete s._thumbId; }
+      // Walk all hotspot arrays
+      var allHs = (s.hotspots || []).concat(s.linkHotspots || [], s.infoHotspots || [], s.mediaHotspots || []);
+      allHs.forEach(function(h) {
         if (h.content && h.content._srcId) {
           h.content.src = h.content._srcId;
           delete h.content._srcId;
@@ -83,33 +86,18 @@
         window.XenoSupabase.saveTour('sample-tour', savedData);
       }
       if (!savedData) {
-        // Try emergency recovery from localStorage
+        // Try emergency recovery from localStorage only when IndexedDB is empty
         try {
           var emergencyRaw = localStorage.getItem('xeno_emergency_' + projectSlug);
           if (emergencyRaw) {
             var emergencyParsed = JSON.parse(emergencyRaw);
             savedData = emergencyParsed.data || emergencyParsed;
-            localStorage.removeItem('xeno_emergency_' + projectSlug);
             console.warn('Recovered project from emergency save');
           }
         } catch(e) {}
-      } else {
-        // Check if emergency save is newer than IndexedDB data
-        try {
-          var emergencyRaw = localStorage.getItem('xeno_emergency_' + projectSlug);
-          if (emergencyRaw) {
-            var emergencyParsed = JSON.parse(emergencyRaw);
-            var emData = emergencyParsed.data || emergencyParsed;
-            var emTime = emergencyParsed.savedAt || 0;
-            var dbTime = savedData.updated_at ? new Date(savedData.updated_at).getTime() : 0;
-            if (emTime > dbTime) {
-              savedData = emData;
-              console.warn('Emergency save is newer — preferring over IndexedDB');
-            }
-            localStorage.removeItem('xeno_emergency_' + projectSlug);
-          }
-        } catch(e) {}
       }
+      // Always clean up emergency key after a successful load
+      try { localStorage.removeItem('xeno_emergency_' + projectSlug); } catch(e) {}
       if (!savedData) {
         savedData = {
           settings: {

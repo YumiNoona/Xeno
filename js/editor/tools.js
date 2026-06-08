@@ -57,6 +57,7 @@
     // Pano click → place hotspot
     D.panoEl.addEventListener('click', function(e) {
       if (!S.editorState.placeMode || !S.currentSceneCtx) return;
+      if (S.isRebuilding && S.isRebuilding()) return;
       var rect = D.panoEl.getBoundingClientRect();
       var coords = S.currentSceneCtx.view.screenToCoordinates({
         x: e.clientX - rect.left, y: e.clientY - rect.top
