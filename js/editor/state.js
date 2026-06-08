@@ -46,17 +46,18 @@
   };
 
   function flashSaveIndicator(success) {
-    var topbar = document.getElementById('topbar-project-name');
-    if (!topbar) return;
-    var orig = topbar.textContent;
+    var indicator = document.getElementById('save-indicator');
+    if (!indicator) return;
     if (success) {
-      topbar.style.color = 'var(--success)';
-      topbar.textContent = orig + ' \u2714';
-      setTimeout(function() { topbar.style.color = ''; topbar.textContent = orig; }, 1200);
+      indicator.style.color = 'var(--success)';
+      indicator.textContent = '\u2714 Saved';
+      indicator.style.opacity = '1';
+      setTimeout(function() { indicator.style.opacity = '0'; }, 1500);
     } else {
-      topbar.style.color = 'var(--danger)';
-      topbar.textContent = orig + ' \u2718';
-      setTimeout(function() { topbar.style.color = ''; topbar.textContent = orig; }, 2000);
+      indicator.style.color = 'var(--danger)';
+      indicator.textContent = '\u2718 Save failed';
+      indicator.style.opacity = '1';
+      setTimeout(function() { indicator.style.opacity = '0'; }, 3000);
     }
   }
 
@@ -79,37 +80,7 @@
     _undoIndex--;
     var snap = _undoStack[_undoIndex];
     window.data = JSON.parse(JSON.stringify(snap));
-    // Rebuild viewer from snapshot
-    var data = window.data;
-    // Clear stale hotspot references before destroying viewer
-    if (data.scenes) {
-      data.scenes.forEach(function(s) {
-        (s.hotspots || []).forEach(function(h) { delete h.__marzipanoHotspot; });
-      });
-      S.scenes.forEach(function(ctx) {
-        (ctx.data.hotspots || []).forEach(function(h) { delete h.__marzipanoHotspot; });
-      });
-    }
-    S.scenes = [];
-    S.viewer.destroy();
-    S.viewer = new window.Xeno.Viewer(D.panoEl, { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } });
-    window.xenoViewer = S.viewer;
-    (data.scenes || []).forEach(function(sData) {
-      var source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
-      var geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
-      var limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
-      var view = new window.Xeno.RectilinearView(sData.initialViewParameters || {}, limiter);
-      var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
-      S.scenes.push({ data: sData, scene: scene, view: view });
-    });
-    if (S.scenes.length > 0) {
-      var firstScene = S.scenes[0];
-      S.currentSceneCtx = firstScene;
-      firstScene.scene.switchTo({});
-      E.renderSceneGrid();
-      E.renderSceneHotspots();
-    }
-    E.debouncedSave();
+    rebuildViewerFromData(window.data);
   };
 
   E.performRedo = function() {
@@ -117,7 +88,13 @@
     _undoIndex++;
     var snap = _undoStack[_undoIndex];
     window.data = JSON.parse(JSON.stringify(snap));
-    var data = window.data;
+    rebuildViewerFromData(window.data);
+  };
+
+  function rebuildViewerFromData(data) {
+    // Cancel running read loop before destroying viewer
+    if (S.viewReadLoop) { cancelAnimationFrame(S.viewReadLoop); S.viewReadLoop = null; }
+    // Clear stale hotspot references
     if (data.scenes) {
       data.scenes.forEach(function(s) {
         (s.hotspots || []).forEach(function(h) { delete h.__marzipanoHotspot; });
@@ -130,23 +107,56 @@
     S.viewer.destroy();
     S.viewer = new window.Xeno.Viewer(D.panoEl, { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } });
     window.xenoViewer = S.viewer;
-    (data.scenes || []).forEach(function(sData) {
-      var source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
-      var geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
-      var limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
-      var view = new window.Xeno.RectilinearView(sData.initialViewParameters || {}, limiter);
-      var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
-      S.scenes.push({ data: sData, scene: scene, view: view });
+    // Resolve media_ IDs before building scenes
+    var resolved = resolveSnapshotMedia(data);
+    resolved.then(function(rData) {
+      (rData.scenes || []).forEach(function(sData) {
+        var source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
+        var geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
+        var limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+        var view = new window.Xeno.RectilinearView(sData.initialViewParameters || {}, limiter);
+        var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
+        S.scenes.push({ data: sData, scene: scene, view: view });
+      });
+      if (S.scenes.length > 0) {
+        var firstScene = S.scenes[0];
+        S.currentSceneCtx = firstScene;
+        firstScene.scene.switchTo({});
+        E.renderSceneGrid();
+        E.renderSceneHotspots();
+      }
+      // Restart view read loop
+      if (E.startViewReadLoop) E.startViewReadLoop();
+      E.debouncedSave();
     });
-    if (S.scenes.length > 0) {
-      var firstScene = S.scenes[0];
-      S.currentSceneCtx = firstScene;
-      firstScene.scene.switchTo({});
-      E.renderSceneGrid();
-      E.renderSceneHotspots();
-    }
-    E.debouncedSave();
-  };
+  }
+
+  function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
+
+  function resolveSnapshotMedia(data) {
+    if (!data || !data.scenes) return Promise.resolve(data);
+    var clone = JSON.parse(JSON.stringify(data));
+    var promises = [];
+    clone.scenes.forEach(function(s) {
+      if (isMediaId(s.mediaUrl) && window.XenoSupabase) {
+        promises.push(
+          window.XenoSupabase.resolveMediaId(s.mediaUrl).then(function(b) {
+            if (b) s.mediaUrl = b;
+          }).catch(function() {})
+        );
+      }
+      if (isMediaId(s.thumbnailUrl) && s.thumbnailUrl !== s.mediaUrl && window.XenoSupabase) {
+        (function(capture) {
+          promises.push(
+            window.XenoSupabase.resolveMediaId(capture).then(function(b) {
+              if (b) s.thumbnailUrl = b;
+            }).catch(function() {})
+          );
+        })(s.thumbnailUrl);
+      }
+    });
+    return Promise.all(promises).then(function() { return clone; });
+  }
 
   // Ctrl+Z / Ctrl+Shift+Z
   document.addEventListener('keydown', function(e) {
@@ -163,6 +173,8 @@
         window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
         var saveData = JSON.parse(JSON.stringify(window.data));
         window.XenoEditor.restoreMediaIds(saveData);
+        // Synchronous localStorage fallback (survives iOS page freeze)
+        try { localStorage.setItem('xeno_emergency_' + S.projectSlug, JSON.stringify(saveData)); } catch(lsErr) {}
         window.XenoSupabase.saveTour(S.projectSlug, saveData);
       } catch(e) {}
     }

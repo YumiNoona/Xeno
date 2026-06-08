@@ -17,7 +17,7 @@
         if (s.data.hidden) card.classList.add('hidden-scene');
         if (S.currentSceneCtx && S.currentSceneCtx.data.id === s.data.id) card.classList.add('active');
 
-        var thumb = s.data.mediaUrl || '';
+        var thumb = s.data.thumbnailUrl || s.data.mediaUrl || '';
         var imgHtml = thumb
           ? '<img class="scene-card-thumb" src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;scene-thumb-placeholder&quot;>Scene</div>\'">'
           : '<div class="scene-thumb-placeholder">Scene</div>';
@@ -61,6 +61,7 @@
         card.addEventListener('drop', function(e) {
           e.preventDefault(); e.stopPropagation();
           if (S.dragSourceIndex === null) return false;
+          E.pushUndo();
           var droppedIds = JSON.parse(e.dataTransfer.getData('text/plain'));
           if (S.dragIsMulti) {
             var remaining = S.scenes.filter(function(sc) { return !S.selectedSceneIds.has(sc.data.id); });

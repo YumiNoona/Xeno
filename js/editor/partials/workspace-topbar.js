@@ -4,8 +4,9 @@
     ${xIcon('chevron-left', 16)}
     Dashboard
   </div>
-  <div class="topbar-center">
-    <span class="topbar-project-name" id="topbar-project-name" contenteditable="true" spellcheck="false">Untitled Tour</span>
+<div class="topbar-center">
+<span class="topbar-project-name" id="topbar-project-name" contenteditable="true" spellcheck="false">Untitled Tour</span>
+<span id="save-indicator" style="margin-left:8px;font-size:var(--type-2xs);opacity:0;transition:opacity 0.2s;"></span>
   </div>
   <div class="topbar-actions">
     <button class="btn-icon" id="topbar-theme-toggle" title="Toggle Theme"></button>

@@ -77,6 +77,17 @@
         window.XenoSupabase.saveTour('sample-tour', savedData);
       }
       if (!savedData) {
+        // Try emergency recovery from localStorage
+        try {
+          var emergencyRaw = localStorage.getItem('xeno_emergency_' + projectSlug);
+          if (emergencyRaw) {
+            savedData = JSON.parse(emergencyRaw);
+            localStorage.removeItem('xeno_emergency_' + projectSlug);
+            console.warn('Recovered project from emergency save');
+          }
+        } catch(e) {}
+      }
+      if (!savedData) {
         savedData = {
           settings: {
             title: 'New Tour', name: 'New Tour', mouseViewMode: 'drag',
