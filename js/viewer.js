@@ -309,6 +309,26 @@
     var viewer = new Xeno.Viewer(panoElement, viewerOpts);
     window.xenoViewer = viewer;
 
+    // WebGL context loss recovery — fires when GPU context is reclaimed
+    // (mobile background, heavy load, driver reset). Shows overlay; auto-recovers on restore.
+    var _ctxLossOverlay = null;
+    panoElement.addEventListener('webglcontextlost', function() {
+      if (!_ctxLossOverlay) {
+        _ctxLossOverlay = document.createElement('div');
+        _ctxLossOverlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);color:#fff;font-family:inherit;font-size:14px;z-index:9999;flex-direction:column;gap:12px;';
+        _ctxLossOverlay.innerHTML = '<div style="opacity:0.6">Display context lost</div><button onclick="window.location.reload()" style="padding:8px 20px;background:var(--accent,#e62e5a);border:none;color:#fff;cursor:pointer;font-family:inherit;">Reload</button>';
+        panoElement.style.position = 'relative';
+        panoElement.appendChild(_ctxLossOverlay);
+      }
+    });
+    panoElement.addEventListener('webglcontextrestored', function() {
+      if (_ctxLossOverlay) {
+        _ctxLossOverlay.remove();
+        _ctxLossOverlay = null;
+      }
+      try { viewer.updateSize(); } catch(e) {}
+    });
+
     // Source builder
     function buildSource(sceneData) {
       if (sceneData.type === 'video') {

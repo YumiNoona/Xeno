@@ -14,6 +14,7 @@
   var _loadPending = false;
   var _mediaDirty = true;
   var _lastFetchedAlbum = null;
+  var _modalOpen = false;
 
   // ─── Albums ──────────────────────────────────────────
   function loadAlbums(activeId) {
@@ -66,10 +67,16 @@
 
   function loadMedia(albumId) {
     currentAlbumId = albumId;
-    var useCache = _lastFetchedAlbum === albumId && !_mediaDirty && mediaCache.length > 0;
-    _lastFetchedAlbum = albumId;
+    // BUG FIX #3: treat undefined album_id same as null for root view
+    var normalizedId = (albumId === undefined) ? null : albumId;
+    currentAlbumId = normalizedId;
+
+    var useCache = _lastFetchedAlbum === normalizedId && !_mediaDirty && mediaCache.length > 0;
+    _lastFetchedAlbum = normalizedId;
+
     if (!useCache) {
       _mediaDirty = false;
+      // Revoke old blob URLs before clearing cache
       mediaCache.forEach(function(m) { if (m._blobUrl) URL.revokeObjectURL(m._blobUrl); });
       selectedIds.clear();
       selectedMap = {};
@@ -82,10 +89,10 @@
     _loadPending = true;
     var fetchOrCache = useCache
       ? Promise.resolve(mediaCache)
-      : window.XenoSupabase.fetchMedia(albumId);
+      : window.XenoSupabase.fetchMedia(normalizedId);
     fetchOrCache.then(function(list) {
       _loadPending = false;
-      
+
       if (!useCache) mediaCache = list;
       D.mediaGridEl.innerHTML = '';
       if (list.length === 0) {
@@ -102,7 +109,7 @@
         var thumb = (media.type && media.type.startsWith('video')) ? '' : media._blobUrl;
         var imgHtml;
         if (thumb) {
-          imgHtml = '<img src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;media-thumb-placeholder&quot;>Broken</div>\'">';
+          imgHtml = '<img src="' + thumb + '">';
         } else {
           var isVideo = media.type && media.type.startsWith('video');
           var isAudio = media.type && media.type.startsWith('audio');
@@ -117,11 +124,20 @@
         }
         item.innerHTML = badge + imgHtml + '<div class="title">' + media.filename + '</div>';
 
+        // Set onerror safely via JS after innerHTML (avoids triple-escaping)
+        var imgEl = item.querySelector('img');
+        if (imgEl) {
+          imgEl.onerror = function() {
+            this.outerHTML = '<div class="media-thumb-placeholder">Broken</div>';
+          };
+        }
+
         item.addEventListener('click', function(e) {
           if (S.mediaPickerCallback) {
             S.mediaPickerCallback(media.url, media.filename);
             S.mediaPickerCallback = null;
             D.mediaModal.classList.remove('visible');
+            _modalOpen = false;
             return;
           }
           var mid = media.id;
@@ -130,8 +146,7 @@
             var ei = Math.max(lastIndex, index);
             for (var i = si; i <= ei; i++) {
               var cm = mediaCache[i];
-              selectedIds.add(cm.id);
-              selectedMap[cm.id] = cm;
+              if (cm) { selectedIds.add(cm.id); selectedMap[cm.id] = cm; }
             }
           } else {
             if (selectedIds.has(mid)) { selectedIds.delete(mid); delete selectedMap[mid]; }
@@ -162,8 +177,11 @@
   E.loadMedia = loadMedia;
 
   // ─── Unified entry point (all callers use this) ────────
+  // BUG FIX #2: removed _loadPending guard that blocked re-opens;
+  // now uses _modalOpen flag which only blocks true duplicate simultaneous opens.
   E.openMediaModal = function() {
-    if (_loadPending) return;
+    if (_modalOpen) return;
+    _modalOpen = true;
     D.mediaModal.classList.add('visible');
     loadAlbums();
     loadMedia(currentAlbumId);
@@ -180,6 +198,7 @@
     if (btnClose) {
       btnClose.addEventListener('click', function() {
         _loadPending = false;
+        _modalOpen = false;
         D.mediaModal.classList.remove('visible');
       });
     }
@@ -228,12 +247,13 @@
             });
           } else if (action === 'delete-folder') {
             E.confirm('Delete album "' + ta.name + '"?', 'Delete Album', true).then(function(ok) {
-              if (ok)
+              if (ok) {
                 window.XenoSupabase.deleteAlbum(ta.id).then(function() {
                   if (currentAlbumId === ta.id) currentAlbumId = null;
                   loadAlbums();
                   loadMedia(currentAlbumId);
                 }).catch(function(err) { E.alert('Error: ' + err.message, 'Delete Error'); });
+              }
             });
           }
           albumCtx = null;
@@ -282,10 +302,13 @@
                 window.XenoSupabase.renameMedia(tm.id, n.trim()).then(function() { loadMedia(currentAlbumId); }).catch(function(err) { E.alert('Error: ' + err.message, 'Rename Error'); });
             });
           } else if (action === 'delete-media') {
+            // BUG FIX #1: was missing braces — _mediaDirty and deleteMedia both ran
+            // unconditionally even when user cancelled the confirm dialog.
             E.confirm('Delete "' + tm.filename + '"?', 'Delete Media', true).then(function(ok) {
-              if (ok)
+              if (ok) {
                 _mediaDirty = true;
                 window.XenoSupabase.deleteMedia(tm.id).then(function() { loadMedia(currentAlbumId); }).catch(function(err) { E.alert('Error: ' + err.message, 'Delete Error'); });
+              }
             });
           } else if (action === 'move-media') {
             openMoveModal();
@@ -372,6 +395,7 @@
           }
         });
         D.mediaModal.classList.remove('visible');
+        _modalOpen = false;
         selectedIds.clear();
         selectedMap = {};
         lastIndex = null;
@@ -407,7 +431,6 @@
       });
     }
 
-    // Search
     // ─── v1 Legacy compat ──────────────────────────────
     var legacyBtn = document.getElementById('btn-create-album');
     if (legacyBtn) {

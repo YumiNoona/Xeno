@@ -71,6 +71,7 @@
             fbOverlay.setAttribute('data-pub-fallback', '1');
             fbOverlay.addEventListener('click', function(e) { if (e.target === fbOverlay) document.body.removeChild(fbOverlay); });
             document.body.appendChild(fbOverlay);
+          }
         }).finally(function() {
           pubBtn.innerHTML = origText;
           pubBtn.disabled = false;

@@ -140,10 +140,11 @@
     };
 
     // Resolve media_xxx IDs to blob URLs in scene thumbnails (two-pass async)
+    var _thumbTimerId = null;
     E.resolveSceneThumbs = function(container, timeout) {
       if (!container) return;
-      clearTimeout(container._thumbTimer);
-      container._thumbTimer = setTimeout(function() {
+      clearTimeout(_thumbTimerId);
+      _thumbTimerId = setTimeout(function() {
         if (!window.XenoSupabase || !window.XenoSupabase.resolveMediaId) return;
         container.querySelectorAll('[data-thumb-id]').forEach(function(el) {
           var id = el.getAttribute('data-thumb-id');
