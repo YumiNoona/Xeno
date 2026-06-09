@@ -75,14 +75,6 @@
     window.XenoSupabase.fetchMedia(albumId).then(function(list) {
       _loadPending = false;
       
-      // Filter by search input
-      var q = D.mediaSearchInput ? D.mediaSearchInput.value.toLowerCase().trim() : '';
-      if (q) {
-        list = list.filter(function(m) {
-          return m.filename.toLowerCase().indexOf(q) !== -1;
-        });
-      }
-
       mediaCache = list;
       D.mediaGridEl.innerHTML = '';
       if (list.length === 0) {
@@ -388,7 +380,7 @@
           Promise.all(promises).then(function() {
             selectedIds.clear(); selectedMap = {}; lastIndex = null;
             loadMedia(currentAlbumId);
-            E.showToast('Deleted ' + promises.length + ' items.');
+            showToast('Deleted ' + promises.length + ' items.');
           }).catch(function(err) { E.alert('Error: ' + err.message, 'Delete Error'); });
         });
       });
@@ -402,24 +394,12 @@
     }
 
     // Search
-    if (D.mediaSearchInput) {
-      D.mediaSearchInput.addEventListener('input', function() {
-        loadMedia(currentAlbumId);
-      });
-    }
-    if (D.mediaSearchClear) {
-      D.mediaSearchClear.addEventListener('click', function() {
-        if (D.mediaSearchInput) D.mediaSearchInput.value = '';
-        loadMedia(currentAlbumId);
-      });
-    }
-
     // ─── v1 Legacy compat ──────────────────────────────
     var legacyBtn = document.getElementById('btn-create-album');
     if (legacyBtn) {
       legacyBtn.addEventListener('click', function() {
         E.prompt('Enter new album name:', '', 'New Album').then(function(n) {
-          if (n) window.XenoSupabase.createAlbum(n).then(function() { loadAlbums(); E.showToast('Album created.'); }).catch(function(err) { E.alert('Error: ' + err.message, 'Create Error'); });
+          if (n) window.XenoSupabase.createAlbum(n).then(function() { loadAlbums(); showToast('Album created.'); }).catch(function(err) { E.alert('Error: ' + err.message, 'Create Error'); });
         });
       });
     }

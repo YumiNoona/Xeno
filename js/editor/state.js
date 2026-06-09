@@ -246,8 +246,6 @@
 
   // Media Manager DOM
   D.mediaGridEl      = $('media-grid');
-  D.mediaSearchInput = $('media-search-input');
-  D.mediaSearchClear = $('media-search-clear');
   D.mediaUploadArea  = $('media-upload-area');
   D.mediaFileInput   = $('media-file-input');
   D.mediaActionBar   = $('media-action-bar');
