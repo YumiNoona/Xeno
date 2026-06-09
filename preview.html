@@ -342,7 +342,7 @@
   <script src="js/lib/webvr-polyfill.js"></script>
 
   <!-- Core Libraries -->
-  <script src="js/ui/Supabase.js"></script>
+  <script>if (!window.isExported) { document.write('<script src="js/ui/Supabase.js"><\/script>'); }</script>
   <script src="data.js"></script>
 
   <!-- Modules -->

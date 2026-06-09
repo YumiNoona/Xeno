@@ -61,6 +61,8 @@ self.addEventListener('fetch', function(e) {
   if (e.request.method !== 'GET') return;
   var url = e.request.url;
   if (url.indexOf('http:') !== 0 && url.indexOf('https:') !== 0) return;
+  // Never cache API responses — always go to network
+  if (url.indexOf('/api/') !== -1) return;
   e.respondWith(
     fetch(e.request).then(function(res) {
       if (res && res.status === 200) {

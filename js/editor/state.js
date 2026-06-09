@@ -99,6 +99,8 @@
   function rebuildViewerFromData(data) {
     if (_isRebuilding) return;
     _isRebuilding = true;
+    // Capture the active scene ID before destroying
+    var prevSceneId = S.currentSceneCtx ? S.currentSceneCtx.data.id : null;
     // Cancel running read loop before destroying viewer
     if (S.viewReadLoop) { cancelAnimationFrame(S.viewReadLoop); S.viewReadLoop = null; }
     // Clear stale hotspot references
@@ -141,9 +143,11 @@
         S.scenes.push({ data: sData, scene: scene, view: view });
       });
       if (S.scenes.length > 0) {
-        var firstScene = S.scenes[0];
-        S.currentSceneCtx = firstScene;
-        firstScene.scene.switchTo({});
+        var targetScene = null;
+        if (prevSceneId) targetScene = S.scenes.find(function(s) { return s.data.id === prevSceneId; });
+        if (!targetScene) targetScene = S.scenes[0];
+        S.currentSceneCtx = targetScene;
+        targetScene.scene.switchTo({});
         E.renderSceneGrid();
         E.renderSceneHotspots();
       }

@@ -159,7 +159,7 @@
         'js/engine/transitions.js', 'js/engine/VideoAsset.js', 'js/engine/DeviceOrientation.js',
         'js/engine/colorEffects.js', 'js/engine/homography.js', 'js/hotspots/HotspotFactory.js',
         'js/hotspots/Builders-Nav.js', 'js/hotspots/Builders-Content.js', 'js/hotspots/Builders-Content-adv.js',
-        'js/ui/Minimap.js', 'js/ui/SceneList.js', 'js/ui/Supabase.js', 'js/vr/XenoVR.js',
+        'js/ui/Minimap.js', 'js/ui/SceneList.js', 'js/vr/XenoVR.js',
         'js/viewer.js'
       ];
 
@@ -237,6 +237,8 @@
         });
       }
 
+      // NOTE: bundleHotspotAudio only walks sceneData.hotspots (not linkHotspots/infoHotspots/ mediaHotspots)
+      // because narrator/ambient audio are always placed into hotspots[] by tools.js — safe but asymmetric.
       function bundleHotspotAudio(hotspots, field, sceneId) {
         (hotspots || []).forEach(function(hs, idx) {
           var src = hs[field];
@@ -302,6 +304,31 @@
         bundleHotspotAudio(sceneData.hotspots, 'narratorAudio', sceneData.id);
         bundleHotspotAudio(sceneData.hotspots, 'ambientAudio', sceneData.id);
       });
+
+      // Bundle floorplan image if set
+      if (exportedData.floorplan && exportedData.floorplan.imageUrl) {
+        var fpSrc = exportedData.floorplan.imageUrl;
+        if (fpSrc.indexOf('blob:') === 0 || fpSrc.indexOf('media_') === 0) {
+          var fp = resolveUrl(fpSrc).then(function(fetchUrl) {
+            if (!fetchUrl) return;
+            return fetch(fetchUrl).then(function(res) {
+              if (!res.ok) throw new Error('Failed to fetch floorplan');
+              return res.blob();
+            }).then(function(blob) {
+              var ext = extFromMime(blob.type) || 'png';
+              var name = uniqueName('floorplan.' + ext);
+              var path = 'media/' + name;
+              zip.file(path, blob);
+              exportedData.floorplan.imageUrl = path;
+            });
+          }).catch(function(err) {
+            mediaFailures++;
+            console.warn('Could not bundle floorplan image', err);
+            exportedData.floorplan.imageUrl = null;
+          });
+          mediaPromises.push(fp);
+        }
+      }
 
       var readme =
         '------------THANK YOU FOR CHOOSING-------------\n' +

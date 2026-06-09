@@ -26,27 +26,25 @@
   document.getElementById('workspace-view').style.display = 'flex';
   document.getElementById('dashboard-view').style.display = 'none';
 
-  function isMediaId(v) { return typeof v === 'string' && v.indexOf('media_') === 0; }
-
   function resolveSceneMedia(data) {
     if (!data || !data.scenes) return Promise.resolve(null);
     // Clone to avoid mutating the canonical data (preserve media IDs for saving)
     var clone = JSON.parse(JSON.stringify(data));
     var promises = [];
     clone.scenes.forEach(function(s) {
-      if (isMediaId(s.mediaUrl)) {
+      if (window.XenoEditor.isMediaId(s.mediaUrl)) {
         s._mediaId = s.mediaUrl;
         promises.push(window.XenoSupabase.resolveMediaId(s.mediaUrl).then(function(b) {
           if (b) s.mediaUrl = b;
         }));
       }
-      if (isMediaId(s.thumbnailUrl) && s.thumbnailUrl !== s.mediaUrl && s.thumbnailUrl !== s._mediaId) {
+      if (window.XenoEditor.isMediaId(s.thumbnailUrl) && s.thumbnailUrl !== s.mediaUrl && s.thumbnailUrl !== s._mediaId) {
         (function(capture) {
           promises.push(window.XenoSupabase.resolveMediaId(capture).then(function(b) {
             if (b) s.thumbnailUrl = b;
           }));
         })(s.thumbnailUrl);
-      } else if (isMediaId(s.thumbnailUrl) && s.thumbnailUrl === s._mediaId) {
+      } else if (window.XenoEditor.isMediaId(s.thumbnailUrl) && s.thumbnailUrl === s._mediaId) {
         // thumbnailUrl same as mediaUrl — will be resolved with mediaUrl above
         s.thumbnailUrl = null; // will be set equal to mediaUrl after resolution
       }
@@ -136,11 +134,11 @@
       topbarName.textContent = data.settings.title || data.settings.name || 'Untitled Tour';
       topbarName.addEventListener('input', function() {
         var n = this.textContent.trim();
-        if (data.settings) { data.settings.title = n || 'Untitled Tour'; data.settings.name = n || 'Untitled Tour'; }
+        if (window.data && window.data.settings) { window.data.settings.title = n || 'Untitled Tour'; window.data.settings.name = n || 'Untitled Tour'; }
         E.debouncedSave();
       });
       topbarName.addEventListener('blur', function() {
-        if (!this.textContent.trim()) this.textContent = 'Untitled Tour';
+        if (!this.textContent.trim()) { this.textContent = 'Untitled Tour'; if (window.data && window.data.settings) { window.data.settings.title = 'Untitled Tour'; window.data.settings.name = 'Untitled Tour'; } }
         E.debouncedSave();
       });
       topbarName.addEventListener('keydown', function(e) {
