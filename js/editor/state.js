@@ -2,6 +2,21 @@
   'use strict';
   var E = window.XenoEditor = window.XenoEditor || {};
   E.isMediaId = function(v) { return typeof v === 'string' && v.indexOf('media_') === 0; };
+  E.restoreMediaIds = function(data) {
+    (data.scenes || []).forEach(function(s) {
+      if (s._mediaId) {
+        s.mediaUrl = s._mediaId;
+        if (s.thumbnailUrl && s.thumbnailUrl.indexOf('blob:') === 0) s.thumbnailUrl = s._mediaId;
+        delete s._mediaId;
+      }
+      if (s._thumbId) { s.thumbnailUrl = s._thumbId; delete s._thumbId; }
+      var allHs = (s.hotspots || []).concat(s.linkHotspots || [], s.infoHotspots || [], s.mediaHotspots || []);
+      allHs.forEach(function(h) {
+        if (h.content && h.content._srcId) { h.content.src = h.content._srcId; delete h.content._srcId; }
+        if (h._customIconId) { h.customIconUrl = h._customIconId; delete h._customIconId; }
+      });
+    });
+  };
 
   // Shared mutable state — populated by init.js, consumed by all modules
   E.state = {
@@ -35,7 +50,7 @@
           window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
         }
         var saveData = JSON.parse(JSON.stringify(window.data));
-        window.XenoEditor.restoreMediaIds(saveData);
+        E.restoreMediaIds(saveData);
         Promise.resolve(window.XenoSupabase.saveTour(S.projectSlug, saveData)).then(function() {
           flashSaveIndicator(true);
         }).catch(function(e) {
@@ -70,7 +85,7 @@
   E.pushUndo = function() {
     if (!S.projectSlug) return;
     var snapshot = JSON.parse(JSON.stringify(window.data));
-    window.XenoEditor.restoreMediaIds(snapshot);
+    E.restoreMediaIds(snapshot);
     _undoIndex++;
     _undoStack.length = _undoIndex;
     _undoStack.push(snapshot);
@@ -106,10 +121,12 @@
     // Clear stale hotspot references
     if (data.scenes) {
       data.scenes.forEach(function(s) {
-        (s.hotspots || []).forEach(function(h) { delete h.__marzipanoHotspot; });
+        var allArrs = [s.hotspots, s.linkHotspots, s.infoHotspots, s.mediaHotspots];
+        allArrs.forEach(function(arr) { (arr || []).forEach(function(h) { delete h.__marzipanoHotspot; }); });
       });
       S.scenes.forEach(function(ctx) {
-        (ctx.data.hotspots || []).forEach(function(h) { delete h.__marzipanoHotspot; });
+        var allArrs = [ctx.data.hotspots, ctx.data.linkHotspots, ctx.data.infoHotspots, ctx.data.mediaHotspots];
+        allArrs.forEach(function(arr) { (arr || []).forEach(function(h) { delete h.__marzipanoHotspot; }); });
       });
     }
     S.scenes = [];
@@ -212,7 +229,7 @@
       try {
         window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
         var saveData = JSON.parse(JSON.stringify(window.data));
-        window.XenoEditor.restoreMediaIds(saveData);
+        E.restoreMediaIds(saveData);
         // Synchronous localStorage only — beforeunload cannot await async saveTour
         localStorage.setItem('xeno_emergency_' + S.projectSlug, JSON.stringify({ data: saveData, savedAt: Date.now() }));
       } catch(e) { console.error('Emergency save failed', e); }

@@ -6,6 +6,7 @@
 
   // ─── Tool Management ────────────────────────────────────
   E.setupTools = function() {
+    if (E._toolsSetupDone) return; E._toolsSetupDone = true;
     D.pillTools.forEach(function(btn) {
       btn.addEventListener('click', function() {
         var tool = btn.getAttribute('data-tool');

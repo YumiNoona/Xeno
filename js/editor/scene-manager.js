@@ -28,11 +28,11 @@
         }
 
         var thumb = s.data.thumbnailUrl || s.data.mediaUrl || '';
-        var isMediaId = thumb && thumb.indexOf('media_') === 0;
-        var thumbSrc = isMediaId ? '' : thumb;
+        var thumbIsMediaId = thumb && thumb.indexOf('media_') === 0;
+        var thumbSrc = thumbIsMediaId ? '' : thumb;
         var imgHtml = thumbSrc
           ? '<img class="scene-card-thumb" src="' + thumbSrc + '" onerror="this.outerHTML=\'<div class=&quot;scene-thumb-placeholder&quot;>Scene</div>\'">'
-          : '<div class="scene-thumb-placeholder" data-thumb-id="' + (isMediaId ? thumb : '') + '">Scene</div>';
+          : '<div class="scene-thumb-placeholder" data-thumb-id="' + (thumbIsMediaId ? thumb : '') + '">Scene</div>';
 
         var eyeSvg = s.data.hidden
           ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
@@ -212,11 +212,11 @@
     };
 
     // ─── Context menu actions ────────────────────────────
-    document.addEventListener('click', function() {
-      D.contextMenu.style.display = 'none';
-      if (D.mediaFolderCtx) D.mediaFolderCtx.style.display = 'none';
-      if (D.mediaItemCtx) D.mediaItemCtx.style.display = 'none';
-      if (D.projectCtx) D.projectCtx.style.display = 'none';
+    document.addEventListener('click', function(e) {
+      if (!D.contextMenu.contains(e.target)) D.contextMenu.style.display = 'none';
+      if (D.mediaFolderCtx && !D.mediaFolderCtx.contains(e.target)) D.mediaFolderCtx.style.display = 'none';
+      if (D.mediaItemCtx && !D.mediaItemCtx.contains(e.target)) D.mediaItemCtx.style.display = 'none';
+      if (D.projectCtx && !D.projectCtx.contains(e.target)) D.projectCtx.style.display = 'none';
     });
 
     D.contextMenu.querySelectorAll('.ctx-item').forEach(function(item) {
@@ -253,7 +253,7 @@
           displayUrl.then(function(resolved) {
             var source = window.Xeno.ImageUrlSource.fromString(resolved || clone.mediaUrl);
             var geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
-            var limiter = window.Xeno.RectilinearView.limit.traditional(1024, 140 * Math.PI / 180);
+            var limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
             var view = new window.Xeno.RectilinearView(clone.initialViewParameters, limiter);
             var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
             S.scenes.push({ data: clone, scene: scene, view: view });
@@ -278,9 +278,8 @@
             window.data.scenes.splice(dIdx, 1);
             if (S.currentSceneCtx === S.contextTarget) E.switchSceneById(S.scenes[0].data.id);
             E.renderSceneGrid();
-        E.debouncedSave();
-      }).catch(function() { _creatingScene = false; });
-    }
+            E.debouncedSave();
+          });
         S.contextTarget = null;
       });
     });

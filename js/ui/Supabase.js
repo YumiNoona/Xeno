@@ -115,6 +115,13 @@
         (tourData.scenes || []).forEach(function(s) {
           if (s.mediaUrl) tourRefs[s.mediaUrl] = true;
           if (s.thumbnailUrl) tourRefs[s.thumbnailUrl] = true;
+          var allHs = (s.hotspots || []).concat(s.linkHotspots || [], s.infoHotspots || [], s.mediaHotspots || []);
+          allHs.forEach(function(h) {
+            if (h.customIconUrl) tourRefs[h.customIconUrl] = true;
+            if (h.narratorAudio) tourRefs[h.narratorAudio] = true;
+            if (h.ambientAudio) tourRefs[h.ambientAudio] = true;
+            if (h.content && h.content.src) tourRefs[h.content.src] = true;
+          });
         });
       } catch(e) {}
     }
@@ -232,8 +239,8 @@
     } catch(e) {
       if (e.name === 'QuotaExceededError' || e.code === 22) {
         alert('Storage is full! Please free up space. Your recent changes may not be saved.');
+        return Promise.resolve();
       }
-      throw e;
     }
     return Promise.resolve();
   }

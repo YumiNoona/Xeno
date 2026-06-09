@@ -5,6 +5,7 @@
   var D = E.dom;
 
   E.setupExport = function() {
+    if (E._exportSetupDone) return; E._exportSetupDone = true;
     // ─── Publish to web ──────────────────────────────────
     var btnPublish = document.getElementById('btn-publish');
     if (btnPublish && window.XenoSupabase) {
@@ -149,6 +150,7 @@
 
       var zip = new window.JSZip();
 
+      // js/engine/xeno.js IS the compiled Marzipano bundle (renamed from marzipano.js)
       var filesToBundle = [
         'css/tokens.css', 'css/viewer/layout.css',
         'css/viewer/components-controls.css', 'css/viewer/components-themes.css', 'css/viewer/components-overlays.css',
@@ -317,10 +319,10 @@
         });
       }
 
-      function bundleSceneThumbnail(sceneData, depPromise) {
+      function bundleSceneThumbnail(sceneData, depPromise, origMediaUrl) {
         var p = (depPromise || Promise.resolve()).then(function() {
           var tUrl = sceneData.thumbnailUrl;
-          if (!tUrl || tUrl === sceneData.mediaUrl || (tUrl.indexOf('blob:') !== 0 && tUrl.indexOf('media_') !== 0)) return;
+          if (!tUrl || tUrl === origMediaUrl || (tUrl.indexOf('blob:') !== 0 && tUrl.indexOf('media_') !== 0)) return;
           return resolveUrl(tUrl).then(function(fetchUrl) {
             if (!fetchUrl) throw new Error('No blob found for thumbnail');
             return fetch(fetchUrl).then(function(res) {
@@ -344,8 +346,9 @@
       }
 
       exportedData.scenes.forEach(function(sceneData) {
+        var origMediaUrl = sceneData.mediaUrl;
         var mediaPromise = bundleSceneMedia(sceneData);
-        bundleSceneThumbnail(sceneData, mediaPromise);
+        bundleSceneThumbnail(sceneData, mediaPromise, origMediaUrl);
         bundleHotspotMedia(sceneData.hotspots, sceneData.id);
         bundleHotspotMedia(sceneData.linkHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.infoHotspots, sceneData.id);

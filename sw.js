@@ -1,5 +1,5 @@
 // Auto-bumped cache key — new timestamp on each SW activation invalidates old caches
-var CACHE = 'xeno-' + Date.now();
+var CACHE = 'xeno-v5';
 var PRECACHE = [
   '/', '/editor.html', '/preview.html', '/index.html',
   '/css/tokens.css',
@@ -44,9 +44,11 @@ self.addEventListener('install', function(e) {
 // Activate: claim clients immediately, then precache + cleanup in background
 self.addEventListener('activate', function(e) {
   e.waitUntil(self.clients.claim());
-  // Background precache — doesn't block activation
+  // Background precache — use individual adds so partial failures don't kill the cache
   caches.open(CACHE).then(function(cache) {
-    cache.addAll(PRECACHE).catch(function() {});
+    PRECACHE.forEach(function(url) {
+      cache.add(url).catch(function() {});
+    });
   });
   // Cleanup old caches
   caches.keys().then(function(keys) {

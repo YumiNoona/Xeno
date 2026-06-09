@@ -58,29 +58,6 @@
     });
   }
 
-  window.XenoEditor.restoreMediaIds = function restoreMediaIds(data) {
-    (data.scenes || []).forEach(function(s) {
-      if (s._mediaId) {
-        s.mediaUrl = s._mediaId;
-        if (s.thumbnailUrl && s.thumbnailUrl.indexOf('blob:') === 0) s.thumbnailUrl = s._mediaId;
-        delete s._mediaId;
-      }
-      if (s._thumbId) { s.thumbnailUrl = s._thumbId; delete s._thumbId; }
-      // Walk all hotspot arrays
-      var allHs = (s.hotspots || []).concat(s.linkHotspots || [], s.infoHotspots || [], s.mediaHotspots || []);
-      allHs.forEach(function(h) {
-        if (h.content && h.content._srcId) {
-          h.content.src = h.content._srcId;
-          delete h.content._srcId;
-        }
-        if (h._customIconId) {
-          h.customIconUrl = h._customIconId;
-          delete h._customIconId;
-        }
-      });
-    });
-  };
-
   window.XenoSupabase.loadTour(projectSlug)
     .then(function(savedData) {
       if (projectSlug === 'sample-tour' && !savedData) {

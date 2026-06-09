@@ -15,6 +15,7 @@
   }
 
   E.setupHotspotProps = function() {
+    if (E._hotspotPropsSetupDone) return; E._hotspotPropsSetupDone = true;
     // ─── Open / Close ────────────────────────────────────
     E.openPropertiesPanel = function(hsData) {
       // Resolve to source object by ID so all writes go to live data, not a render clone

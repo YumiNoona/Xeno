@@ -5,6 +5,7 @@
   var D = E.dom;
 
   E.setupUI = function() {
+    if (E._uiSetupDone) return; E._uiSetupDone = true;
     // ─── Resizers ────────────────────────────────────────
     var sidebar = document.getElementById('editor-sidebar');
     var leftResizer = document.getElementById('left-resizer');

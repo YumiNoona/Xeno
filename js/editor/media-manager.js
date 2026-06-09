@@ -168,6 +168,7 @@
     var btnClose = document.getElementById('btn-close-media');
     if (btnClose) {
       btnClose.addEventListener('click', function() {
+        _loadPending = false;
         D.mediaModal.classList.remove('visible');
       });
     }
