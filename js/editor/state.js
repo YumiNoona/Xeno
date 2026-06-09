@@ -223,6 +223,7 @@
     if (!e.ctrlKey && !e.metaKey) return;
     if (_isRebuilding) return;
     if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); E.performUndo(); }
+    if (e.key === 'y' && !e.shiftKey) { e.preventDefault(); E.performRedo(); }
     if (e.key === 'Z' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); E.performRedo(); }
   });
 

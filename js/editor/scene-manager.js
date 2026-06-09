@@ -261,9 +261,20 @@
             ? window.XenoSupabase.resolveMediaId(mediaId)
             : Promise.resolve(clone.mediaUrl);
           displayUrl.then(function(resolved) {
-            var source = window.Xeno.ImageUrlSource.fromString(resolved || clone.mediaUrl);
-            var geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
-            var limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+            var resolvedUrl = resolved || clone.mediaUrl;
+            var source, geometry, limiter;
+            if (clone.type === 'video' && window.XenoVideoAsset) {
+              var asset = new window.XenoVideoAsset();
+              if (clone.videoOptions) asset.setVideo(resolvedUrl, clone.videoOptions);
+              else asset.setVideo(resolvedUrl);
+              source = new window.Xeno.SingleAssetSource(asset);
+              geometry = new window.Xeno.EquirectGeometry([{ width: 1 }]);
+              limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+            } else {
+              source = window.Xeno.ImageUrlSource.fromString(resolvedUrl);
+              geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
+              limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+            }
             var view = new window.Xeno.RectilinearView(clone.initialViewParameters, limiter);
             var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
             S.scenes.push({ data: clone, scene: scene, view: view });
@@ -273,6 +284,7 @@
         } else if (action === 'scene-thumbnail') {
           var targetScene = S.contextTarget;
           S.mediaPickerCallback = function(url) {
+            E.pushUndo();
             targetScene.data.thumbnailUrl = url;
             E.renderSceneGrid();
             E.debouncedSave();

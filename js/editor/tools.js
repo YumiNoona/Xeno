@@ -40,9 +40,9 @@
       };
 
       if (!S.currentSceneCtx.data.hotspots) S.currentSceneCtx.data.hotspots = [];
+      E.pushUndo();
       S.currentSceneCtx.data.hotspots.push(newHs);
       E.createVisualHotspot(newHs);
-      E.pushUndo();
 
       setActiveTool('select');
       S.editorState.placeMode = false;

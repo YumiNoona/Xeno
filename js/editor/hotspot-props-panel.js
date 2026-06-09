@@ -24,6 +24,7 @@
         if (src) hsData = src;
       }
       S.selectedHotspotData = hsData;
+      E.pushUndo(); // Capture pre-edit state for undo
       // Hide all non-hotspot sections
       D.fieldsProjectSettings.style.display = 'none';
       D.panelTitle.textContent = 'Hotspot Properties';

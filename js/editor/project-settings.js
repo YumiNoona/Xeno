@@ -9,6 +9,7 @@
     var panel = D.propsPanel;
     if (!panel) return;
 
+    E.pushUndo(); // Capture pre-edit state
     D.panelTitle.textContent = 'Project Settings';
     D.fieldsHotspotProperties.style.display = 'none';
     D.fieldsProjectSettings.style.display = 'block';
