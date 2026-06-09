@@ -104,7 +104,7 @@
           var hsData = S.dragHsData;
           if (hsData) {
             S.selectedHotspotElement = S.dragHsElement;
-            E.openPropertiesPanel(hsData);
+            E.openPropertiesPanel(hsData, { skipUndo: true });
           }
         } else if (S.isDragging) {
           // Write drag position back to source hotspot (not the render clone)

@@ -26,7 +26,7 @@
       if (S.editorState.placeMode) return;
       e.stopPropagation();
       S.selectedHotspotElement = el;
-      E.openPropertiesPanel(hsData);
+      E.openPropertiesPanel(hsData, { skipUndo: true });
     });
 
     if (hsData.iconSize) E.applyIconSize(el, hsData.iconSize);
