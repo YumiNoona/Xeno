@@ -17,14 +17,14 @@
   E.setupHotspotProps = function() {
     if (E._hotspotPropsSetupDone) return; E._hotspotPropsSetupDone = true;
     // ─── Open / Close ────────────────────────────────────
-    E.openPropertiesPanel = function(hsData) {
+    E.openPropertiesPanel = function(hsData, opts) {
       // Resolve to source object by ID so all writes go to live data, not a render clone
       if (hsData && hsData.id) {
         var src = findSourceHotspot(hsData.id);
         if (src) hsData = src;
       }
       S.selectedHotspotData = hsData;
-      E.pushUndo(); // Capture pre-edit state for undo
+      if (!(opts && opts.skipUndo)) E.pushUndo(); // Skip when caller already pushed undo (e.g., hotspot placement)
       // Hide all non-hotspot sections
       D.fieldsProjectSettings.style.display = 'none';
       D.panelTitle.textContent = 'Hotspot Properties';

@@ -48,7 +48,7 @@
       S.editorState.placeMode = false;
       D.panoWrapper.classList.remove('crosshair-mode');
       hideModeBadge();
-      E.openPropertiesPanel(newHs);
+      E.openPropertiesPanel(newHs, { skipUndo: true });
       E.debouncedSave();
     });
 
