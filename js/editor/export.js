@@ -289,8 +289,8 @@
         }).catch(function(err) {
           mediaFailures++;
           console.warn('Could not bundle media for scene ' + sceneData.name, err);
-          sceneData.mediaUrl = null;
-          sceneData.thumbnailUrl = null;
+          // Preserve original URL — won't resolve offline but keeps the intent visible
+          sceneData.thumbnailUrl = sceneData.thumbnailUrl || null;
         });
         mediaPromises.push(p);
         return p;
@@ -568,8 +568,8 @@
         .then(function(res) { if (!res.ok) throw new Error('Failed to fetch preview.html'); return res.text(); })
         .then(function(html) { zip.file('index.html', html
           .replace('<head>', '<head>\n  <script>window.isExported = true;</script>')
-          .replace('  <link rel="manifest" href="manifest.json">\n', '')
-          .replace("if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}\n    ", '')
+          .replace('  <!-- xeno-export-remove -->\n', '')
+          .replace("<!-- xeno-export-remove -->\n    ", '')
         ); });
 
       var all = fetchPromises.concat(imagePromises).concat(mediaPromises);

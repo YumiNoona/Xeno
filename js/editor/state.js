@@ -40,6 +40,7 @@
           window.XenoSupabase.saveTour(S.projectSlug, saveData);
           flashSaveIndicator(true);
         } catch(e) {
+          console.error('Save failed:', e);
           flashSaveIndicator(false);
         }
       }
@@ -173,8 +174,8 @@
         s._mediaId = s.mediaUrl;
         promises.push(
           window.XenoSupabase.resolveMediaId(s.mediaUrl).then(function(b) {
-            if (b) s.mediaUrl = b;
-          }).catch(function() {})
+            s.mediaUrl = b || null;
+          }).catch(function() { s.mediaUrl = null; })
         );
       }
       if (isMediaId(s.thumbnailUrl) && s.thumbnailUrl !== s.mediaUrl && s.thumbnailUrl !== s._mediaId && window.XenoSupabase) {

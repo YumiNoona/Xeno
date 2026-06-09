@@ -1,3 +1,4 @@
+// Bump version on every deployment (e.g. xeno-v5, xeno-v6) — stale cache blocks code updates
 var CACHE = 'xeno-v4';
 var PRECACHE = [
   '/', '/editor.html', '/preview.html', '/index.html',

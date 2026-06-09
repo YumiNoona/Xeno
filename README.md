@@ -105,10 +105,11 @@ Xeno/
 │   │   ├── hotspot-props-types.js  Per-type property forms
 │   │   ├── project-settings.js     Project-wide settings panel
 │   │   ├── scene-manager.js   Scene CRUD and selection
-│   │   ├── scene-settings.js  Per-scene settings
 │   │   ├── media-manager.js   Media library UI
 │   │   ├── dashboard.js       Project dashboard
 │   │   ├── export.js          ZIP export
+│   │   ├── modals.js          Alert / confirm dialog helpers
+│   │   ├── color-picker.js    Color picker widget
 │   │   └── ui.js              Utility helpers, theme toggle, resizers
 │   │
 │   ├── engine/                 Marzipano-based viewer engine
@@ -129,10 +130,9 @@ Xeno/
 │   ├── vr/                     XenoVR.js (VR mode)
 │   └── viewer.js               Viewer bootstrap
 │
-├── engine/                     Marzipano engine source (bundled into build/)
-├── build/                      Compiled Marzipano bundle
+├── engine/                     Marzipano source (src/, scripts/, demos/)
+├── build/                      Compiled Marzipano bundle (build/marzipano.js)
 ├── public/                     Static assets (favicon ICO + PNG)
-├── img/                        UI assets and hotspot icons
 │
 ├── editor.html                 Tour Studio entry
 ├── preview.html                360-degree Viewer entry

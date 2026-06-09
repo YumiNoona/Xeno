@@ -35,6 +35,12 @@
       });
     }
 
+    // Restore persisted widths
+    var savedLeft = localStorage.getItem('xeno_left_width');
+    if (savedLeft && sidebar) { sidebar.style.width = savedLeft; sidebar.style.minWidth = savedLeft; }
+    var savedRight = localStorage.getItem('xeno_right_width');
+    if (savedRight && props) { props.style.width = savedRight; }
+
     if (leftResizer) {
       leftResizer.addEventListener('mousedown', function(e) {
         e.preventDefault();
@@ -53,6 +59,7 @@
         }
         function onUp() {
           sidebar.style.transition = ''; leftResizer.classList.remove('dragging');
+          localStorage.setItem('xeno_left_width', sidebar.style.width);
           document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp);
         }
         document.addEventListener('mousemove', onMove);
@@ -70,6 +77,7 @@
         }
         function onUp() {
           props.style.transition = ''; rightResizer.classList.remove('dragging');
+          localStorage.setItem('xeno_right_width', props.style.width);
           document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp);
         }
         document.addEventListener('mousemove', onMove);

@@ -4,12 +4,22 @@
   var S = E.state;
   var D = E.dom;
 
+  function findSourceHotspot(id) {
+    if (!id || !S.currentSceneCtx) return null;
+    var all = [S.currentSceneCtx.data.hotspots || [], S.currentSceneCtx.data.linkHotspots || [], S.currentSceneCtx.data.infoHotspots || [], S.currentSceneCtx.data.mediaHotspots || []];
+    for (var fi = 0; fi < all.length; fi++) {
+      var h = all[fi].find(function(x) { return x.id === id; });
+      if (h) return h;
+    }
+    return null;
+  }
+
   E.setupHotspotProps = function() {
     // ─── Open / Close ────────────────────────────────────
     E.openPropertiesPanel = function(hsData) {
       // Resolve to source object by ID so all writes go to live data, not a render clone
-      if (S.currentSceneCtx && hsData && hsData.id) {
-        var src = (S.currentSceneCtx.data.hotspots || []).find(function(h) { return h.id === hsData.id; });
+      if (hsData && hsData.id) {
+        var src = findSourceHotspot(hsData.id);
         if (src) hsData = src;
       }
       S.selectedHotspotData = hsData;
@@ -427,9 +437,11 @@
       if (!S.selectedHotspotData || !S.currentSceneCtx) return;
       E.confirm('Delete this hotspot?', 'Delete Hotspot', true).then(function(ok) {
         if (!ok) return;
-        var arr = S.currentSceneCtx.data.hotspots || [];
-        var idx = arr.findIndex(function(h) { return h.id === S.selectedHotspotData.id; });
-        if (idx !== -1) { E.pushUndo(); arr.splice(idx, 1); }
+        var all = [S.currentSceneCtx.data.hotspots || [], S.currentSceneCtx.data.linkHotspots || [], S.currentSceneCtx.data.infoHotspots || [], S.currentSceneCtx.data.mediaHotspots || []];
+        for (var di = 0; di < all.length; di++) {
+          var idx = all[di].findIndex(function(h) { return h.id === S.selectedHotspotData.id; });
+          if (idx !== -1) { E.pushUndo(); all[di].splice(idx, 1); break; }
+        }
         E.renderSceneHotspots();
         E.closePropertiesPanel();
         E.debouncedSave();

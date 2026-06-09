@@ -28,8 +28,9 @@
         }
 
         var thumb = s.data.thumbnailUrl || s.data.mediaUrl || '';
-        var imgHtml = thumb
-          ? '<img class="scene-card-thumb" src="' + thumb + '" onerror="this.outerHTML=\'<div class=&quot;scene-thumb-placeholder&quot;>Scene</div>\'">'
+        var thumbSrc = (thumb && thumb.indexOf('media_') === 0) ? '' : thumb;
+        var imgHtml = thumbSrc
+          ? '<img class="scene-card-thumb" src="' + thumbSrc + '" onerror="this.outerHTML=\'<div class=&quot;scene-thumb-placeholder&quot;>Scene</div>\'">'
           : '<div class="scene-thumb-placeholder">Scene</div>';
 
         var eyeSvg = s.data.hidden
@@ -205,6 +206,7 @@
         } else if (action === 'set-default') {
           var idx = S.scenes.indexOf(S.contextTarget);
           if (idx > 0) {
+            E.pushUndo();
             S.scenes.splice(idx, 1);
             S.scenes.unshift(S.contextTarget);
             window.data.scenes.splice(idx, 1);

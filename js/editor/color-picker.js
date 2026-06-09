@@ -164,9 +164,20 @@
     addRecent(hsvToHex(_hue, _sat, _val));
     var overlay = document.getElementById('xeno-color-picker');
     if (overlay) overlay.style.display = 'none';
+    _dragging.sv = _dragging.hue = false;
+    cleanupWindowListeners();
     _targetInput = null;
     _targetSwatch = null;
     _targetHex = null;
+  }
+
+  var _onMove = null, _onTouchMove = null, _onUp = null, _onTouchEnd = null;
+
+  function cleanupWindowListeners() {
+    if (_onMove) { window.removeEventListener('mousemove', _onMove); _onMove = null; }
+    if (_onTouchMove) { window.removeEventListener('touchmove', _onTouchMove); _onTouchMove = null; }
+    if (_onUp) { window.removeEventListener('mouseup', _onUp); _onUp = null; }
+    if (_onTouchEnd) { window.removeEventListener('touchend', _onTouchEnd); _onTouchEnd = null; }
   }
 
   // ── Event listeners ──────────────────────────────
@@ -207,16 +218,21 @@
       }, { passive: false });
     }
 
-    window.addEventListener('mousemove', function(e) {
+    _onMove = function(e) {
       if (_dragging.sv) updateSV(e);
       if (_dragging.hue) updateHue(e);
-    });
-    window.addEventListener('touchmove', function(e) {
+    };
+    _onTouchMove = function(e) {
       if (_dragging.sv) updateSV(e.touches[0]);
       if (_dragging.hue) updateHue(e.touches[0]);
-    });
-    window.addEventListener('mouseup', function() { _dragging.sv = _dragging.hue = false; });
-    window.addEventListener('touchend', function() { _dragging.sv = _dragging.hue = false; });
+    };
+    _onUp = function() { _dragging.sv = _dragging.hue = false; };
+    _onTouchEnd = function() { _dragging.sv = _dragging.hue = false; };
+
+    window.addEventListener('mousemove', _onMove);
+    window.addEventListener('touchmove', _onTouchMove);
+    window.addEventListener('mouseup', _onUp);
+    window.addEventListener('touchend', _onTouchEnd);
 
     function updateSV(e) {
       var rect = svBox.getBoundingClientRect();
