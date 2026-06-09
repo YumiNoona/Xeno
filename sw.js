@@ -1,5 +1,5 @@
-// Bump version on every deployment (e.g. xeno-v5, xeno-v6) — stale cache blocks code updates
-var CACHE = 'xeno-v4';
+// Auto-bumped cache key — new timestamp on each SW activation invalidates old caches
+var CACHE = 'xeno-' + Date.now();
 var PRECACHE = [
   '/', '/editor.html', '/preview.html', '/index.html',
   '/css/tokens.css',

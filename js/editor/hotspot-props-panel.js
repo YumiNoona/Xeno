@@ -222,6 +222,7 @@
         var tip = S.selectedHotspotElement.querySelector('.link-tooltip, .info-title, .tip p, .scene-card-label, .tip');
         if (tip) tip.textContent = this.value;
       }
+      E.renderSceneHotspots();
       E.debouncedSave();
     });
 

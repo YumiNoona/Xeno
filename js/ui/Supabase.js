@@ -443,7 +443,7 @@
     init: init, isConfigured: isConfigured,
     loadTour: loadTour, saveTour: saveTour,
     fetchTours: fetchTours, deleteTour: deleteTour,
-    uploadFile: uploadFile, downloadAsFile: downloadAsFile,
+    downloadAsFile: downloadAsFile,
     fetchAlbums: fetchAlbums, createAlbum: createAlbum,
     fetchMedia: fetchMedia, uploadAndRecordMedia: uploadAndRecordMedia, getMediaRecord: getMediaRecord,
     renameAlbum: renameAlbum, deleteAlbum: deleteAlbum,

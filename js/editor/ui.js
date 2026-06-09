@@ -39,7 +39,11 @@
     var savedLeft = localStorage.getItem('xeno_left_width');
     if (savedLeft && sidebar) { sidebar.style.width = savedLeft; sidebar.style.minWidth = savedLeft; }
     var savedRight = localStorage.getItem('xeno_right_width');
-    if (savedRight && props) { props.style.width = savedRight; }
+    if (savedRight && props) {
+      var parts = savedRight.split('|');
+      props.style.width = parts[0];
+      if (parts[1]) props.style.minWidth = parts[1];
+    }
 
     if (leftResizer) {
       leftResizer.addEventListener('mousedown', function(e) {
@@ -77,7 +81,7 @@
         }
         function onUp() {
           props.style.transition = ''; rightResizer.classList.remove('dragging');
-          localStorage.setItem('xeno_right_width', props.style.width);
+          localStorage.setItem('xeno_right_width', props.style.width + '|' + props.style.minWidth);
           document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp);
         }
         document.addEventListener('mousemove', onMove);

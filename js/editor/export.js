@@ -231,7 +231,6 @@
           }).catch(function(err) {
             mediaFailures++;
             console.warn('Could not bundle hotspot media for scene ' + sceneId, err);
-            hs.content.src = null;
           });
           mediaPromises.push(p);
         });
@@ -289,8 +288,6 @@
         }).catch(function(err) {
           mediaFailures++;
           console.warn('Could not bundle media for scene ' + sceneData.name, err);
-          // Preserve original URL — won't resolve offline but keeps the intent visible
-          sceneData.thumbnailUrl = sceneData.thumbnailUrl || null;
         });
         mediaPromises.push(p);
         return p;
@@ -354,8 +351,11 @@
         bundleHotspotMedia(sceneData.linkHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.infoHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.mediaHotspots, sceneData.id);
-        bundleHotspotAudio(sceneData.hotspots, 'narratorAudio', sceneData.id);
-        bundleHotspotAudio(sceneData.hotspots, 'ambientAudio', sceneData.id);
+        // Audio fields (narratorAudio, ambientAudio) typically only appear on hotspots[],
+        // but scanning all four arrays costs nothing and ensures future-proofing
+        var _allHS = [sceneData.hotspots, sceneData.linkHotspots, sceneData.infoHotspots, sceneData.mediaHotspots];
+        _allHS.forEach(function(arr) { bundleHotspotAudio(arr, 'narratorAudio', sceneData.id); });
+        _allHS.forEach(function(arr) { bundleHotspotAudio(arr, 'ambientAudio', sceneData.id); });
         bundleHotspotCustomIcons(sceneData.hotspots, sceneData.id);
         bundleHotspotCustomIcons(sceneData.linkHotspots, sceneData.id);
         bundleHotspotCustomIcons(sceneData.infoHotspots, sceneData.id);
@@ -568,8 +568,7 @@
         .then(function(res) { if (!res.ok) throw new Error('Failed to fetch preview.html'); return res.text(); })
         .then(function(html) { zip.file('index.html', html
           .replace('<head>', '<head>\n  <script>window.isExported = true;</script>')
-          .replace('  <!-- xeno-export-remove -->\n', '')
-          .replace("<!-- xeno-export-remove -->\n    ", '')
+          .split('\n').filter(function(l) { return l.indexOf('xeno-export-remove') === -1; }).join('\n')
         ); });
 
       var all = fetchPromises.concat(imagePromises).concat(mediaPromises);

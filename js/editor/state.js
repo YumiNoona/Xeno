@@ -36,13 +36,12 @@
         }
         var saveData = JSON.parse(JSON.stringify(window.data));
         window.XenoEditor.restoreMediaIds(saveData);
-        try {
-          window.XenoSupabase.saveTour(S.projectSlug, saveData);
+        Promise.resolve(window.XenoSupabase.saveTour(S.projectSlug, saveData)).then(function() {
           flashSaveIndicator(true);
-        } catch(e) {
+        }).catch(function(e) {
           console.error('Save failed:', e);
           flashSaveIndicator(false);
-        }
+        });
       }
     }, 500);
   };
@@ -172,10 +171,11 @@
     clone.scenes.forEach(function(s) {
       if (isMediaId(s.mediaUrl) && window.XenoSupabase) {
         s._mediaId = s.mediaUrl;
+        var _placeholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="4000" height="2000"%3E%3Crect fill="%231a1a1a" width="4000" height="2000"/%3E%3Ctext fill="%23666" font-family="monospace" font-size="48" x="2000" y="1000" text-anchor="middle" dominant-baseline="middle"%3EMedia unavailable%3C/text%3E%3C/svg%3E';
         promises.push(
           window.XenoSupabase.resolveMediaId(s.mediaUrl).then(function(b) {
-            s.mediaUrl = b || null;
-          }).catch(function() { s.mediaUrl = null; })
+            s.mediaUrl = b || _placeholder;
+          }).catch(function() { s.mediaUrl = _placeholder; })
         );
       }
       if (isMediaId(s.thumbnailUrl) && s.thumbnailUrl !== s.mediaUrl && s.thumbnailUrl !== s._mediaId && window.XenoSupabase) {
@@ -189,7 +189,11 @@
         })(s.thumbnailUrl);
       }
     });
-    return Promise.all(promises).then(function() { return clone; });
+    return Promise.all(promises).then(function() {
+      // After all resolutions, sync any thumbnailUrl that was skipped (matched mediaUrl)
+      clone.scenes.forEach(function(s) { if (s._mediaId && s.thumbnailUrl === s._mediaId) { s.thumbnailUrl = s.mediaUrl; } });
+      return clone;
+    });
   }
 
   // Ctrl+Z / Ctrl+Shift+Z
@@ -208,9 +212,8 @@
         window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
         var saveData = JSON.parse(JSON.stringify(window.data));
         window.XenoEditor.restoreMediaIds(saveData);
-        // Synchronous localStorage fallback (survives iOS page freeze)
-        try { localStorage.setItem('xeno_emergency_' + S.projectSlug, JSON.stringify({ data: saveData, savedAt: Date.now() })); } catch(lsErr) { console.error('Emergency localStorage save failed', lsErr); }
-        window.XenoSupabase.saveTour(S.projectSlug, saveData);
+        // Synchronous localStorage only — beforeunload cannot await async saveTour
+        localStorage.setItem('xeno_emergency_' + S.projectSlug, JSON.stringify({ data: saveData, savedAt: Date.now() }));
       } catch(e) { console.error('Emergency save failed', e); }
     }
   }

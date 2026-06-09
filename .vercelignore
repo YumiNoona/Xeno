@@ -1,0 +1,5 @@
+build
+engine/demos
+node_modules
+schema.sql
+*.log
