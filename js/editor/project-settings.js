@@ -12,6 +12,7 @@
     E.pushUndo(); // Capture pre-edit state
     D.panelTitle.textContent = 'Project Settings';
     D.fieldsHotspotProperties.style.display = 'none';
+    document.querySelectorAll('.type-fields').forEach(function(f) { f.style.display = 'none'; });
     D.fieldsProjectSettings.style.display = 'block';
     D.panelActionsHotspot.style.display = 'none';
     // Show the save button (may have been hidden by closePropertiesPanel)
