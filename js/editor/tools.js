@@ -150,6 +150,7 @@
             E.openPropertiesPanel(hsData);
           }
         } else if (S.isDragging) {
+          E.pushUndo();
           E.debouncedSave();
         }
         S.isDragging = false;

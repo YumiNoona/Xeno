@@ -344,6 +344,7 @@
     // ─── Save / Delete / Close ───────────────────────────
     document.getElementById('btn-save-properties').addEventListener('click', function() {
       if (!S.selectedHotspotData) return;
+      E.pushUndo();
       S.selectedHotspotData.type = D.propType.value;
       S.selectedHotspotData.style = D.propType.value;
       S.selectedHotspotData.title = D.propTitle.value;
@@ -419,13 +420,15 @@
 
     document.getElementById('btn-delete-hotspot').addEventListener('click', function() {
       if (!S.selectedHotspotData || !S.currentSceneCtx) return;
-      if (!confirm('Delete this hotspot?')) return;
-      var arr = S.currentSceneCtx.data.hotspots || [];
-      var idx = arr.indexOf(S.selectedHotspotData);
-      if (idx !== -1) { E.pushUndo(); arr.splice(idx, 1); }
-      E.renderSceneHotspots();
-      E.closePropertiesPanel();
-      E.debouncedSave();
+      E.confirm('Delete this hotspot?', 'Delete Hotspot', true).then(function(ok) {
+        if (!ok) return;
+        var arr = S.currentSceneCtx.data.hotspots || [];
+        var idx = arr.indexOf(S.selectedHotspotData);
+        if (idx !== -1) { E.pushUndo(); arr.splice(idx, 1); }
+        E.renderSceneHotspots();
+        E.closePropertiesPanel();
+        E.debouncedSave();
+      });
     });
 
     document.getElementById('btn-close-properties').addEventListener('click', E.closePropertiesPanel);
