@@ -86,7 +86,7 @@
     if (S.selectedHotspotData) {
       var list = container.listHotspots();
       list.forEach(function(h) {
-        if (h.domElement().__hsData === S.selectedHotspotData) {
+        if (h.domElement().__hsData && h.domElement().__hsData.id === S.selectedHotspotData.id) {
           S.selectedHotspotElement = h.domElement();
         }
       });

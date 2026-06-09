@@ -321,26 +321,27 @@
       }
 
       function bundleSceneThumbnail(sceneData) {
-        var tUrl = sceneData.thumbnailUrl;
-        if (!tUrl || tUrl === sceneData.mediaUrl) return;
-        if (tUrl.indexOf('blob:') !== 0 && tUrl.indexOf('media_') !== 0) return;
-        var p = resolveUrl(tUrl).then(function(fetchUrl) {
-          if (!fetchUrl) throw new Error('No blob found for thumbnail');
-          return fetch(fetchUrl).then(function(res) {
-            if (!res.ok) throw new Error('Failed to fetch thumbnail');
-            return res.blob();
-          }).then(function(blob) {
-            var ext = extFromMime(blob.type) || 'jpg';
-            var mediaId = tUrl.indexOf('media_') === 0 ? tUrl : null;
-            var orig = mediaId ? getOriginalName(mediaId, null) : null;
-            var name = uniqueName(orig || ('thumb_' + sceneData.id + '.' + ext));
-            zip.file('media/' + name, blob);
-            sceneData.thumbnailUrl = 'media/' + name;
+        var p = Promise.resolve().then(function() {
+          var tUrl = sceneData.thumbnailUrl;
+          if (!tUrl || tUrl === sceneData.mediaUrl || (tUrl.indexOf('blob:') !== 0 && tUrl.indexOf('media_') !== 0)) return;
+          return resolveUrl(tUrl).then(function(fetchUrl) {
+            if (!fetchUrl) throw new Error('No blob found for thumbnail');
+            return fetch(fetchUrl).then(function(res) {
+              if (!res.ok) throw new Error('Failed to fetch thumbnail');
+              return res.blob();
+            }).then(function(blob) {
+              var ext = extFromMime(blob.type) || 'jpg';
+              var mediaId = tUrl.indexOf('media_') === 0 ? tUrl : null;
+              var orig = mediaId ? getOriginalName(mediaId, null) : null;
+              var name = uniqueName(orig || ('thumb_' + sceneData.id + '.' + ext));
+              zip.file('media/' + name, blob);
+              sceneData.thumbnailUrl = 'media/' + name;
+            });
+          }).catch(function(err) {
+            mediaFailures++;
+            console.warn('Could not bundle thumbnail for scene ' + sceneData.name, err);
+            sceneData.thumbnailUrl = null;
           });
-        }).catch(function(err) {
-          mediaFailures++;
-          console.warn('Could not bundle thumbnail for scene ' + sceneData.name, err);
-          sceneData.thumbnailUrl = null;
         });
         mediaPromises.push(p);
       }

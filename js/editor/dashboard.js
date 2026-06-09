@@ -115,9 +115,11 @@
             window.XenoSupabase.exportProject(slug).then(function(bundle) {
               var blob = new Blob([JSON.stringify(bundle)], { type: 'application/json' });
               var a = document.createElement('a');
-              a.href = URL.createObjectURL(blob);
+              var url = URL.createObjectURL(blob);
+              a.href = url;
               a.download = slug + '.xeno';
               a.click();
+              setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
               showShareModal(slug);
             }).catch(function(err) {
               E.alert('Export failed: ' + err.message, 'Export Error');
@@ -141,7 +143,6 @@
   };
 
   function showShareModal(slug, shareUrlOverride) {
-    var modal = document.getElementById('share-modal');
     var modal = document.getElementById('share-modal');
     var shareWhatsApp = document.getElementById('share-whatsapp');
     var shareTelegram = document.getElementById('share-telegram');

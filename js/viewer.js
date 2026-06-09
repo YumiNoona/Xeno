@@ -955,6 +955,7 @@
   // ── Startup ──────────────────────────────────────────────────
   var remoteLoadUrl = window.XENO_LOAD_URL || new URLSearchParams(window.location.search).get('load');
   if (remoteLoadUrl) {
+    var _blobUrlsToRevoke = [];
     // Load from remote URL (shared project)
     fetch(remoteLoadUrl)
       .then(function(r) { if (!r.ok) throw new Error('Project not found'); return r.json(); })
@@ -972,7 +973,9 @@
               var bytes = new Uint8Array(binary.length);
               for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
               var blob = new Blob([bytes], { type: m.type });
-              mediaMap[m.id] = URL.createObjectURL(blob);
+              var blobUrl = URL.createObjectURL(blob);
+              mediaMap[m.id] = blobUrl;
+              _blobUrlsToRevoke.push(blobUrl);
               return Promise.resolve();
             } catch(e) { return Promise.resolve(); }
           });
@@ -997,6 +1000,10 @@
       })
       .then(function(tourData) {
         initViewer(tourData);
+        setTimeout(function() {
+          _blobUrlsToRevoke.forEach(function(url) { try { URL.revokeObjectURL(url); } catch(e) {} });
+          _blobUrlsToRevoke = [];
+        }, 30000);
       })
       .catch(function(err) {
         alert('Failed to load shared project: ' + err.message);

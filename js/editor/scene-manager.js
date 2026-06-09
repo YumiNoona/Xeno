@@ -252,9 +252,9 @@
             window.data.scenes.splice(dIdx, 1);
             if (S.currentSceneCtx === S.contextTarget) E.switchSceneById(S.scenes[0].data.id);
             E.renderSceneGrid();
-            E.debouncedSave();
-          });
-        }
+        E.debouncedSave();
+      }).catch(function() { _creatingScene = false; });
+    }
         S.contextTarget = null;
       });
     });
@@ -340,9 +340,12 @@
     });
 
     // ─── Add Scene Helpers ───────────────────────────────
+    var _creatingScene = false;
     function isMediaId(v) { return window.XenoEditor.isMediaId(v); }
 
     function createSceneFromUrl(url, name, forceVideo) {
+      if (_creatingScene) return;
+      _creatingScene = true;
       var newId = 'scene_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
       var cleanName = (name || 'Untitled').replace(/\.[^/.]+$/, '');
       var isVideo = forceVideo || url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || (name && name.toLowerCase().match(/\.(mp4|webm|ogg)$/));
@@ -352,6 +355,7 @@
         : Promise.resolve(url);
 
       resolveFn.then(function(displayUrl) {
+        _creatingScene = false;
         var storedUrl = isMediaId(url) ? url : displayUrl;
         var thumbUrl = isVideo ? 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"/%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"/%3E%3Cpolyline points="21 15 16 10 5 21"/%3E%3C/svg%3E' : (isMediaId(url) ? displayUrl : storedUrl);
         var sData = {
@@ -384,7 +388,7 @@
         E.switchSceneById(newId);
         E.startViewReadLoop();
         E.debouncedSave();
-      });
+      }).catch(function() { _creatingScene = false; });
     }
 
     E.addSceneFromUrl = function(url, name) { createSceneFromUrl(url, name, false); };

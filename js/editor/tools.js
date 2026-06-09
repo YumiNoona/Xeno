@@ -106,6 +106,12 @@
             E.openPropertiesPanel(hsData);
           }
         } else if (S.isDragging) {
+          // Write drag position back to source hotspot (not the render clone)
+          if (S.dragHsData && S.currentSceneCtx) {
+            var sourceArr = S.currentSceneCtx.data.hotspots || [];
+            var sourceHs = sourceArr.find(function(h) { return h.id === S.dragHsData.id; });
+            if (sourceHs) { sourceHs.yaw = S.dragHsData.yaw; sourceHs.pitch = S.dragHsData.pitch; }
+          }
           E.pushUndo();
           E.debouncedSave();
         }
