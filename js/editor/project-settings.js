@@ -11,7 +11,6 @@
 
     D.panelTitle.textContent = 'Project Settings';
     D.fieldsHotspotProperties.style.display = 'none';
-    if (D.fieldsSceneSettings) D.fieldsSceneSettings.style.display = 'none';
     D.fieldsProjectSettings.style.display = 'block';
     D.panelActionsHotspot.style.display = 'none';
     // Show the save button (may have been hidden by closePropertiesPanel)

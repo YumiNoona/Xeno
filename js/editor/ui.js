@@ -104,6 +104,11 @@
     var logoBack = document.getElementById('logo-back');
     if (logoBack) logoBack.addEventListener('click', function() { window.location.search = ''; });
 
+    var btnUndo = document.getElementById('btn-undo');
+    if (btnUndo) btnUndo.addEventListener('click', function() { E.performUndo(); });
+    var btnRedo = document.getElementById('btn-redo');
+    if (btnRedo) btnRedo.addEventListener('click', function() { E.performRedo(); });
+
     var btnPreview = document.getElementById('btn-preview-tour');
     if (btnPreview) {
       btnPreview.addEventListener('click', function() {

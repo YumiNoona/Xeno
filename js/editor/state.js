@@ -90,11 +90,13 @@
     _undoStack.length = _undoIndex;
     _undoStack.push(snapshot);
     if (_undoStack.length > UNDO_MAX) { _undoStack.shift(); _undoIndex--; }
+    refreshUndoButtons();
   };
 
   E.performUndo = function() {
     if (_undoIndex <= 0 || !S.projectSlug || !S.viewer) return;
     _undoIndex--;
+    refreshUndoButtons();
     var snap = _undoStack[_undoIndex];
     window.data = JSON.parse(JSON.stringify(snap));
     rebuildViewerFromData(window.data);
@@ -103,6 +105,7 @@
   E.performRedo = function() {
     if (_undoIndex >= _undoStack.length - 1 || !S.projectSlug || !S.viewer) return;
     _undoIndex++;
+    refreshUndoButtons();
     var snap = _undoStack[_undoIndex];
     window.data = JSON.parse(JSON.stringify(snap));
     rebuildViewerFromData(window.data);
@@ -130,6 +133,7 @@
       });
     }
     S.scenes = [];
+    if (E._resetHotspotGen) E._resetHotspotGen();
     try {
       S.viewer.destroy();
       S.viewer = new window.Xeno.Viewer(D.panoEl, { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } });
@@ -212,6 +216,7 @@
       return clone;
     });
   }
+  E.resolveSnapshotMedia = resolveSnapshotMedia;
 
   // Ctrl+Z / Ctrl+Shift+Z
   document.addEventListener('keydown', function(e) {
@@ -220,6 +225,13 @@
     if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); E.performUndo(); }
     if (e.key === 'Z' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); E.performRedo(); }
   });
+
+  function refreshUndoButtons() {
+    var undoBtn = document.getElementById('btn-undo');
+    var redoBtn = document.getElementById('btn-redo');
+    if (undoBtn) undoBtn.disabled = _undoIndex <= 0;
+    if (redoBtn) redoBtn.disabled = _undoIndex >= _undoStack.length - 1;
+  }
 
   // Emergency flush on tab close to prevent data loss
   function emergencySave() {
@@ -375,7 +387,6 @@
 
   // Editor panels
   D.fieldsHotspotProperties = $('fields-hotspot-properties');
-  D.fieldsSceneSettings = $('fields-scene-settings');
   D.fieldsProjectSettings = $('fields-project-settings');
   D.panelActionsHotspot = $('panel-actions-hotspot');
 

@@ -188,6 +188,16 @@
       var sceneCtx = S.scenes.find(function(s) { return s.data.id === id; });
       if (!sceneCtx) return;
 
+      // Pause video on current scene before switching away
+      if (S.currentSceneCtx && S.currentSceneCtx.data.type === 'video') {
+        var curSrc = S.currentSceneCtx.scene.source();
+        var curAsset = curSrc && curSrc.asset ? curSrc.asset() : null;
+        if (curAsset && typeof curAsset.element === 'function') {
+          var curVideo = curAsset.element();
+          if (curVideo) curVideo.pause();
+        }
+      }
+
       if (sceneCtx.data.type === 'video') {
         var src = sceneCtx.scene.source();
         var asset = src.asset();
@@ -280,6 +290,7 @@
             E.renderSceneGrid();
             E.debouncedSave();
           });
+        }
         S.contextTarget = null;
       });
     });

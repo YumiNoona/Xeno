@@ -93,7 +93,7 @@
   }
 
   function createBlobUrl(key) {
-    revokeBlobUrl(key);
+    if (_blobUrls[key]) return Promise.resolve(_blobUrls[key]);
     return blobGet(key).then(function(blob) {
       if (!blob) return null;
       _blobUrls[key] = URL.createObjectURL(blob);
@@ -222,7 +222,10 @@
   function loadTour(slug) {
     var raw = localStorage.getItem(LOCAL_STORAGE_PREFIX + slug);
     if (!raw) return Promise.resolve(null);
-    try { return Promise.resolve(JSON.parse(raw).data || JSON.parse(raw)); }
+    try {
+      var parsed = JSON.parse(raw);
+      return Promise.resolve(parsed.data || parsed);
+    }
     catch (e) { return Promise.resolve(null); }
   }
 
@@ -271,10 +274,9 @@
 
   function fetchMedia(albumId) {
     var list = getLocalMedia();
-    // Always create fresh blob URLs (session-scoped, stale after reload)
+    // Create blob URLs for items not already cached (session-scoped)
     var blobPromises = [];
     list.forEach(function(m) {
-      revokeBlobUrl(m.id);
       blobPromises.push(
         createBlobUrl(m.id).then(function(blobUrl) {
           if (blobUrl) m._blobUrl = blobUrl;
@@ -427,14 +429,15 @@
     // Restore blobs to IndexedDB
     var blobPromises = (bundle.media || []).map(function(m) {
       if (!m.data) return Promise.resolve();
-      var base64 = m.data.split(',')[1];
+      var base64 = m.data.split(',')[1] || m.data.split(',')[0];
       if (!base64) return Promise.resolve();
-      try {
-        var binary = atob(base64);
-        var bytes = new Uint8Array(binary.length);
-        for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        return blobStore(m.id, new Blob([bytes], { type: m.type }));
-      } catch(e) { return Promise.resolve(); }
+      var mimeType = m.data.split(',')[0].match(/:(.*?);/);
+      mimeType = mimeType ? mimeType[1] : 'application/octet-stream';
+      return fetch('data:' + mimeType + ';base64,' + base64).then(function(res) {
+        return res.blob();
+      }).then(function(blob) {
+        return blobStore(m.id, blob);
+      }).catch(function() {});
     });
     return Promise.all(blobPromises).then(function() { return slug; });
   }

@@ -1,7 +1,8 @@
 /*
- * Xeno — Universal 360° Tour Data
- * This file defines the complete tour configuration.
- * Viewer reads this at load. Editor writes back to it (or Supabase).
+ * Xeno — Standalone / Sample Tour Data
+ * Serves as the default fallback for exported tours (window.isExported = true)
+ * and the sample tour shown when no project is loaded.
+ * The viewer reads this; the editor writes to localStorage/IndexedDB instead.
  */
 var data = {
   settings: {

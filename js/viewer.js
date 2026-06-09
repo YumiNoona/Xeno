@@ -9,6 +9,7 @@
   var screenfull = window.screenfull;
 
   var data = window.data;
+  var _mqlListener = null;
 
   function initViewer(tourData) {
     if (tourData) {
@@ -27,6 +28,10 @@
 
     // Detect desktop or mobile mode.
     if (window.matchMedia) {
+      if (_mqlListener) {
+        _mqlListener.mql.removeEventListener('change', _mqlListener.fn);
+        _mqlListener = null;
+      }
       var setMode = function () {
         if (mql.matches) {
           document.body.classList.remove('desktop');
@@ -39,6 +44,7 @@
       var mql = matchMedia("(max-width: 500px), (max-height: 500px)");
       setMode();
       mql.addEventListener('change', setMode);
+      _mqlListener = { mql: mql, fn: setMode };
     } else {
       document.body.classList.add('desktop');
     }

@@ -27,35 +27,8 @@
   document.getElementById('dashboard-view').style.display = 'none';
 
   function resolveSceneMedia(data) {
-    if (!data || !data.scenes) return Promise.resolve(null);
-    // Clone to avoid mutating the canonical data (preserve media IDs for saving)
-    var clone = JSON.parse(JSON.stringify(data));
-    var promises = [];
-    clone.scenes.forEach(function(s) {
-      if (window.XenoEditor.isMediaId(s.mediaUrl)) {
-        s._mediaId = s.mediaUrl;
-        promises.push(window.XenoSupabase.resolveMediaId(s.mediaUrl).then(function(b) {
-          if (b) s.mediaUrl = b;
-        }));
-      }
-      if (window.XenoEditor.isMediaId(s.thumbnailUrl) && s.thumbnailUrl !== s.mediaUrl && s.thumbnailUrl !== s._mediaId) {
-        (function(capture) {
-          promises.push(window.XenoSupabase.resolveMediaId(capture).then(function(b) {
-            if (b) s.thumbnailUrl = b;
-          }));
-        })(s.thumbnailUrl);
-      } else if (window.XenoEditor.isMediaId(s.thumbnailUrl) && s.thumbnailUrl === s._mediaId) {
-        // thumbnailUrl same as mediaUrl — will be resolved with mediaUrl above
-        s.thumbnailUrl = null; // will be set equal to mediaUrl after resolution
-      }
-    });
-    return Promise.all(promises).then(function() {
-      // Set thumbnailUrl to match mediaUrl where appropriate
-      clone.scenes.forEach(function(s) {
-        if (!s.thumbnailUrl && s.mediaUrl) s.thumbnailUrl = s.mediaUrl;
-      });
-      return clone;
-    });
+    return E.resolveSnapshotMedia ? E.resolveSnapshotMedia(data) : Promise.resolve(null);
+  }
   }
 
   window.XenoSupabase.loadTour(projectSlug)
@@ -64,14 +37,17 @@
         savedData = JSON.parse(JSON.stringify(window.data));
         window.XenoSupabase.saveTour('sample-tour', savedData);
       }
-      if (!savedData) {
-        // Try emergency recovery from localStorage only when IndexedDB is empty
+      if (!savedData || (savedData && !Array.isArray(savedData.scenes))) {
+        // Try emergency recovery if IndexedDB is empty or structurally invalid
         try {
           var emergencyRaw = localStorage.getItem('xeno_emergency_' + projectSlug);
           if (emergencyRaw) {
             var emergencyParsed = JSON.parse(emergencyRaw);
-            savedData = emergencyParsed.data || emergencyParsed;
-            console.warn('Recovered project from emergency save');
+            var emergencyData = emergencyParsed.data || emergencyParsed;
+            if (emergencyData && Array.isArray(emergencyData.scenes)) {
+              savedData = emergencyData;
+              console.warn('Recovered project from emergency save');
+            }
           }
         } catch(e) {}
       }
@@ -110,6 +86,16 @@
     if (topbarName && data.settings) {
       topbarName.textContent = data.settings.title || data.settings.name || 'Untitled Tour';
       topbarName.addEventListener('input', function() {
+        if (this.textContent.length > 100) {
+          this.textContent = this.textContent.substring(0, 100);
+          // Move cursor to end
+          var range = document.createRange();
+          range.selectNodeContents(this);
+          range.collapse(false);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
         var n = this.textContent.trim();
         if (window.data && window.data.settings) { window.data.settings.title = n || 'Untitled Tour'; window.data.settings.name = n || 'Untitled Tour'; }
         E.debouncedSave();
@@ -152,5 +138,6 @@
       E.switchSceneById(initialSceneId);
       E.startViewReadLoop();
     }
+    E.pushUndo(); // Capture initial clean state as undo entry 0
   }
 })();

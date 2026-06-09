@@ -6,6 +6,8 @@
 
   E.createVisualHotspot = function(hsData) {
     if (!S.currentSceneCtx) return;
+    // Double-destroy guard: only fires on direct createVisualHotspot calls on live data
+    // (renderSceneHotspots uses deep-cloned copies without __marzipanoHotspot, so this is normally skipped)
     if (hsData.__marzipanoHotspot) {
       S.currentSceneCtx.scene.hotspotContainer().destroyHotspot(hsData.__marzipanoHotspot);
       hsData.__marzipanoHotspot = null;
@@ -32,6 +34,7 @@
   };
 
   var _hotspotGen = 0;
+  E._resetHotspotGen = function() { _hotspotGen = 0; };
 
   E.renderSceneHotspots = function() {
     if (!S.currentSceneCtx) return;
@@ -81,16 +84,16 @@
       if (thisGen !== _hotspotGen) return; // Stale generation — scene switched
       if (S.currentSceneCtx !== sceneCtx) return;
       renderHotspots.forEach(function(hsData) { E.createVisualHotspot(hsData); });
-    });
 
-    if (S.selectedHotspotData) {
-      var list = container.listHotspots();
-      list.forEach(function(h) {
-        if (h.domElement().__hsData && h.domElement().__hsData.id === S.selectedHotspotData.id) {
-          S.selectedHotspotElement = h.domElement();
-        }
-      });
-    }
+      if (S.selectedHotspotData) {
+        var list = container.listHotspots();
+        list.forEach(function(h) {
+          if (h.domElement().__hsData && h.domElement().__hsData.id === S.selectedHotspotData.id) {
+            S.selectedHotspotElement = h.domElement();
+          }
+        });
+      }
+    });
   };
 
   // ─── Quad Points ────────────────────────────────────────

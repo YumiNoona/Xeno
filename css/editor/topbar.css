@@ -76,3 +76,8 @@
   background: var(--border);
   margin: 0 4px;
 }
+
+.topbar-actions .btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

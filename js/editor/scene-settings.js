@@ -5,6 +5,7 @@
   var D = E.dom;
 
   E.setupSceneSettings = function() {
+    if (E._sceneSettingsSetupDone) return; E._sceneSettingsSetupDone = true;
     // ─── Save current view as default ──────────────────────
     var btnSaveView = document.getElementById('btn-save-view');
     if (btnSaveView) {

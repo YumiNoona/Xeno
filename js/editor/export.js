@@ -9,13 +9,15 @@
     // ─── Publish to web ──────────────────────────────────
     var btnPublish = document.getElementById('btn-publish');
     if (btnPublish && window.XenoSupabase) {
+      var _publishInProgress = false;
       btnPublish.addEventListener('click', function() {
         if (!S.projectSlug) { alert('No project to publish.'); return; }
-
+        if (_publishInProgress) return;
+        _publishInProgress = true;
         // Custom expiry picker modal
         showPublishExpiry(function(expiryValue) {
           doPublish(expiryValue);
-        });
+        }, function() { _publishInProgress = false; });
       });
 
       function doPublish(expiryValue) {
@@ -58,11 +60,12 @@
         }).finally(function() {
           pubBtn.innerHTML = origText;
           pubBtn.disabled = false;
+          _publishInProgress = false;
         });
       }
     }
 
-    function showPublishExpiry(callback) {
+    function showPublishExpiry(callback, onCancel) {
       var overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
       var modal = document.createElement('div');
@@ -123,6 +126,7 @@
 
       modal.querySelector('#pub-cancel-btn').addEventListener('click', function() {
         document.body.removeChild(overlay);
+        if (onCancel) onCancel();
       });
       modal.querySelector('#pub-go-btn').addEventListener('click', function() {
         var checked = modal.querySelector('input[name="pub-expiry"]:checked');
@@ -131,7 +135,10 @@
         callback(value);
       });
       overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) document.body.removeChild(overlay);
+        if (e.target === overlay) {
+          document.body.removeChild(overlay);
+          if (onCancel) onCancel();
+        }
       });
     }
 
@@ -149,6 +156,8 @@
       exportBtn.disabled = true;
 
       var zip = new window.JSZip();
+      var baseUrl = window.location.href.split('?')[0].replace(/[^/]*$/, '');
+      var absUrl = function(path) { return baseUrl + path; };
 
       // js/engine/xeno.js IS the compiled Marzipano bundle (renamed from marzipano.js)
       var filesToBundle = [
@@ -553,20 +562,20 @@
       zip.file('run.sh', shContent);
 
       var fetchPromises = filesToBundle.map(function(path) {
-        return fetch(path)
+        return fetch(absUrl(path))
           .then(function(res) { if (!res.ok) throw new Error('Failed to fetch ' + path); return res.text(); })
           .then(function(content) { zip.file(path, content); })
           .catch(function(err) { bundleFailures++; console.warn(err); });
       });
 
       var imagePromises = imagesToBundle.map(function(path) {
-        return fetch(path)
+        return fetch(absUrl(path))
           .then(function(res) { if (!res.ok) throw new Error('Failed to fetch ' + path); return res.blob(); })
           .then(function(blob) { zip.file(path, blob); })
           .catch(function(err) { bundleFailures++; console.warn(err); });
       });
 
-      var previewPromise = fetch('preview.html')
+      var previewPromise = fetch(absUrl('preview.html'))
         .then(function(res) { if (!res.ok) throw new Error('Failed to fetch preview.html'); return res.text(); })
         .then(function(html) { zip.file('index.html', html
           .replace('<head>', '<head>\n  <script>window.isExported = true;</script>')
@@ -578,6 +587,15 @@
 
       Promise.all(all)
         .then(function() {
+          // Post-validation: warn about unresolved media_ or blob: URLs in exported data
+          var unresolved = [];
+          exportedData.scenes.forEach(function(s) {
+            var t = s.thumbnailUrl || '';
+            var m = s.mediaUrl || '';
+            if (t.indexOf('media_') === 0 || t.indexOf('blob:') === 0) unresolved.push('thumbnailUrl on ' + (s.name || s.id));
+            if (m.indexOf('media_') === 0 || m.indexOf('blob:') === 0) unresolved.push('mediaUrl on ' + (s.name || s.id));
+          });
+          if (unresolved.length) bundleFailures += unresolved.length;
           zip.file('data.js', 'var data = ' + JSON.stringify(exportedData, null, 2) + ';\n');
           return zip.generateAsync({ type: 'blob' });
         })

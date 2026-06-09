@@ -25,7 +25,6 @@
       }
       S.selectedHotspotData = hsData;
       // Hide all non-hotspot sections
-      if (D.fieldsSceneSettings) D.fieldsSceneSettings.style.display = 'none';
       D.fieldsProjectSettings.style.display = 'none';
       D.panelTitle.textContent = 'Hotspot Properties';
       D.panelActionsHotspot.style.display = 'flex';
