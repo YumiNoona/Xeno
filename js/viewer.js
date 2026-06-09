@@ -934,9 +934,25 @@
             if (blobUrl) hs.content.src = blobUrl;
           }));
         }
+        // Narrator/ambient audio fields
+        ['narratorAudio', 'ambientAudio'].forEach(function (field) {
+          if (isMediaId(hs[field])) {
+            promises.push(resolveMediaIdOrUrl(hs[field]).then(function (blobUrl) {
+              if (blobUrl) hs[field] = blobUrl;
+            }));
+          }
+        });
       });
     });
-    return Promise.all(promises).then(function () { return tourData; });
+    return Promise.all(promises).then(function () {
+      // Sync thumbnailUrl to mediaUrl for scenes where they matched (thumbnail never independently resolved)
+      tourData.scenes.forEach(function (s) {
+        if (isMediaId(s.thumbnailUrl) && !isMediaId(s.mediaUrl)) {
+          s.thumbnailUrl = s.mediaUrl;
+        }
+      });
+      return tourData;
+    });
   }
 
   // ── Preload scene images so Marzipano has them ready ──────

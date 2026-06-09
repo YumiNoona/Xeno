@@ -312,7 +312,6 @@
           }).catch(function(err) {
             mediaFailures++;
             console.warn('Could not bundle custom icon for scene ' + sceneId, err);
-            hs.customIconUrl = null;
           });
           mediaPromises.push(p);
         });

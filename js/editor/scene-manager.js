@@ -144,9 +144,14 @@
         container.querySelectorAll('[data-thumb-id]').forEach(function(el) {
           var id = el.getAttribute('data-thumb-id');
           if (!id) return;
+          el.removeAttribute('data-thumb-id');
           window.XenoSupabase.resolveMediaId(id).then(function(b) {
             if (!b) return;
-            el.outerHTML = '<img class="scene-card-thumb" src="' + b + '" onerror="this.outerHTML=\'<div class=&quot;scene-thumb-placeholder&quot;>Scene</div>\'">';
+            var img = document.createElement('img');
+            img.className = 'scene-card-thumb';
+            img.src = b;
+            img.onerror = function() { this.outerHTML = '<div class="scene-thumb-placeholder">Scene</div>'; };
+            el.parentNode.replaceChild(img, el);
           }).catch(function() {});
         });
       }, timeout || 100);

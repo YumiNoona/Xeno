@@ -17,6 +17,9 @@ module.exports = async function handler(req, res) {
     const htmlPath = path.join(process.cwd(), 'preview.html');
     let html = fs.readFileSync(htmlPath, 'utf8');
 
+    // Strip export-remove sentinel lines (same as export.js)
+    html = html.split('\n').filter(function(l) { return l.indexOf('xeno-export-remove') === -1; }).join('\n');
+
     // Inject the load URL before the viewer.js script loads
     const injectScript = '<script>window.XENO_LOAD_URL="/api/load?slug=' + slug + '";</script>';
     html = html.replace('</head>', injectScript + '\n</head>');

@@ -206,6 +206,7 @@
 
   // Emergency flush on tab close to prevent data loss
   function emergencySave() {
+    if (S.isRebuilding && S.isRebuilding()) return;
     if (S.saveTimeout) clearTimeout(S.saveTimeout);
     if (S.projectSlug && window.XenoSupabase && S.scenes && S.scenes.length) {
       try {

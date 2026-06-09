@@ -237,7 +237,7 @@
     /* Sky — equirectangular 360 image */
     var sky = document.createElement('a-sky');
     sky.id = 'xenovr-sky';
-    sky.setAttribute('src', sceneData.mediaUrl || '');
+    sky.setAttribute('src', (sceneData.mediaUrl && sceneData.mediaUrl.indexOf('media_') === 0) ? '' : (sceneData.mediaUrl || ''));
     sky.setAttribute('rotation', '0 -90 0');
     sky.setAttribute('radius', '100');
     sceneEl.appendChild(sky);
@@ -730,7 +730,7 @@
         'property:material.opacity;from:1;to:0;dur:300;easing:easeInQuad');
       setTimeout(function () {
         sky.setAttribute('src', '');
-        sky.setAttribute('src', sceneData.mediaUrl || '');
+        sky.setAttribute('src', (sceneData.mediaUrl && sceneData.mediaUrl.indexOf('media_') === 0) ? '' : (sceneData.mediaUrl || ''));
         sky.setAttribute('animation',
           'property:material.opacity;from:0;to:1;dur:400;easing:easeOutQuad');
       }, 320);
