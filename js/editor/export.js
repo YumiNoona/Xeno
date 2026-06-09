@@ -509,7 +509,11 @@
 
       var previewPromise = fetch('preview.html')
         .then(function(res) { if (!res.ok) throw new Error('Failed to fetch preview.html'); return res.text(); })
-        .then(function(html) { zip.file('index.html', html.replace('<head>', '<head>\n  <script>window.isExported = true;</script>')); });
+        .then(function(html) { zip.file('index.html', html
+          .replace('<head>', '<head>\n  <script>window.isExported = true;</script>')
+          .replace('<link rel="manifest" href="manifest.json">\n    ', '')
+          .replace("if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}\n    ", '')
+        ); });
 
       var all = fetchPromises.concat(imagePromises).concat(mediaPromises);
       all.push(previewPromise);

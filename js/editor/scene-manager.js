@@ -213,12 +213,13 @@
             E.debouncedSave();
           }
         } else if (action === 'duplicate') {
+          E.pushUndo();
           var clone = JSON.parse(JSON.stringify(S.contextTarget.data));
           clone.id = 'scene_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
           clone.name = clone.name + ' (copy)';
           // Restore media ID for persistence if available
           var mediaId = S.contextTarget.data._mediaId;
-          if (mediaId) clone.mediaUrl = mediaId;
+          if (mediaId) { clone.mediaUrl = mediaId; clone._mediaId = mediaId; }
           window.data.scenes.push(clone);
           var displayUrl = mediaId && window.XenoSupabase
             ? window.XenoSupabase.resolveMediaId(mediaId)
