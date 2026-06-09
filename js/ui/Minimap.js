@@ -7,6 +7,7 @@
 (function() {
 
   window.initMinimap = function() {
+    if (window._minimapInterval) clearInterval(window._minimapInterval);
     var Xeno = window.Xeno;
     var data = window.data;
     var scenes = window.xenoScenes;
@@ -239,7 +240,7 @@
     };
 
     // View direction arrow rotation loop
-    setInterval(function() {
+    window._minimapInterval = setInterval(function() {
       if (!viewer || !scenes) return;
       var active = scenes.find(function(s) { return s.scene.isActive && s.scene.isActive(); });
       if (!active) return;

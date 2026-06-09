@@ -996,14 +996,15 @@
             var base64 = m.data.split(',')[1];
             if (!base64) return Promise.resolve();
             try {
-              var binary = atob(base64);
-              var bytes = new Uint8Array(binary.length);
-              for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-              var blob = new Blob([bytes], { type: m.type });
-              var blobUrl = URL.createObjectURL(blob);
-              mediaMap[m.id] = blobUrl;
-              _blobUrlsToRevoke.push(blobUrl);
-              return Promise.resolve();
+              var mimeType = m.data.split(',')[0].match(/:(.*?);/);
+              mimeType = mimeType ? mimeType[1] : 'application/octet-stream';
+              return fetch('data:' + mimeType + ';base64,' + base64).then(function(r) {
+                return r.blob();
+              }).then(function(blob) {
+                var blobUrl = URL.createObjectURL(blob);
+                mediaMap[m.id] = blobUrl;
+                _blobUrlsToRevoke.push(blobUrl);
+              }).catch(function() {});
             } catch(e) { return Promise.resolve(); }
           });
           return Promise.all(mediaPromises).then(function() {
