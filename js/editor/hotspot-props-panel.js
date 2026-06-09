@@ -7,6 +7,11 @@
   E.setupHotspotProps = function() {
     // ─── Open / Close ────────────────────────────────────
     E.openPropertiesPanel = function(hsData) {
+      // Resolve to source object by ID so all writes go to live data, not a render clone
+      if (S.currentSceneCtx && hsData && hsData.id) {
+        var src = (S.currentSceneCtx.data.hotspots || []).find(function(h) { return h.id === hsData.id; });
+        if (src) hsData = src;
+      }
       S.selectedHotspotData = hsData;
       // Hide all non-hotspot sections
       if (D.fieldsSceneSettings) D.fieldsSceneSettings.style.display = 'none';
@@ -423,7 +428,7 @@
       E.confirm('Delete this hotspot?', 'Delete Hotspot', true).then(function(ok) {
         if (!ok) return;
         var arr = S.currentSceneCtx.data.hotspots || [];
-        var idx = arr.indexOf(S.selectedHotspotData);
+        var idx = arr.findIndex(function(h) { return h.id === S.selectedHotspotData.id; });
         if (idx !== -1) { E.pushUndo(); arr.splice(idx, 1); }
         E.renderSceneHotspots();
         E.closePropertiesPanel();

@@ -153,6 +153,7 @@
 
     // ── Center-bar drag-to-scroll (mouse + touch) ──────────────────────────
     (function() {
+      var _prevObserver = null;
       var _dragWindowListeners = null;
 
       function cleanupDragListeners() {
@@ -257,6 +258,7 @@
 
       attachWhenReady();
 
+      if (_prevObserver) _prevObserver.disconnect();
       var themeObserver = new MutationObserver(function(mutations) {
         mutations.forEach(function(m) {
           if (m.attributeName === 'data-layout-theme') {
@@ -265,6 +267,7 @@
         });
       });
       themeObserver.observe(document.body, { attributes: true });
+      _prevObserver = themeObserver;
     })();
 
     // Apply visibility settings (individual buttons first, then master)

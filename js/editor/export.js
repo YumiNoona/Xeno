@@ -265,7 +265,7 @@
       }
 
       function bundleSceneMedia(sceneData) {
-        if (!sceneData.mediaUrl) return;
+        if (!sceneData.mediaUrl) return Promise.resolve();
         var origUrl = sceneData.mediaUrl;
         var p = resolveUrl(origUrl).then(function(fetchUrl) {
           if (!fetchUrl) throw new Error('No blob found for ' + sceneData.name);
@@ -293,6 +293,7 @@
           sceneData.thumbnailUrl = null;
         });
         mediaPromises.push(p);
+        return p;
       }
 
       function bundleHotspotCustomIcons(hotspots, sceneId) {
@@ -320,8 +321,8 @@
         });
       }
 
-      function bundleSceneThumbnail(sceneData) {
-        var p = Promise.resolve().then(function() {
+      function bundleSceneThumbnail(sceneData, depPromise) {
+        var p = (depPromise || Promise.resolve()).then(function() {
           var tUrl = sceneData.thumbnailUrl;
           if (!tUrl || tUrl === sceneData.mediaUrl || (tUrl.indexOf('blob:') !== 0 && tUrl.indexOf('media_') !== 0)) return;
           return resolveUrl(tUrl).then(function(fetchUrl) {
@@ -347,8 +348,8 @@
       }
 
       exportedData.scenes.forEach(function(sceneData) {
-        bundleSceneMedia(sceneData);
-        bundleSceneThumbnail(sceneData);
+        var mediaPromise = bundleSceneMedia(sceneData);
+        bundleSceneThumbnail(sceneData, mediaPromise);
         bundleHotspotMedia(sceneData.hotspots, sceneData.id);
         bundleHotspotMedia(sceneData.linkHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.infoHotspots, sceneData.id);

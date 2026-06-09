@@ -108,8 +108,12 @@
         } else if (S.isDragging) {
           // Write drag position back to source hotspot (not the render clone)
           if (S.dragHsData && S.currentSceneCtx) {
-            var sourceArr = S.currentSceneCtx.data.hotspots || [];
-            var sourceHs = sourceArr.find(function(h) { return h.id === S.dragHsData.id; });
+            var allArrays = [S.currentSceneCtx.data.hotspots || [], S.currentSceneCtx.data.linkHotspots || [], S.currentSceneCtx.data.infoHotspots || [], S.currentSceneCtx.data.mediaHotspots || []];
+            var sourceHs;
+            for (var ai = 0; ai < allArrays.length; ai++) {
+              sourceHs = allArrays[ai].find(function(h) { return h.id === S.dragHsData.id; });
+              if (sourceHs) break;
+            }
             if (sourceHs) { sourceHs.yaw = S.dragHsData.yaw; sourceHs.pitch = S.dragHsData.pitch; }
           }
           E.pushUndo();

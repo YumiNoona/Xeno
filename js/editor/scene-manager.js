@@ -346,6 +346,7 @@
     function createSceneFromUrl(url, name, forceVideo) {
       if (_creatingScene) return;
       _creatingScene = true;
+      try {
       var newId = 'scene_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
       var cleanName = (name || 'Untitled').replace(/\.[^/.]+$/, '');
       var isVideo = forceVideo || url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || (name && name.toLowerCase().match(/\.(mp4|webm|ogg)$/));
@@ -389,6 +390,7 @@
         E.startViewReadLoop();
         E.debouncedSave();
       }).catch(function() { _creatingScene = false; });
+      } catch(e) { _creatingScene = false; throw e; }
     }
 
     E.addSceneFromUrl = function(url, name) { createSceneFromUrl(url, name, false); };
