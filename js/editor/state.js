@@ -71,9 +71,9 @@
       setTimeout(function() { indicator.style.opacity = '0'; }, 1500);
     } else {
       indicator.style.color = 'var(--danger)';
-      indicator.textContent = '\u2718 Save failed';
+      indicator.textContent = '\u26A0 Save failed';
       indicator.style.opacity = '1';
-      setTimeout(function() { indicator.style.opacity = '0'; }, 3000);
+      // Failure stays visible until next successful save (cleared in success branch above)
     }
   }
 

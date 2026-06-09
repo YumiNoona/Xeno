@@ -392,7 +392,9 @@
       return sceneContext;
     }).filter(Boolean);
 
-    window.xenoScenes = scenes;
+    if (typeof Object.getOwnPropertyDescriptor(window, 'xenoScenes') === 'undefined') {
+      window.xenoScenes = scenes;
+    }
 
     // Initialize UI modules after scenes are loaded
     if (window.initSceneList) window.initSceneList();

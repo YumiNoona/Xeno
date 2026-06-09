@@ -12,6 +12,8 @@
   var albumCtx = null;
   var mediaCtx = null;
   var _loadPending = false;
+  var _mediaDirty = true;
+  var _lastFetchedAlbum = null;
 
   // ─── Albums ──────────────────────────────────────────
   function loadAlbums() {
@@ -62,6 +64,10 @@
   }
 
   function loadMedia(albumId) {
+    currentAlbumId = albumId;
+    var useCache = _lastFetchedAlbum === albumId && !_mediaDirty && mediaCache.length > 0;
+    _lastFetchedAlbum = albumId;
+    _mediaDirty = false;
     // Revoke old blob URLs
     mediaCache.forEach(function(m) { if (m._blobUrl) URL.revokeObjectURL(m._blobUrl); });
     selectedIds.clear();
@@ -72,10 +78,13 @@
     D.mediaGridEl.innerHTML = '<div class="media-loading"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Loading...</div>';
 
     _loadPending = true;
-    window.XenoSupabase.fetchMedia(albumId).then(function(list) {
+    var fetchOrCache = useCache
+      ? Promise.resolve(mediaCache)
+      : window.XenoSupabase.fetchMedia(albumId);
+    fetchOrCache.then(function(list) {
       _loadPending = false;
       
-      mediaCache = list;
+      if (!useCache) mediaCache = list;
       D.mediaGridEl.innerHTML = '';
       if (list.length === 0) {
         D.mediaGridEl.innerHTML = '<div class="media-empty">No media yet &mdash; upload files above</div>';
@@ -273,6 +282,7 @@
           } else if (action === 'delete-media') {
             E.confirm('Delete "' + tm.filename + '"?', 'Delete Media', true).then(function(ok) {
               if (ok)
+                _mediaDirty = true;
                 window.XenoSupabase.deleteMedia(tm.id).then(function() { loadMedia(currentAlbumId); }).catch(function(err) { E.alert('Error: ' + err.message, 'Delete Error'); });
             });
           } else if (action === 'move-media') {
@@ -380,6 +390,7 @@
           });
           Promise.all(promises).then(function() {
             selectedIds.clear(); selectedMap = {}; lastIndex = null;
+            _mediaDirty = true;
             loadMedia(currentAlbumId);
             showToast('Deleted ' + promises.length + ' items.');
           }).catch(function(err) { E.alert('Error: ' + err.message, 'Delete Error'); });
@@ -425,6 +436,7 @@
     }
     Promise.all(promises).then(function() {
       uploadArea.innerHTML = originalHtml;
+      _mediaDirty = true;
       loadMedia(currentAlbumId);
     }).catch(function(err) {
       E.alert('Error uploading: ' + err.message, 'Upload Error');

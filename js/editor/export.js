@@ -152,6 +152,7 @@
       var originalText = exportBtn.innerHTML;
       var mediaFailures = 0;
       var bundleFailures = 0;
+      var unresolved = [];
       exportBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Exporting...';
       exportBtn.disabled = true;
 
@@ -178,6 +179,17 @@
 
         'public/logo.ico', 'public/logo-16x16.png', 'public/logo-32x32.png'
       ];
+
+      // Pre-check favicons — if missing, embed an inline SVG fallback
+      var faviconPromises = ['public/logo.ico'].map(function(fav) {
+        return fetch(absUrl(fav), { method: 'HEAD' }).then(function(r) {
+          if (!r.ok) {
+            bundleFailures++;
+            // Provide inline SVG favicon as ZIP fallback
+            zip.file(fav, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#e11d48"/><text x="16" y="23" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="22" fill="#fff">X</text></svg>');
+          }
+        }).catch(function() {});
+      });
 
       // Build media ID → original filename map from localStorage
       var mediaRecords = JSON.parse(localStorage.getItem('xeno_media') || '[]');
@@ -247,8 +259,7 @@
         });
       }
 
-      // NOTE: bundleHotspotAudio only walks sceneData.hotspots (not linkHotspots/infoHotspots/ mediaHotspots)
-      // because narrator/ambient audio are always placed into hotspots[] by tools.js — safe but asymmetric.
+      // bundleHotspotAudio — called for all four hotspot arrays (hotspots, linkHotspots, infoHotspots, mediaHotspots)
       function bundleHotspotAudio(hotspots, field, sceneId) {
         (hotspots || []).forEach(function(hs, idx) {
           var src = hs[field];
@@ -582,13 +593,13 @@
           .split('\n').filter(function(l) { return l.indexOf('xeno-export-remove') === -1; }).join('\n')
         ); });
 
-      var all = fetchPromises.concat(imagePromises).concat(mediaPromises);
+      var all = fetchPromises.concat(imagePromises).concat(mediaPromises).concat(faviconPromises);
       all.push(previewPromise);
 
       Promise.all(all)
         .then(function() {
           // Post-validation: warn about unresolved media_ or blob: URLs in exported data
-          var unresolved = [];
+          unresolved.length = 0;
           exportedData.scenes.forEach(function(s) {
             var t = s.thumbnailUrl || '';
             var m = s.mediaUrl || '';
@@ -613,7 +624,12 @@
             var msg = [];
             if (mediaFailures > 0) msg.push(mediaFailures + ' media file(s) could not be included');
             if (bundleFailures > 0) msg.push(bundleFailures + ' static asset(s) failed to bundle');
-            alert('Warning: ' + msg.join('. ') + '. The exported tour may not display correctly.');
+            msg.push('The exported tour may not display correctly.');
+            if (unresolved.length > 0) {
+              var prefix = unresolved.slice(0, 5);
+              msg.push('Unresolved: ' + prefix.join(', ') + (unresolved.length > 5 ? ' \u2026and ' + (unresolved.length - 5) + ' more' : ''));
+            }
+            alert('Warning: ' + msg.join('. '));
           }
           setTimeout(function() { if (window.showDonatePopup) window.showDonatePopup(); }, 600);
         })

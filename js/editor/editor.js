@@ -26,11 +26,6 @@
   document.getElementById('workspace-view').style.display = 'flex';
   document.getElementById('dashboard-view').style.display = 'none';
 
-  function resolveSceneMedia(data) {
-    return E.resolveSnapshotMedia ? E.resolveSnapshotMedia(data) : Promise.resolve(null);
-  }
-  }
-
   window.XenoSupabase.loadTour(projectSlug)
     .then(function(savedData) {
       if (projectSlug === 'sample-tour' && !savedData) {
@@ -73,7 +68,7 @@
       // Keep canonical data (with media IDs) for saving — clone once more in case
       // modules modify it later (they push/remove scenes, but mediaUrl stays as IDs)
       window.data = JSON.parse(JSON.stringify(savedData));
-      return resolveSceneMedia(savedData);
+      return E.resolveSnapshotMedia ? E.resolveSnapshotMedia(savedData) : Promise.resolve(null);
     })
     .then(function(resolvedClone) {
       if (resolvedClone) startEditor(resolvedClone);
@@ -112,7 +107,7 @@
     var viewMode = (data.settings && data.settings.mouseViewMode) || 'drag';
     S.viewer = new window.Xeno.Viewer(D.panoEl, { controls: { mouseViewMode: viewMode } });
     window.xenoViewer = S.viewer;
-    window.xenoScenes = S.scenes;
+    Object.defineProperty(window, 'xenoScenes', { get: function() { return S.scenes; }, configurable: false });
 
     (data.scenes || []).forEach(function(sData) {
       var source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
