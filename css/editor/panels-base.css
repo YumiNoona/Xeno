@@ -5,6 +5,7 @@
   top: 0;
   bottom: 0;
   width: 310px;
+  touch-action: pan-y; /* Allow vertical scroll, block horizontal pano drag */
   background: var(--bg-panel);
   backdrop-filter: blur(24px);
   border-left: 1px solid var(--border);

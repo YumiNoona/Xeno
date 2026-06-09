@@ -32,20 +32,22 @@
         savedData = JSON.parse(JSON.stringify(window.data));
         window.XenoSupabase.saveTour('sample-tour', savedData);
       }
-      if (!savedData || (savedData && !Array.isArray(savedData.scenes))) {
-        // Try emergency recovery if IndexedDB is empty or structurally invalid
-        try {
-          var emergencyRaw = localStorage.getItem('xeno_emergency_' + projectSlug);
-          if (emergencyRaw) {
-            var emergencyParsed = JSON.parse(emergencyRaw);
-            var emergencyData = emergencyParsed.data || emergencyParsed;
-            if (emergencyData && Array.isArray(emergencyData.scenes)) {
+      // Try emergency recovery — prefer if its timestamp is newer than the normal save
+      try {
+        var emergencyRaw = localStorage.getItem('xeno_emergency_' + projectSlug);
+        if (emergencyRaw) {
+          var emergencyParsed = JSON.parse(emergencyRaw);
+          var emergencyData = emergencyParsed.data || emergencyParsed;
+          if (emergencyData && Array.isArray(emergencyData.scenes)) {
+            var emTime = emergencyParsed.savedAt || 0;
+            var dbTime = savedData ? (savedData._savedAt || 0) : 0;
+            if (!savedData || emTime > dbTime || !Array.isArray(savedData.scenes)) {
               savedData = emergencyData;
-              console.warn('Recovered project from emergency save');
+              console.warn('Recovered project from emergency save' + (!dbTime ? '' : ' (newer than IndexedDB)'));
             }
           }
-        } catch(e) {}
-      }
+        }
+      } catch(e) {}
       // Always clean up emergency key after a successful load
       try { localStorage.removeItem('xeno_emergency_' + projectSlug); } catch(e) {}
       if (!savedData) {
@@ -144,5 +146,6 @@
       E.startViewReadLoop();
     }
     E.pushUndo(); // Capture initial clean state as undo entry 0
+    if (E.refreshUndoButtons) E.refreshUndoButtons();
   }
 })();

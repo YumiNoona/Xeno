@@ -16,20 +16,21 @@
   var _lastFetchedAlbum = null;
 
   // ─── Albums ──────────────────────────────────────────
-  function loadAlbums() {
+  function loadAlbums(activeId) {
+    if (activeId !== undefined) currentAlbumId = activeId;
     window.XenoSupabase.fetchAlbums().then(function(albums) {
       D.albumListEl.innerHTML = '';
       var rootEl = document.createElement('div');
       rootEl.className = 'album-item' + (currentAlbumId === null ? ' active' : '');
       rootEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Root';
-      rootEl.addEventListener('click', function() { currentAlbumId = null; loadAlbums(); loadMedia(null); });
+      rootEl.addEventListener('click', function() { loadAlbums(null); loadMedia(null); });
       D.albumListEl.appendChild(rootEl);
 
       albums.forEach(function(album) {
         var el = document.createElement('div');
         el.className = 'album-item' + (currentAlbumId === album.id ? ' active' : '');
         el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ' + album.name;
-        el.addEventListener('click', function() { currentAlbumId = album.id; loadAlbums(); loadMedia(album.id); });
+        el.addEventListener('click', function() { loadAlbums(album.id); loadMedia(album.id); });
         el.addEventListener('contextmenu', function(e) {
           e.preventDefault(); e.stopPropagation();
           albumCtx = album;
@@ -67,15 +68,16 @@
     currentAlbumId = albumId;
     var useCache = _lastFetchedAlbum === albumId && !_mediaDirty && mediaCache.length > 0;
     _lastFetchedAlbum = albumId;
-    _mediaDirty = false;
-    // Revoke old blob URLs
-    mediaCache.forEach(function(m) { if (m._blobUrl) URL.revokeObjectURL(m._blobUrl); });
-    selectedIds.clear();
-    selectedMap = {};
-    lastIndex = null;
-    mediaCache = [];
-    syncSelection();
-    D.mediaGridEl.innerHTML = '<div class="media-loading"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Loading...</div>';
+    if (!useCache) {
+      _mediaDirty = false;
+      mediaCache.forEach(function(m) { if (m._blobUrl) URL.revokeObjectURL(m._blobUrl); });
+      selectedIds.clear();
+      selectedMap = {};
+      lastIndex = null;
+      mediaCache = [];
+      syncSelection();
+      D.mediaGridEl.innerHTML = '<div class="media-loading"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Loading...</div>';
+    }
 
     _loadPending = true;
     var fetchOrCache = useCache

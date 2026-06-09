@@ -84,6 +84,7 @@
 
   // Track active blob URLs so we can revoke them
   var _blobUrls = {};
+  var _inflightBlobs = {}; // Prevents concurrent blobGet for the same key
 
   function revokeBlobUrl(key) {
     if (_blobUrls[key]) {
@@ -230,6 +231,7 @@
   }
 
   function saveTour(slug, tourData) {
+    tourData._savedAt = Date.now();
     var raw = localStorage.getItem(LOCAL_STORAGE_PREFIX + slug);
     var existing = raw ? JSON.parse(raw) : {};
     var payload = {
@@ -343,9 +345,16 @@
   // ─── Resolve a stored media ID to a blob URL ──────────
 
   function resolveMediaId(mediaId) {
-    return createBlobUrl(mediaId).then(function(blobUrl) {
+    if (_inflightBlobs[mediaId]) return _inflightBlobs[mediaId];
+    var promise = createBlobUrl(mediaId).then(function(blobUrl) {
+      delete _inflightBlobs[mediaId];
       return blobUrl || null;
+    }).catch(function() {
+      delete _inflightBlobs[mediaId];
+      return null;
     });
+    _inflightBlobs[mediaId] = promise;
+    return promise;
   }
 
   // ─── Export / Import ──────────────────────────────────

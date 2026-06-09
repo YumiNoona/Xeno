@@ -29,6 +29,10 @@
       E.openPropertiesPanel(hsData, { skipUndo: true });
     });
 
+    // Prevent hotspot clicks from initiating pano drag
+    el.addEventListener('pointerdown', function(e) { e.stopPropagation(); });
+    el.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+
     if (hsData.iconSize) E.applyIconSize(el, hsData.iconSize);
     return el;
   };

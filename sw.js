@@ -1,9 +1,8 @@
 // Auto-bumped cache key — new timestamp on each SW activation invalidates old caches
-// 🔁 Bump this version on every deploy to invalidate stale caches
-// For automated deploys, inject via Vercel env: var CACHE = 'xeno-' + (process.env.VERCEL_GIT_COMMIT_SHA || 'v6').slice(0,8);
-var CACHE = 'xeno-v6';
+// Auto-bumped daily — new date invalidates stale caches without per-load thrashing
+var CACHE = 'xeno-' + new Date().toISOString().slice(0, 10);
 var PRECACHE = [
-  '/', '/editor.html', '/preview.html', '/index.html',
+  '/', '/editor.html', '/preview.html', '/index.html', '/data.js',
   '/css/tokens.css',
   '/css/editor/base.css', '/css/editor/buttons.css', '/css/editor/topbar.css',
   '/css/editor/sidebar.css', '/css/editor/viewport.css',

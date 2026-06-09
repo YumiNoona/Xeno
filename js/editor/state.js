@@ -45,6 +45,7 @@
   E.debouncedSave = function() {
     if (S.saveTimeout) clearTimeout(S.saveTimeout);
     S.saveTimeout = setTimeout(function() {
+      if (_isRebuilding || (S.isRebuilding && S.isRebuilding())) return;
       if (S.projectSlug && window.XenoSupabase) {
         if (S.scenes && S.scenes.length) {
           window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
@@ -211,8 +212,12 @@
       }
     });
     return Promise.all(promises).then(function() {
-      // After all resolutions, sync any thumbnailUrl that was skipped (matched mediaUrl)
-      clone.scenes.forEach(function(s) { if (s._mediaId && s.thumbnailUrl === s._mediaId) { s.thumbnailUrl = s.mediaUrl; } });
+      clone.scenes.forEach(function(s) {
+        if (s._mediaId && s.thumbnailUrl === s._mediaId) {
+          // Only sync if mediaUrl was actually resolved (not a placeholder)
+          s.thumbnailUrl = s.mediaUrl && s.mediaUrl.indexOf('data:image/svg') === 0 ? '' : s.mediaUrl;
+        }
+      });
       return clone;
     });
   }
@@ -233,6 +238,7 @@
     if (undoBtn) undoBtn.disabled = _undoIndex <= 0;
     if (redoBtn) redoBtn.disabled = _undoIndex >= _undoStack.length - 1;
   }
+  E.refreshUndoButtons = refreshUndoButtons;
 
   // Emergency flush on tab close to prevent data loss
   function emergencySave() {

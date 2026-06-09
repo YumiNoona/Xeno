@@ -27,11 +27,15 @@
         pubBtn.disabled = true;
 
         window.XenoSupabase.exportProject(S.projectSlug).then(function(bundle) {
+          var controller = new AbortController();
+          var timeout = setTimeout(function() { controller.abort(); }, 30000);
           return fetch('/api/publish', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ project: bundle, expiry: expiryValue })
+            body: JSON.stringify({ project: bundle, expiry: expiryValue }),
+            signal: controller.signal
           }).then(function(r) {
+            clearTimeout(timeout);
             if (!r.ok) throw new Error('Publish failed');
             return r.json();
           });
@@ -52,11 +56,21 @@
           }
           setTimeout(function() { if (window.showDonatePopup) window.showDonatePopup(); }, 800);
         }).catch(function(err) {
-          var previewUrl = window.location.origin + '/preview.html?project=' + S.projectSlug;
-          prompt('Publish API not available (local dev). Share this:', previewUrl);
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(previewUrl).then(function() {}).catch(function() {});
-          }
+          if (err && err.name === 'AbortError') {
+            alert('Publish timed out after 30 seconds. Please check your connection and try again.');
+          } else {
+            // Fallback: show inline modal instead of browser prompt()
+            var fbUrl = window.location.origin + '/preview.html?project=' + S.projectSlug;
+            var fbOverlay = document.createElement('div');
+            fbOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;display:flex;align-items:center;justify-content:center;';
+            fbOverlay.innerHTML = '<div style="background:var(--bg-panel);border:3px solid var(--border);padding:24px;max-width:440px;width:90%;text-align:center;">' +
+              '<p style="color:var(--text-primary);margin-bottom:16px;">Share this link:</p>' +
+              '<input value="' + fbUrl + '" readonly style="width:100%;padding:8px;background:#0a0a0a;border:2px solid var(--border);color:var(--text-primary);font-family:monospace;font-size:12px;margin-bottom:12px;text-align:center;" onclick="this.select()">' +
+              '<button style="background:var(--accent);color:#fff;border:none;padding:10px 24px;cursor:pointer;font-weight:bold;text-transform:uppercase;" onclick="navigator.clipboard.writeText(\'' + fbUrl + '\');this.textContent=\'Copied!\';setTimeout(function(){document.body.removeChild(document.querySelector(\'[data-pub-fallback]\'))},600);">Copy & Close</button>' +
+              '</div>';
+            fbOverlay.setAttribute('data-pub-fallback', '1');
+            fbOverlay.addEventListener('click', function(e) { if (e.target === fbOverlay) document.body.removeChild(fbOverlay); });
+            document.body.appendChild(fbOverlay);
         }).finally(function() {
           pubBtn.innerHTML = origText;
           pubBtn.disabled = false;
@@ -197,6 +211,7 @@
       mediaRecords.forEach(function(r) { mediaMap[r.id] = r; });
 
       var usedNames = {};
+      var usedMedia = {}; // Track already-written zip paths to prevent double-write
 
       function uniqueName(name) {
         if (!usedNames[name]) { usedNames[name] = true; return name; }
@@ -224,7 +239,13 @@
 
       function getOriginalName(mediaId, fallback) {
         var rec = mediaMap[mediaId];
-        return rec && rec.filename ? rec.filename : fallback;
+        if (rec && rec.filename) return rec.filename;
+        // Cross-reference Supabase if localStorage meta is stale
+        if (window.XenoSupabase && window.XenoSupabase.getMediaRecord) {
+          var supRec = window.XenoSupabase.getMediaRecord(mediaId);
+          if (supRec && supRec.filename) return supRec.filename;
+        }
+        return fallback;
       }
 
       function resolveUrl(url) {
@@ -353,8 +374,9 @@
               var mediaId = tUrl.indexOf('media_') === 0 ? tUrl : null;
               var orig = mediaId ? getOriginalName(mediaId, null) : null;
               var name = uniqueName(orig || ('thumb_' + sceneData.id + '.' + ext));
-              zip.file('media/' + name, blob);
-              sceneData.thumbnailUrl = 'media/' + name;
+              var path = 'media/' + name;
+              if (!usedMedia[path]) { usedMedia[path] = true; zip.file(path, blob); }
+              sceneData.thumbnailUrl = path;
             });
           }).catch(function(err) {
             mediaFailures++;
@@ -373,8 +395,7 @@
         bundleHotspotMedia(sceneData.linkHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.infoHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.mediaHotspots, sceneData.id);
-        // Audio fields (narratorAudio, ambientAudio) typically only appear on hotspots[],
-        // but scanning all four arrays costs nothing and ensures future-proofing
+        // Scan all four hotspot arrays for narrator/ambient audio
         var _allHS = [sceneData.hotspots, sceneData.linkHotspots, sceneData.infoHotspots, sceneData.mediaHotspots];
         _allHS.forEach(function(arr) { bundleHotspotAudio(arr, 'narratorAudio', sceneData.id); });
         _allHS.forEach(function(arr) { bundleHotspotAudio(arr, 'ambientAudio', sceneData.id); });

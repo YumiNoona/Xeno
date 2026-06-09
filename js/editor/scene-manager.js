@@ -31,7 +31,7 @@
         var thumbIsMediaId = thumb && thumb.indexOf('media_') === 0;
         var thumbSrc = thumbIsMediaId ? '' : thumb;
         var imgHtml = thumbSrc
-          ? '<img class="scene-card-thumb" src="' + thumbSrc + '" onerror="this.outerHTML=\'<div class=&quot;scene-thumb-placeholder&quot;>Scene</div>\'">'
+          ? '<img class="scene-card-thumb" src="' + thumbSrc + '">'
           : '<div class="scene-thumb-placeholder" data-thumb-id="' + (thumbIsMediaId ? thumb : '') + '">Scene</div>';
 
         var eyeSvg = s.data.hidden
@@ -131,6 +131,10 @@
         });
 
         D.sceneGridEl.appendChild(card);
+        var thumbImg = card.querySelector('.scene-card-thumb');
+        if (thumbImg) {
+          thumbImg.onerror = function() { this.outerHTML = '<div class="scene-thumb-placeholder">Scene</div>'; };
+        }
       });
       E.resolveSceneThumbs(D.sceneGridEl);
     };
@@ -255,7 +259,7 @@
           clone.name = clone.name + ' (copy)';
           // Restore media ID for persistence if available
           var mediaId = S.contextTarget.data._mediaId;
-          if (mediaId) { clone.mediaUrl = mediaId; clone._mediaId = mediaId; }
+          if (mediaId) { clone.mediaUrl = mediaId; }
           window.data.scenes.push(clone);
           var displayUrl = mediaId && window.XenoSupabase
             ? window.XenoSupabase.resolveMediaId(mediaId)
