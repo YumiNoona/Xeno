@@ -54,10 +54,11 @@
       var c = Object.assign({}, h); c.type = c.type || 'image'; c.style = c.style || 'media'; hotspots.push(c);
     });
 
-    // Resolve media IDs in hotspot content.src and customIconUrl
+    // Deep-clone hotspots to avoid mutating source data with temp _srcId/_customIconId
+    var renderHotspots = hotspots.map(function(hs) { return JSON.parse(JSON.stringify(hs)); });
     var isMediaId = window.XenoEditor.isMediaId;
     var resolvePromises = [];
-    hotspots.forEach(function(hs) {
+    renderHotspots.forEach(function(hs) {
       var src = hs.content && hs.content.src;
       if (isMediaId(src) && window.XenoSupabase) {
         hs.content._srcId = hs.content.src;
@@ -79,7 +80,7 @@
     Promise.all(resolvePromises).then(function() {
       if (thisGen !== _hotspotGen) return; // Stale generation — scene switched
       if (S.currentSceneCtx !== sceneCtx) return;
-      hotspots.forEach(function(hsData) { E.createVisualHotspot(hsData); });
+      renderHotspots.forEach(function(hsData) { E.createVisualHotspot(hsData); });
     });
 
     if (S.selectedHotspotData) {

@@ -208,9 +208,9 @@
         var saveData = JSON.parse(JSON.stringify(window.data));
         window.XenoEditor.restoreMediaIds(saveData);
         // Synchronous localStorage fallback (survives iOS page freeze)
-        try { localStorage.setItem('xeno_emergency_' + S.projectSlug, JSON.stringify({ data: saveData, savedAt: Date.now() })); } catch(lsErr) {}
+        try { localStorage.setItem('xeno_emergency_' + S.projectSlug, JSON.stringify({ data: saveData, savedAt: Date.now() })); } catch(lsErr) { console.error('Emergency localStorage save failed', lsErr); }
         window.XenoSupabase.saveTour(S.projectSlug, saveData);
-      } catch(e) {}
+      } catch(e) { console.error('Emergency save failed', e); }
     }
   }
   window.addEventListener('beforeunload', emergencySave);

@@ -62,6 +62,8 @@
   }
 
   function loadMedia(albumId) {
+    // Revoke old blob URLs
+    mediaCache.forEach(function(m) { if (m._blobUrl) URL.revokeObjectURL(m._blobUrl); });
     selectedIds.clear();
     selectedMap = {};
     lastIndex = null;

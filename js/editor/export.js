@@ -165,7 +165,7 @@
 
       var imagesToBundle = [
 
-        'public/logo.ico', 'public/logo 16x16.png', 'public/logo 32x32.png'
+        'public/logo.ico', 'public/logo-16x16.png', 'public/logo-32x32.png'
       ];
 
       // Build media ID → original filename map from localStorage
@@ -295,14 +295,69 @@
         mediaPromises.push(p);
       }
 
+      function bundleHotspotCustomIcons(hotspots, sceneId) {
+        (hotspots || []).forEach(function(hs, idx) {
+          var src = hs.customIconUrl;
+          if (!src || (src.indexOf('blob:') !== 0 && src.indexOf('media_') !== 0)) return;
+          var p = resolveUrl(src).then(function(fetchUrl) {
+            if (!fetchUrl) throw new Error('No blob found for custom icon');
+            return fetch(fetchUrl).then(function(res) {
+              if (!res.ok) throw new Error('Failed to fetch custom icon');
+              return res.blob();
+            }).then(function(blob) {
+              var ext = extFromMime(blob.type) || 'png';
+              var orig = src.indexOf('media_') === 0 ? getOriginalName(src, null) : null;
+              var name = uniqueName(orig || ('icon_' + sceneId + '_' + idx + '.' + ext));
+              zip.file('media/' + name, blob);
+              hs.customIconUrl = 'media/' + name;
+            });
+          }).catch(function(err) {
+            mediaFailures++;
+            console.warn('Could not bundle custom icon for scene ' + sceneId, err);
+            hs.customIconUrl = null;
+          });
+          mediaPromises.push(p);
+        });
+      }
+
+      function bundleSceneThumbnail(sceneData) {
+        var tUrl = sceneData.thumbnailUrl;
+        if (!tUrl || tUrl === sceneData.mediaUrl) return;
+        if (tUrl.indexOf('blob:') !== 0 && tUrl.indexOf('media_') !== 0) return;
+        var p = resolveUrl(tUrl).then(function(fetchUrl) {
+          if (!fetchUrl) throw new Error('No blob found for thumbnail');
+          return fetch(fetchUrl).then(function(res) {
+            if (!res.ok) throw new Error('Failed to fetch thumbnail');
+            return res.blob();
+          }).then(function(blob) {
+            var ext = extFromMime(blob.type) || 'jpg';
+            var mediaId = tUrl.indexOf('media_') === 0 ? tUrl : null;
+            var orig = mediaId ? getOriginalName(mediaId, null) : null;
+            var name = uniqueName(orig || ('thumb_' + sceneData.id + '.' + ext));
+            zip.file('media/' + name, blob);
+            sceneData.thumbnailUrl = 'media/' + name;
+          });
+        }).catch(function(err) {
+          mediaFailures++;
+          console.warn('Could not bundle thumbnail for scene ' + sceneData.name, err);
+          sceneData.thumbnailUrl = null;
+        });
+        mediaPromises.push(p);
+      }
+
       exportedData.scenes.forEach(function(sceneData) {
         bundleSceneMedia(sceneData);
+        bundleSceneThumbnail(sceneData);
         bundleHotspotMedia(sceneData.hotspots, sceneData.id);
         bundleHotspotMedia(sceneData.linkHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.infoHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.mediaHotspots, sceneData.id);
         bundleHotspotAudio(sceneData.hotspots, 'narratorAudio', sceneData.id);
         bundleHotspotAudio(sceneData.hotspots, 'ambientAudio', sceneData.id);
+        bundleHotspotCustomIcons(sceneData.hotspots, sceneData.id);
+        bundleHotspotCustomIcons(sceneData.linkHotspots, sceneData.id);
+        bundleHotspotCustomIcons(sceneData.infoHotspots, sceneData.id);
+        bundleHotspotCustomIcons(sceneData.mediaHotspots, sceneData.id);
       });
 
       // Bundle floorplan image if set

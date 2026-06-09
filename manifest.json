@@ -14,12 +14,12 @@
       "type": "image/x-icon"
     },
     {
-      "src": "/public/logo 16x16.png",
+      "src": "/public/logo-16x16.png",
       "sizes": "16x16",
       "type": "image/png"
     },
     {
-      "src": "/public/logo 32x32.png",
+      "src": "/public/logo-32x32.png",
       "sizes": "32x32",
       "type": "image/png"
     }

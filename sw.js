@@ -31,7 +31,7 @@ var PRECACHE = [
   '/js/editor/partials/viewport.js', '/js/editor/partials/properties-panel.js',
   '/js/editor/partials/context-menus.js', '/js/editor/partials/media-modal.js',
   '/manifest.json',
-  '/public/logo.ico', '/public/logo 16x16.png', '/public/logo 32x32.png'
+  '/public/logo.ico', '/public/logo-16x16.png', '/public/logo-32x32.png'
 ];
 
 // Install: activate immediately without waiting for precache

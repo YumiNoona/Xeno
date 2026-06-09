@@ -153,15 +153,48 @@
 
     // ── Center-bar drag-to-scroll (mouse + touch) ──────────────────────────
     (function() {
+      var _dragWindowListeners = null;
+
+      function cleanupDragListeners() {
+        if (_dragWindowListeners) {
+          window.removeEventListener('mouseup', _dragWindowListeners.mouseup);
+          window.removeEventListener('mousemove', _dragWindowListeners.mousemove);
+          _dragWindowListeners = null;
+        }
+      }
+
       function initDragScroll(el) {
         if (!el || el._dragScrollInit) return;
         el._dragScrollInit = true;
+        cleanupDragListeners();
 
         var isDown  = false;
         var startX  = 0;
         var scrollL = 0;
         var moved   = false;
         var THRESHOLD = 5;
+
+        function onMouseup() {
+          if (!isDown) return;
+          isDown = false;
+          el.style.cursor = '';
+          el.style.userSelect = '';
+        }
+
+        function onMousemove(e) {
+          if (!isDown) return;
+          var x    = e.pageX - el.offsetLeft;
+          var walk = x - startX;
+          if (Math.abs(walk) > THRESHOLD) {
+            moved = true;
+            e.preventDefault();
+            el.scrollLeft = scrollL - walk;
+          }
+        }
+
+        _dragWindowListeners = { mouseup: onMouseup, mousemove: onMousemove };
+        window.addEventListener('mouseup', onMouseup);
+        window.addEventListener('mousemove', onMousemove);
 
         // ── Mouse ──────────────────────────────
         el.addEventListener('mousedown', function(e) {
@@ -172,24 +205,6 @@
           scrollL = el.scrollLeft;
           el.style.cursor = 'grabbing';
           el.style.userSelect = 'none';
-        });
-
-        window.addEventListener('mouseup', function() {
-          if (!isDown) return;
-          isDown = false;
-          el.style.cursor = '';
-          el.style.userSelect = '';
-        });
-
-        window.addEventListener('mousemove', function(e) {
-          if (!isDown) return;
-          var x    = e.pageX - el.offsetLeft;
-          var walk = x - startX;
-          if (Math.abs(walk) > THRESHOLD) {
-            moved = true;
-            e.preventDefault();
-            el.scrollLeft = scrollL - walk;
-          }
         });
 
         el.addEventListener('click', function(e) {
