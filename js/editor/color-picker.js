@@ -80,6 +80,11 @@
   function drawHue() {
     var canvas = document.getElementById('xcp-hue-canvas');
     if (!canvas) return;
+    var hueBar = canvas.parentElement;
+    if (hueBar) {
+      canvas.width = hueBar.clientWidth;
+      canvas.height = hueBar.clientHeight;
+    }
     var ctx = canvas.getContext('2d');
     var w = canvas.width, h = canvas.height;
     for (var y = 0; y < h; y++) {
@@ -95,9 +100,11 @@
       sv.style.left = (_sat / 100 * 200) + 'px';
       sv.style.top = ((1 - _val / 100) * 200) + 'px';
     }
+    var hueBar = document.querySelector('.xcp-hue-bar');
     var hue = document.getElementById('xcp-hue-cursor');
-    if (hue) {
-      hue.style.top = ((_hue / 360) * 200 - 3) + 'px';
+    if (hue && hueBar) {
+      hue.style.top = ((_hue / 360) * hueBar.clientHeight - 3) + 'px';
+      hue.style.width = (hueBar.clientWidth + 4) + 'px';
     }
   }
 
@@ -154,10 +161,12 @@
     if (oldPrev) oldPrev.style.background = _oldColor;
     var overlay = document.getElementById('xeno-color-picker');
     if (overlay) overlay.style.display = 'flex';
-    drawSV();
-    drawHue();
-    syncAll();
-    renderRecent();
+    requestAnimationFrame(function() {
+      drawHue();
+      drawSV();
+      syncAll();
+      renderRecent();
+    });
   }
 
   function closePicker() {
@@ -273,12 +282,16 @@
     var dropper = document.getElementById('xcp-eyedropper');
     if (dropper && window.EyeDropper) {
       dropper.addEventListener('click', function() {
+        dropper.classList.add('xcp-dropper-active');
         var ed = new EyeDropper();
         ed.open().then(function(result) {
           var hsv = hexToHsv(result.sRGBHex);
           _hue = hsv.h; _sat = hsv.s; _val = hsv.v;
           drawSV(); syncAll();
-        }).catch(function() {});
+        }).catch(function() {})
+          .finally(function() {
+            dropper.classList.remove('xcp-dropper-active');
+          });
       });
     } else if (dropper) {
       dropper.style.display = 'none';
@@ -302,6 +315,9 @@
   function wireSwatches() {
     var iconSwatch = document.getElementById('prop-icon-color-swatch');
     var ringSwatch = document.getElementById('prop-ring-color-swatch');
+    var textColorSwatch = document.getElementById('prop-text-color-swatch');
+    var textBgColorSwatch = document.getElementById('prop-text-bg-color-swatch');
+    
     if (iconSwatch && iconSwatch.parentElement) {
       iconSwatch.parentElement.addEventListener('click', function(e) {
         e.preventDefault(); e.stopPropagation();
@@ -312,6 +328,18 @@
       ringSwatch.parentElement.addEventListener('click', function(e) {
         e.preventDefault(); e.stopPropagation();
         openPicker('prop-ring-color', 'prop-ring-color-swatch');
+      });
+    }
+    if (textColorSwatch && textColorSwatch.parentElement) {
+      textColorSwatch.parentElement.addEventListener('click', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        openPicker('prop-text-color', 'prop-text-color-swatch');
+      });
+    }
+    if (textBgColorSwatch && textBgColorSwatch.parentElement) {
+      textBgColorSwatch.parentElement.addEventListener('click', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        openPicker('prop-text-bg-color', 'prop-text-bg-color-swatch');
       });
     }
   }

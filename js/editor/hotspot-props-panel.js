@@ -152,6 +152,10 @@
       if (D.groupTextBgColor) D.groupTextBgColor.style.display = D.propTextBg.checked ? '' : 'none';
       D.propTextColor.value = hsData.textColor || '#ffffff';
       D.propTextBgColor.value = (hsData.bgColor && hsData.bgColor !== 'transparent') ? hsData.bgColor : '#000000';
+      var textColorSwatch = document.getElementById('prop-text-color-swatch');
+      var textBgColorSwatch = document.getElementById('prop-text-bg-color-swatch');
+      if (textColorSwatch) textColorSwatch.style.background = hsData.textColor || '#ffffff';
+      if (textBgColorSwatch) textBgColorSwatch.style.background = (hsData.bgColor && hsData.bgColor !== 'transparent') ? hsData.bgColor : '#000000';
       D.propTextSize.value = hsData.fontSize || 14;
       D.propTextSizeLabel.textContent = (hsData.fontSize || 14) + 'px';
       D.propTextFont.value = hsData.fontFamily || '';

@@ -26,12 +26,36 @@
   bottom: -3px; right: -3px;
 }
 .xcp-dropper {
-  background: none; border: 1px solid var(--border);
-  color: var(--text-muted); cursor: pointer;
-  padding: 4px 6px; display: flex; align-items: center;
-  transition: border-color 0.15s, color 0.15s;
+  background: #1a1a1a;
+  border: 2px solid var(--border);
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 4px;
 }
-.xcp-dropper:hover { border-color: var(--accent); color: var(--accent-text); }
+.xcp-dropper:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: scale(1.05);
+  box-shadow: 0 0 0 2px rgba(230, 45, 88, 0.2);
+}
+.xcp-dropper:active {
+  transform: scale(0.95);
+}
+.xcp-dropper-active {
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+  animation: xcp-pulse 0.8s infinite ease-in-out;
+}
+@keyframes xcp-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 45, 88, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(230, 45, 88, 0); }
+}
 .xcp-header {
   display: flex; justify-content: space-between; align-items: center;
   padding: 10px 14px;
@@ -73,14 +97,14 @@
   z-index: 2;
 }
 .xcp-hue-bar {
-  position: relative; width: 20px; height: 200px;
+  position: relative; width: 100%; height: 200px;
   border: 2px solid var(--border); cursor: pointer;
-  flex-shrink: 0;
+  flex: 1;
 }
 .xcp-hue-bar canvas { display: block; }
 .xcp-hue-cursor {
   position: absolute; left: -3px;
-  width: 22px; height: 6px;
+  width: 100%; height: 6px;
   border: 2px solid #fff;
   pointer-events: none;
   box-shadow: 0 0 0 1px rgba(0,0,0,0.5);
@@ -88,6 +112,21 @@
 }
 .xcp-preview-row {
   display: flex; gap: 10px; align-items: center; margin-bottom: 10px;
+}
+.hs-hex-input {
+  background: #1a1a1a;
+  border: 2px solid var(--border);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 4px;
+}
+.hs-hex-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(230, 45, 88, 0.2);
 }
 .xcp-preview-old, .xcp-preview-new {
   width: 32px; height: 32px;

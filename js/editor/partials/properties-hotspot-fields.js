@@ -404,11 +404,17 @@ window.XenoTemplates.hotspotFields = function() {
         <div style="display:flex;gap:10px;align-items:flex-start;">
           <div style="flex:1;">
             <label>Text Color</label>
-            <input type="color" id="prop-text-color" value="#ffffff">
+            <label style="display:block;width:32px;height:32px;border:2px solid var(--border);cursor:pointer;position:relative;">
+              <input type="hidden" id="prop-text-color" value="#ffffff">
+              <span id="prop-text-color-swatch" style="display:block;width:100%;height:100%;background:#fff;"></span>
+            </label>
           </div>
           <div style="flex:1;" id="group-text-bg-color">
             <label>Background Color</label>
-            <input type="color" id="prop-text-bg-color" value="#000000">
+            <label style="display:block;width:32px;height:32px;border:2px solid var(--border);cursor:pointer;position:relative;">
+              <input type="hidden" id="prop-text-bg-color" value="#000000">
+              <span id="prop-text-bg-color-swatch" style="display:block;width:100%;height:100%;background:#000;"></span>
+            </label>
           </div>
         </div>
       </div>
