@@ -8,13 +8,6 @@ window.XenoTemplates.colorPicker = function() {
     <div class="xcp-header">
       <span class="xcp-title">COLOR</span>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button class="xcp-dropper" id="xcp-eyedropper" title="Pick from screen">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2a10 10 0 0 0-3.29 19.43c.5.09.68-.22.68-.5V19a4 4 0 0 0-3-3.73c-1.67-.32-3.37-1.1-3.37-4.77a3.7 3.7 0 0 1 1-2.64 3.6 3.6 0 0 1 .29-2.88s.23-1.72 1.64-2.61a5.88 5.88 0 0 1 2.88 0c.64-.5 1.52-.75 2.35-.76a3.8 3.8 0 0 1 2.69 1.14"/>
-            <polyline points="21 15 21 21 15 21"/>
-            <line x1="18" y1="18" x2="21" y2="21"/>
-          </svg>
-        </button>
         <button class="xcp-close" id="xcp-close">&times;</button>
       </div>
     </div>
@@ -30,8 +23,13 @@ window.XenoTemplates.colorPicker = function() {
         </div>
       </div>
       <div class="xcp-preview-row">
-        <div class="xcp-preview-old" id="xcp-preview-old"></div>
         <div class="xcp-preview-new" id="xcp-preview-new"></div>
+        <button class="xcp-dropper" id="xcp-eyedropper" title="Pick from screen" style="flex-shrink:0;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.71 4.63a1 1 0 0 0-1.42 0l-2.68 2.68-1.41-1.41 2.68-2.68a1 1 0 0 0-1.42-1.41l-2.68 2.68-1.41-1.41a1 1 0 0 0-1.42 1.41l1.41 1.41-6.36 6.36a2 2 0 0 0-.58 1.42L3 20.31a1 1 0 0 0 1 1a1 1 0 0 0 .71-.29l2.12-2.12a2 2 0 0 0 1.42-.58l6.36-6.36 1.41 1.41 2.68-2.68a1 1 0 0 0 0-1.42z"/>
+            <path fill="currentColor" d="M4.92 19.08l.71-.71 1.41 1.41-.71.71z"/>
+          </svg>
+        </button>
         <input type="text" class="hs-hex-input" id="xcp-hex" maxlength="7" value="#ffffff" style="flex:1;min-width:0;">
       </div>
       <div class="xcp-presets" id="xcp-presets">

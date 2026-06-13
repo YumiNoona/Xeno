@@ -84,8 +84,7 @@ body[data-layout-theme="gallery"] #sceneList .scene .scene-thumb {
 body[data-layout-theme="gallery"] #sceneList .scene .scene-name { display: none; }
 body[data-layout-theme="gallery"] #controls .ctrl-btn {
   width: 38px; height: 38px;
-  background: rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.18);
-  backdrop-filter: blur(8px);
+  background: transparent; border: none;
 }
 body[data-layout-theme="gallery"] #controls { bottom: 20px; right: 20px; }
 
@@ -148,9 +147,8 @@ body[data-layout-theme="float"] #sceneList.enabled {
 }
 body[data-layout-theme="float"] #controls .ctrl-btn {
   width: 42px; height: 42px;
-  background: rgba(0,0,0,0.45); border-color: var(--border-glass);
-  backdrop-filter: blur(12px); border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  background: transparent; border: none;
+  box-shadow: none;
 }
 body[data-layout-theme="float"] #controls .ctrl-btn svg { width: 18px; height: 18px; }
 body[data-layout-theme="float"] #controls { bottom: 110px; }
@@ -265,8 +263,7 @@ body[data-layout-theme="center-bar"] #controls {
 }
 body[data-layout-theme="center-bar"] #controls .ctrl-btn {
   width: 36px; height: 36px;
-  background: transparent; border-color: rgba(255,255,255,0.12);
-  border-radius: 8px;
+  background: transparent; border: none;
 }
 body[data-layout-theme="center-bar"] #controls .ctrl-btn svg { width: 16px; height: 16px; }
 

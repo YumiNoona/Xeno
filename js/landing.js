@@ -3,6 +3,7 @@
   var themeToggle = document.getElementById('theme-toggle');
   var sunIcon = document.getElementById('sun-icon');
   var moonIcon = document.getElementById('moon-icon');
+  var transitionOverlay = document.getElementById('xeno-page-transition');
 
   var currentTheme = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', currentTheme);
@@ -21,6 +22,26 @@
     sunIcon.style.display = theme === 'dark' ? 'none' : 'block';
     moonIcon.style.display = theme === 'dark' ? 'block' : 'none';
   }
+
+  function navigateWithTransition(url) {
+    transitionOverlay.style.opacity = '1';
+    transitionOverlay.style.pointerEvents = 'auto';
+    setTimeout(function() {
+      window.location.href = url;
+    }, 200);
+  }
+
+  // Attach click handlers to all internal links
+  document.addEventListener('click', function(e) {
+    var link = e.target.closest('a');
+    if (link && link.href && !link.target) {
+      var url = new URL(link.href);
+      if (url.origin === window.location.origin && !url.pathname.includes('marzipano.net')) {
+        e.preventDefault();
+        navigateWithTransition(link.href);
+      }
+    }
+  });
 
   // Preview tour picker
   var cardPreview = document.getElementById('card-preview');
@@ -62,6 +83,7 @@
         tours.forEach(function(t) {
           var el = document.createElement('a');
           el.href = 'preview.html?project=' + encodeURIComponent(t.slug);
+          el.target = '_blank';
           el.style.cssText = 'display:block;padding:12px 16px;background:var(--bg-raised);border:2px solid var(--border);color:var(--text-primary);text-decoration:none;transition:all 0.15s;font-family:inherit;';
           el.innerHTML = '<strong>' + t.name + '</strong><br><span style="font-size:var(--type-xs);color:var(--text-muted);">' + t.scenes + ' scene' + (t.scenes !== 1 ? 's' : '') + '</span>';
           el.addEventListener('mouseenter', function() { this.style.borderColor = 'var(--accent)'; });

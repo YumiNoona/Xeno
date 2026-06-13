@@ -14,6 +14,15 @@
   var _targetHex = null;
   var _oldColor = '#ffffff';
   var _dragging = { sv: false, hue: false };
+  var _listenersAttached = false;
+
+  // Fallback eyedropper state
+  var _fallbackDropper = {
+    active: false,
+    overlay: null,
+    preview: null,
+    hexLabel: null
+  };
 
   function hsvToHex(h, s, v) {
     s /= 100; v /= 100;
@@ -52,7 +61,6 @@
     var ctx = canvas.getContext('2d');
     var w = canvas.width, h = canvas.height;
     var imageData = ctx.createImageData(w, h);
-    var satRad = _sat / 100;
     for (var y = 0; y < h; y++) {
       var val = 1 - y / h;
       for (var x = 0; x < w; x++) {
@@ -66,7 +74,7 @@
         else if (_hue < 180) { r = 0; g = c; b = X; }
         else if (_hue < 240) { r = 0; g = X; b = c; }
         else if (_hue < 300) { r = X; g = 0; b = c; }
-        else { r = c; g = 0; b = X; }
+        else { r = c; g = 0; b = x; }
         var idx = (y * w + x) * 4;
         imageData.data[idx] = (r * sat + m) * 255;
         imageData.data[idx + 1] = (g * sat + m) * 255;
@@ -150,6 +158,10 @@
   }
 
   function openPicker(inputId, swatchId, hexInputId) {
+    if (!_listenersAttached) {
+      setupPicker();
+      _listenersAttached = true;
+    }
     _targetInput = document.getElementById(inputId);
     _targetSwatch = document.getElementById(swatchId);
     _targetHex = document.getElementById(hexInputId);
@@ -280,21 +292,50 @@
 
     // Eyedropper
     var dropper = document.getElementById('xcp-eyedropper');
-    if (dropper && window.EyeDropper) {
-      dropper.addEventListener('click', function() {
-        dropper.classList.add('xcp-dropper-active');
-        var ed = new EyeDropper();
-        ed.open().then(function(result) {
-          var hsv = hexToHsv(result.sRGBHex);
-          _hue = hsv.h; _sat = hsv.s; _val = hsv.v;
-          drawSV(); syncAll();
-        }).catch(function() {})
-          .finally(function() {
-            dropper.classList.remove('xcp-dropper-active');
-          });
-      });
-    } else if (dropper) {
-      dropper.style.display = 'none';
+    console.log('[ColorPicker] Looking for dropper element:', dropper);
+    console.log('[ColorPicker] window.EyeDropper:', !!window.EyeDropper);
+    if (dropper) {
+      if (window.EyeDropper) {
+        dropper.addEventListener('click', function(e) {
+          console.log('[ColorPicker] Dropper clicked!');
+          e.preventDefault();
+          e.stopPropagation();
+          dropper.classList.add('xcp-dropper-active');
+          var ed = new EyeDropper();
+          console.log('[ColorPicker] Opening eye dropper...');
+          ed.open().then(function(result) {
+            console.log('[ColorPicker] Dropper result:', result);
+            var hsv = hexToHsv(result.sRGBHex);
+            _hue = hsv.h; _sat = hsv.s; _val = hsv.v;
+            drawSV(); syncAll();
+            if (E.showToast) {
+              E.showToast('Color picked: ' + result.sRGBHex.toUpperCase());
+            }
+          }).catch(function(err) {
+            console.error('[ColorPicker] Dropper error:', err);
+          })
+            .finally(function() {
+              dropper.classList.remove('xcp-dropper-active');
+            });
+        });
+      } else {
+        // Use fallback - let's just tell users to use the color picker controls,
+        // or let them click on the SV canvas to pick a color
+        dropper.title = 'Pick a color from the color picker';
+        dropper.addEventListener('click', function(e) {
+          console.log('[ColorPicker] Fallback dropper clicked!');
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Show a little toast message
+          if (E.showToast) {
+            E.showToast('Click on the color picker area to pick a color!');
+          }
+          
+          // Let's just let them use the existing color picker controls
+          // Or we could add a bigger target area... but for now this is fine
+        });
+      }
     }
 
     // Preset color clicks
@@ -346,7 +387,6 @@
 
   // Initialize after DOM is ready
   setTimeout(function() {
-    setupPicker();
     wireSwatches();
   }, 500);
 })();

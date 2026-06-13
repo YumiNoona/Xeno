@@ -25,7 +25,7 @@ window.XenoViewerTheme = (function() {
         'body[data-layout-theme="gallery"] #sceneList .scene:nth-child(5){transform:rotate(3deg) translateY(6px);z-index:2}',
         'body[data-layout-theme="gallery"] #sceneList .scene:nth-child(6){transform:rotate(5deg) translateY(10px);z-index:1}',
         'body[data-layout-theme="gallery"] #sceneList .scene:nth-child(n+7){transform:rotate(6deg) translateY(14px);z-index:0;opacity:0.5}',
-        'body[data-layout-theme="gallery"] #controls .ctrl-btn{width:38px;height:38px;background:rgba(0,0,0,0.5);border-color:rgba(255,255,255,0.18);backdrop-filter:blur(8px)}',
+        'body[data-layout-theme="gallery"] #controls .ctrl-btn{width:38px;height:38px;background:transparent;border:none}',
         'body[data-layout-theme="gallery"] #controls{bottom:20px;right:20px}',
         'body[data-layout-theme="float"] #titleBar{position:absolute;top:16px;left:16px;right:auto;width:auto;height:auto;padding:8px 16px;background:rgba(0,0,0,0.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--border-glass);border-radius:9999px;box-shadow:0 4px 24px rgba(0,0,0,0.4)}',
         'body[data-layout-theme="float"] #titleBar .sceneName{font-size:var(--type-sm)}',
@@ -39,7 +39,7 @@ window.XenoViewerTheme = (function() {
         'body[data-layout-theme="float"] #sceneList .scene.current{background:rgba(225,29,72,0.2);border:1px solid rgba(225,29,72,0.35)}',
         'body[data-layout-theme="float"] #sceneList .scene .scene-thumb{width:64px;height:64px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);flex-shrink:0}',
         'body[data-layout-theme="float"] #sceneList .scene .scene-name{font-size:var(--type-xs);text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary)}',
-        'body[data-layout-theme="float"] #controls .ctrl-btn{width:42px;height:42px;background:rgba(0,0,0,0.45);border-color:var(--border-glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3)}',
+        'body[data-layout-theme="float"] #controls .ctrl-btn{width:42px;height:42px;background:transparent;border:none;box-shadow:none}',
         'body[data-layout-theme="float"] #controls .ctrl-btn svg{width:18px;height:18px}',
         'body[data-layout-theme="float"] #controls{position:fixed;bottom:80px;right:20px;flex-direction:column}',
         'body[data-layout-theme="hamburger"] #titleBar{display:none}',
@@ -69,7 +69,7 @@ window.XenoViewerTheme = (function() {
         'body[data-layout-theme="center-bar"] #sceneList .scene .scene-thumb{width:100px;height:100px;border-radius:10px;object-fit:cover}',
         'body[data-layout-theme="center-bar"] #sceneList .scene .scene-name{display:none}',
         'body[data-layout-theme="center-bar"] #controls{position:fixed;width:max-content;bottom:24px;left:50%;transform:translateX(-50%);flex-direction:row;gap:8px;background:rgba(0,0,0,0.4);border:1px solid var(--border-glass);border-radius:12px;padding:6px 10px}',
-        'body[data-layout-theme="center-bar"] #controls .ctrl-btn{width:36px;height:36px;background:transparent;border-color:rgba(255,255,255,0.12);border-radius:8px}',
+        'body[data-layout-theme="center-bar"] #controls .ctrl-btn{width:36px;height:36px;background:transparent;border:none}',
         'body[data-layout-theme="center-bar"] #controls .ctrl-btn svg{width:16px;height:16px}'
       ].join('');
       document.head.appendChild(ts);

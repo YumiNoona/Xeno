@@ -3,6 +3,19 @@
   var E = window.XenoEditor;
   var S = E.state;
   var D = E.dom;
+  var transitionOverlay = document.getElementById('xeno-page-transition');
+
+  function navigateWithTransition(url) {
+    if (transitionOverlay) {
+      transitionOverlay.style.opacity = '1';
+      transitionOverlay.style.pointerEvents = 'auto';
+      setTimeout(function() {
+        window.location.href = url;
+      }, 200);
+    } else {
+      window.location.href = url;
+    }
+  }
 
   E.setupUI = function() {
     if (E._uiSetupDone) return; E._uiSetupDone = true;
@@ -102,7 +115,10 @@
 
     // ─── Workspace Header ────────────────────────────────
     var logoBack = document.getElementById('logo-back');
-    if (logoBack) logoBack.addEventListener('click', function() { window.location.search = ''; });
+    if (logoBack) logoBack.addEventListener('click', function(e) {
+      e.preventDefault();
+      navigateWithTransition('editor.html');
+    });
 
     var btnUndo = document.getElementById('btn-undo');
     if (btnUndo) btnUndo.addEventListener('click', function() { E.performUndo(); });
@@ -112,7 +128,9 @@
     var btnPreview = document.getElementById('btn-preview-tour');
     if (btnPreview) {
       btnPreview.addEventListener('click', function() {
-        if (S.projectSlug) window.open('preview.html?project=' + encodeURIComponent(S.projectSlug), '_blank');
+        if (S.projectSlug) {
+          window.open('preview.html?project=' + encodeURIComponent(S.projectSlug), '_blank');
+        }
       });
     }
 
@@ -122,6 +140,18 @@
         E.openProjectSettingsPanel();
       });
     }
+
+    // Add click handler for internal links
+    document.addEventListener('click', function(e) {
+      var link = e.target.closest('a');
+      if (link && link.href && !link.target) {
+        var url = new URL(link.href);
+        if (url.origin === window.location.origin) {
+          e.preventDefault();
+          navigateWithTransition(link.href);
+        }
+      }
+    });
 
     E.setupThemeToggle();
   };
