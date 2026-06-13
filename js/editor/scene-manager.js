@@ -257,7 +257,14 @@
           E.pushUndo();
           var clone = JSON.parse(JSON.stringify(S.contextTarget.data));
           clone.id = 'scene_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-          clone.name = clone.name + ' (copy)';
+          // Deduplicate: "name" → "name (1)", "name (1)" → "name (2)", etc.
+          var baseName = clone.name.replace(/\s*\(\d+\)\s*$/, '');
+          var cleanName = baseName;
+          var existingNames = (window.data.scenes || []).map(function(s) { return s.name; });
+          for (var dupIdx = 1; existingNames.indexOf(cleanName) !== -1; dupIdx++) {
+            cleanName = baseName + ' (' + dupIdx + ')';
+          }
+          clone.name = cleanName;
           // Restore media ID for persistence if available
           var mediaId = S.contextTarget.data._mediaId;
           if (mediaId) { clone.mediaUrl = mediaId; }
@@ -376,32 +383,21 @@
     });
 
     // ─── Batch rename scenes ──────────────────────────────
-    document.getElementById('btn-batch-rename-scenes').addEventListener('click', function() {
-      if (S.selectedSceneIds.size === 0) return;
-      E.prompt('Enter name pattern (use # for number):', 'Room #', 'Batch Rename').then(function(pattern) {
-        if (!pattern) return;
-        var count = 1;
-        S.scenes.forEach(function(s) {
-          if (S.selectedSceneIds.has(s.data.id)) {
-            s.data.name = pattern.replace('#', String(count).padStart(2, '0'));
-            count++;
-          }
-        });
-        E.renderSceneGrid();
-        E.debouncedSave();
-      });
-    });
-
     // ─── Add Scene Helpers ───────────────────────────────
-    var _creatingScene = false;
+    var _creatingScene = 0;
     function isMediaId(v) { return window.XenoEditor.isMediaId(v); }
 
     function createSceneFromUrl(url, name, forceVideo) {
-      if (_creatingScene) return;
-      _creatingScene = true;
+      _creatingScene++;
       try {
       var newId = 'scene_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-      var cleanName = (name || 'Untitled').replace(/\.[^/.]+$/, '');
+      var baseName = (name || 'Untitled').replace(/\.[^/.]+$/, '');
+      // Deduplicate scene names: if baseName already exists, append (1), (2), etc.
+      var cleanName = baseName;
+      var existingNames = (window.data.scenes || []).map(function(s) { return s.name; });
+      for (var dupIdx = 1; existingNames.indexOf(cleanName) !== -1; dupIdx++) {
+        cleanName = baseName + ' (' + dupIdx + ')';
+      }
       var isVideo = forceVideo || url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || (name && name.toLowerCase().match(/\.(mp4|webm|ogg)$/));
 
       var resolveFn = (isMediaId(url) && window.XenoSupabase)
@@ -409,7 +405,7 @@
         : Promise.resolve(url);
 
       resolveFn.then(function(displayUrl) {
-        _creatingScene = false;
+        _creatingScene--;
         var storedUrl = isMediaId(url) ? url : displayUrl;
         var thumbUrl = isVideo ? 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"/%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"/%3E%3Cpolyline points="21 15 16 10 5 21"/%3E%3C/svg%3E' : (isMediaId(url) ? displayUrl : storedUrl);
         var sData = {
@@ -442,8 +438,8 @@
         E.switchSceneById(newId);
         E.startViewReadLoop();
         E.debouncedSave();
-      }).catch(function() { _creatingScene = false; });
-      } catch(e) { _creatingScene = false; throw e; }
+      }).catch(function() { _creatingScene--; });
+      } catch(e) { _creatingScene--; throw e; }
     }
 
     E.addSceneFromUrl = function(url, name) { createSceneFromUrl(url, name, false); };
