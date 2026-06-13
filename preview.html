@@ -145,22 +145,28 @@
       </svg>
     </div>
 
-    <!-- Gyroscope: simple motion sensor icon -->
+    <!-- Gyroscope: phone with motion indicators -->
     <div id="gyroToggle" class="ctrl-btn" title="Toggle Gyroscope">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
         stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3"/>
-        <circle cx="12" cy="12" r="7" stroke-dasharray="4 4"/>
+        <rect x="7" y="3" width="10" height="18" rx="2"/>
+        <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+        <path d="M4 6c-1 2-1 4 0 6M20 6c1 2 1 4 0 6" stroke-dasharray="2 2"/>
       </svg>
     </div>
 
-    <!-- VR: simple headset icon -->
+    <!-- VR: bold VR goggles icon -->
     <div id="vrToggle" class="ctrl-btn" title="Enter VR Mode">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
         stroke-linejoin="round">
-        <path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-3l-2-4H9l-2 4H4a2 2 0 0 1-2-2V9z"/>
-        <circle cx="7.5" cy="12" r="1.5"/>
-        <circle cx="16.5" cy="12" r="1.5"/>
+        <!-- Headset visor — wide curved body -->
+        <path d="M2 8.5C2 7.4 2.9 6.5 4 6.5h16c1.1 0 2 .9 2 2v7c0 1.1-.9 2-2 2h-2.5c-.4 0-.8-.2-1-.6L15 15H9l-1.5 1.9c-.2.4-.6.6-1 .6H4c-1.1 0-2-.9-2-2v-7z"/>
+        <!-- Left lens circle -->
+        <circle cx="8.5" cy="12" r="2.2"/>
+        <!-- Right lens circle -->
+        <circle cx="15.5" cy="12" r="2.2"/>
+        <!-- Nose bridge -->
+        <line x1="10.7" y1="12" x2="13.3" y2="12"/>
       </svg>
     </div>
 
@@ -173,18 +179,17 @@
       </svg>
     </div>
 
-    <!-- Pan Controls: 4 clear directional arrows for navigation -->
+    <!-- Pan Controls: 4 clear directional arrows -->
     <div id="viewControlsToggle" class="ctrl-btn" title="Toggle Pan Controls">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-        stroke-linejoin="round">
-        <!-- Up Arrow -->
-        <polyline points="12 4 8 8 16 8"/>
-        <!-- Down Arrow -->
-        <polyline points="12 20 8 16 16 16"/>
-        <!-- Left Arrow -->
-        <polyline points="4 12 8 8 8 16"/>
-        <!-- Right Arrow -->
-        <polyline points="20 12 16 8 16 16"/>
+      <svg class="icon" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+        <!-- Up arrow -->
+        <polygon points="12,2 8,8 11,8 11,10 13,10 13,8 16,8"/>
+        <!-- Down arrow -->
+        <polygon points="12,22 8,16 11,16 11,14 13,14 13,16 16,16"/>
+        <!-- Left arrow -->
+        <polygon points="2,12 8,8 8,11 10,11 10,13 8,13 8,16"/>
+        <!-- Right arrow -->
+        <polygon points="22,12 16,8 16,11 14,11 14,13 16,13 16,16"/>
       </svg>
     </div>
 
