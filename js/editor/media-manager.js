@@ -15,6 +15,7 @@
   var _mediaDirty = true;
   var _lastFetchedAlbum = null;
   var _modalOpen = false;
+  var _mediaGen = 0;
 
   // ─── Albums ──────────────────────────────────────────
   function loadAlbums(activeId) {
@@ -71,13 +72,22 @@
     var normalizedId = (albumId === undefined) ? null : albumId;
     currentAlbumId = normalizedId;
 
+    _mediaGen++;
+    var currentGen = _mediaGen;
+
     var useCache = _lastFetchedAlbum === normalizedId && !_mediaDirty && mediaCache.length > 0;
     _lastFetchedAlbum = normalizedId;
 
     if (!useCache) {
       _mediaDirty = false;
       // Revoke old blob URLs before clearing cache
-      mediaCache.forEach(function(m) { if (m._blobUrl) URL.revokeObjectURL(m._blobUrl); });
+      mediaCache.forEach(function(m) {
+        if (window.XenoSupabase && window.XenoSupabase.revokeBlobUrl) {
+          window.XenoSupabase.revokeBlobUrl(m.id);
+        } else if (m._blobUrl) {
+          URL.revokeObjectURL(m._blobUrl);
+        }
+      });
       selectedIds.clear();
       selectedMap = {};
       lastIndex = null;
@@ -91,6 +101,17 @@
       ? Promise.resolve(mediaCache)
       : window.XenoSupabase.fetchMedia(normalizedId);
     fetchOrCache.then(function(list) {
+      if (currentGen !== _mediaGen) {
+        // Stale fetch - clean up blob URLs to prevent memory leaks
+        list.forEach(function(m) {
+          if (window.XenoSupabase && window.XenoSupabase.revokeBlobUrl) {
+            window.XenoSupabase.revokeBlobUrl(m.id);
+          } else if (m._blobUrl) {
+            URL.revokeObjectURL(m._blobUrl);
+          }
+        });
+        return;
+      }
       _loadPending = false;
 
       if (!useCache) mediaCache = list;
@@ -188,6 +209,7 @@
 
   // ─── Setup event listeners (called from editor.js) ────
   E.setupMediaManager = function() {
+    if (E._mediaMgrSetupDone) return; E._mediaMgrSetupDone = true;
     var btnMedia = document.getElementById('btn-media-manager');
     if (btnMedia) {
       btnMedia.addEventListener('click', function() { E.openMediaModal(); });

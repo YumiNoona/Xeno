@@ -139,12 +139,20 @@
       E.resolveSceneThumbs(D.sceneGridEl);
     };
 
-    // Resolve media_xxx IDs to blob URLs in scene thumbnails (two-pass async)
-    var _thumbTimerId = null;
-    E.resolveSceneThumbs = function(container, timeout) {
+    // Resolve media_xxx IDs to blob URLs in scene thumbnails.
+    // Uses requestIdleCallback so resolution waits until the browser is idle,
+    // avoiding the fixed-timeout problem on slow devices (mobile, first visit).
+    var _thumbIdleId = null;
+    var _scheduleIdle = window.requestIdleCallback
+      ? function(fn) { return window.requestIdleCallback(fn, { timeout: 500 }); }
+      : function(fn) { return setTimeout(fn, 150); };
+    var _cancelIdle = window.cancelIdleCallback || clearTimeout;
+
+    E.resolveSceneThumbs = function(container) {
       if (!container) return;
-      clearTimeout(_thumbTimerId);
-      _thumbTimerId = setTimeout(function() {
+      if (_thumbIdleId) { _cancelIdle(_thumbIdleId); _thumbIdleId = null; }
+      _thumbIdleId = _scheduleIdle(function() {
+        _thumbIdleId = null;
         if (!window.XenoSupabase || !window.XenoSupabase.resolveMediaId) return;
         E._thumbCache = E._thumbCache || {};
         container.querySelectorAll('[data-thumb-id]').forEach(function(el) {
@@ -162,7 +170,7 @@
             el.parentNode.replaceChild(img, el);
           }).catch(function() {});
         });
-      }, timeout || 100);
+      });
     };
 
     // ─── Click empty area → clear selection ────────────────
@@ -227,6 +235,13 @@
       S.selectedHotspotData = null;
       S.selectedHotspotElement = null;
       if (window.updateMinimap) window.updateMinimap(sceneCtx);
+
+      // Cancel and restart the view read loop to sync bottom bar readout
+      if (S.viewReadLoop) {
+        cancelAnimationFrame(S.viewReadLoop);
+        S.viewReadLoop = null;
+      }
+      if (E.startViewReadLoop) E.startViewReadLoop();
     };
 
     // ─── Context menu actions ────────────────────────────

@@ -3,17 +3,52 @@
   var E = window.XenoEditor = window.XenoEditor || {};
   E.isMediaId = function(v) { return typeof v === 'string' && v.indexOf('media_') === 0; };
   E.restoreMediaIds = function(data) {
+    var getMediaId = function(url) {
+      if (!url || typeof url !== 'string' || url.indexOf('blob:') !== 0) return url;
+      if (window.XenoSupabase && window.XenoSupabase.getMediaIdByBlobUrl) {
+        var id = window.XenoSupabase.getMediaIdByBlobUrl(url);
+        if (id) return id;
+      }
+      return url;
+    };
+
     (data.scenes || []).forEach(function(s) {
       if (s._mediaId) {
         s.mediaUrl = s._mediaId;
-        if (s.thumbnailUrl && s.thumbnailUrl.indexOf('blob:') === 0) s.thumbnailUrl = s._mediaId;
         delete s._mediaId;
+      } else {
+        s.mediaUrl = getMediaId(s.mediaUrl);
       }
-      if (s._thumbId) { s.thumbnailUrl = s._thumbId; delete s._thumbId; }
+
+      if (s._thumbId) {
+        s.thumbnailUrl = s._thumbId;
+        delete s._thumbId;
+      } else {
+        s.thumbnailUrl = getMediaId(s.thumbnailUrl);
+      }
+
       var allHs = (s.hotspots || []).concat(s.linkHotspots || [], s.infoHotspots || [], s.mediaHotspots || []);
       allHs.forEach(function(h) {
-        if (h.content && h.content._srcId) { h.content.src = h.content._srcId; delete h.content._srcId; }
-        if (h._customIconId) { h.customIconUrl = h._customIconId; delete h._customIconId; }
+        if (h.content) {
+          if (h.content._srcId) {
+            h.content.src = h.content._srcId;
+            delete h.content._srcId;
+          } else {
+            h.content.src = getMediaId(h.content.src);
+          }
+        }
+        if (h._customIconId) {
+          h.customIconUrl = h._customIconId;
+          delete h._customIconId;
+        } else {
+          h.customIconUrl = getMediaId(h.customIconUrl);
+        }
+        if (h.narratorAudio) {
+          h.narratorAudio = getMediaId(h.narratorAudio);
+        }
+        if (h.ambientAudio) {
+          h.ambientAudio = getMediaId(h.ambientAudio);
+        }
       });
     });
   };
@@ -99,6 +134,7 @@
   };
 
   E.performUndo = function() {
+    if (_isRebuilding) return;
     if (_undoIndex <= 0 || !S.projectSlug || !S.viewer) return;
     _undoIndex--;
     S._isDirty = true;
@@ -109,6 +145,7 @@
   };
 
   E.performRedo = function() {
+    if (_isRebuilding) return;
     if (_undoIndex >= _undoStack.length - 1 || !S.projectSlug || !S.viewer) return;
     _undoIndex++;
     S._isDirty = true;
@@ -129,67 +166,80 @@
     // Cancel running read loop before destroying viewer
     if (S.viewReadLoop) { cancelAnimationFrame(S.viewReadLoop); S.viewReadLoop = null; }
     // Clear stale hotspot references
-    if (data.scenes) {
-      data.scenes.forEach(function(s) {
-        var allArrs = [s.hotspots, s.linkHotspots, s.infoHotspots, s.mediaHotspots];
-        allArrs.forEach(function(arr) { (arr || []).forEach(function(h) { delete h.__marzipanoHotspot; }); });
+    var cleanHotspots = function(scene) {
+      if (!scene) return;
+      var allArrs = [scene.hotspots, scene.linkHotspots, scene.infoHotspots, scene.mediaHotspots];
+      allArrs.forEach(function(arr) {
+        (arr || []).forEach(function(h) {
+          delete h.__marzipanoHotspot;
+        });
       });
+    };
+    if (data && data.scenes) {
+      data.scenes.forEach(cleanHotspots);
+    }
+    if (window.data && window.data.scenes) {
+      window.data.scenes.forEach(cleanHotspots);
+    }
+    if (S.scenes) {
       S.scenes.forEach(function(ctx) {
-        var allArrs = [ctx.data.hotspots, ctx.data.linkHotspots, ctx.data.infoHotspots, ctx.data.mediaHotspots];
-        allArrs.forEach(function(arr) { (arr || []).forEach(function(h) { delete h.__marzipanoHotspot; }); });
+        if (ctx && ctx.data) {
+          cleanHotspots(ctx.data);
+        }
       });
     }
     S.scenes = [];
     if (E._resetHotspotGen) E._resetHotspotGen();
-    try {
-      S.viewer.destroy();
-      S.viewer = new window.Xeno.Viewer(D.panoEl, { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } });
-      window.xenoViewer = S.viewer;
-    } catch(e) {
-      console.warn('Failed to destroy/create viewer during rebuild', e);
-      _isRebuilding = false;
-      return;
-    }
-    var resolved = resolveSnapshotMedia(data);
-    resolved.then(function(rData) {
-      (rData.scenes || []).forEach(function(sData) {
-        var source, geometry, view, limiter;
-        if (sData.type === 'video' && window.XenoVideoAsset) {
-          var asset = new window.XenoVideoAsset();
-          if (sData.videoOptions) asset.setVideo(sData.mediaUrl, sData.videoOptions);
-          else asset.setVideo(sData.mediaUrl);
-          source = new window.Xeno.SingleAssetSource(asset);
-          geometry = new window.Xeno.EquirectGeometry([{ width: 1 }]);
-          limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
-        } else {
-          source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
-          geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
-          limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+
+    // Wrap the entire viewer destroy, create, resolve snapshot, and rebuild process in a single promise chain
+    Promise.resolve()
+      .then(function() {
+        S.viewer.destroy();
+        S.viewer = new window.Xeno.Viewer(D.panoEl, { controls: { mouseViewMode: (data.settings && data.settings.mouseViewMode) || 'drag' } });
+        window.xenoViewer = S.viewer;
+        return resolveSnapshotMedia(data);
+      })
+      .then(function(rData) {
+        (rData.scenes || []).forEach(function(sData) {
+          var source, geometry, view, limiter;
+          if (sData.type === 'video' && window.XenoVideoAsset) {
+            var asset = new window.XenoVideoAsset();
+            if (sData.videoOptions) asset.setVideo(sData.mediaUrl, sData.videoOptions);
+            else asset.setVideo(sData.mediaUrl);
+            source = new window.Xeno.SingleAssetSource(asset);
+            geometry = new window.Xeno.EquirectGeometry([{ width: 1 }]);
+            limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+          } else {
+            source = window.Xeno.ImageUrlSource.fromString(sData.mediaUrl);
+            geometry = new window.Xeno.EquirectGeometry([{ width: 4000 }]);
+            limiter = window.Xeno.RectilinearView.limit.vfov(60 * Math.PI / 180, 120 * Math.PI / 180);
+          }
+          view = new window.Xeno.RectilinearView(sData.initialViewParameters || {}, limiter);
+          var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
+          S.scenes.push({ data: sData, scene: scene, view: view });
+        });
+        if (S.scenes.length > 0) {
+          var targetScene = null;
+          if (prevSceneId) targetScene = S.scenes.find(function(s) { return s.data.id === prevSceneId; });
+          if (!targetScene) targetScene = S.scenes[0];
+          S.currentSceneCtx = targetScene;
+          targetScene.scene.switchTo({});
+          E.renderSceneGrid();
+          E.renderSceneHotspots();
         }
-        view = new window.Xeno.RectilinearView(sData.initialViewParameters || {}, limiter);
-        var scene = S.viewer.createScene({ source: source, geometry: geometry, view: view, pinFirstLevel: true });
-        S.scenes.push({ data: sData, scene: scene, view: view });
+        S.selectedHotspotData = null;
+        S.selectedHotspotElement = null;
+        E.closePropertiesPanel();
+        if (E.startViewReadLoop) E.startViewReadLoop();
+        E.debouncedSave();
+        _isRebuilding = false;
+        refreshUndoButtons();
+      })
+      .catch(function(err) {
+        console.warn('Failed during rebuild chain', err);
+        _isRebuilding = false;
+        refreshUndoButtons();
       });
-      if (S.scenes.length > 0) {
-        var targetScene = null;
-        if (prevSceneId) targetScene = S.scenes.find(function(s) { return s.data.id === prevSceneId; });
-        if (!targetScene) targetScene = S.scenes[0];
-        S.currentSceneCtx = targetScene;
-        targetScene.scene.switchTo({});
-        E.renderSceneGrid();
-        E.renderSceneHotspots();
-      }
-      S.selectedHotspotData = null;
-      S.selectedHotspotElement = null;
-      E.closePropertiesPanel();
-      if (E.startViewReadLoop) E.startViewReadLoop();
-      E.debouncedSave();
-      _isRebuilding = false;
-      refreshUndoButtons();
-    }).catch(function() {
-      _isRebuilding = false;
-      refreshUndoButtons();
-    });
   }
 
   var isMediaId = E.isMediaId;

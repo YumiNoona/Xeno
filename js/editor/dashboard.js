@@ -112,18 +112,38 @@
             };
             E.openMediaModal();
           } else if (action === 'download-project') {
-            window.XenoSupabase.exportProject(slug).then(function(bundle) {
-              var blob = new Blob([JSON.stringify(bundle)], { type: 'application/json' });
-              var a = document.createElement('a');
-              var url = URL.createObjectURL(blob);
-              a.href = url;
-              a.download = slug + '.xeno';
-              a.click();
-              setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
-              showShareModal(slug);
-            }).catch(function(err) {
-              E.alert('Export failed: ' + err.message, 'Export Error');
-            });
+            // Flush live editor state before export so unsaved changes are included
+            var doExport = function() {
+              window.XenoSupabase.exportProject(slug).then(function(bundle) {
+                var blob = new Blob([JSON.stringify(bundle)], { type: 'application/json' });
+                var a = document.createElement('a');
+                var oUrl = URL.createObjectURL(blob);
+                a.href = oUrl;
+                a.download = slug + '.xeno';
+                a.click();
+                setTimeout(function() { URL.revokeObjectURL(oUrl); }, 10000);
+                showShareModal(slug);
+              }).catch(function(err) {
+                E.alert('Export failed: ' + err.message, 'Export Error');
+              });
+            };
+            var S = E.state;
+            if (S && S.projectSlug === slug && S.scenes && S.scenes.length && window.XenoSupabase) {
+              // Sync live scenes into window.data, then persist immediately
+              if (S.saveTimeout) clearTimeout(S.saveTimeout);
+              window.data.scenes = S.scenes.map(function(sc) { return JSON.parse(JSON.stringify(sc.data)); });
+              var saveData = JSON.parse(JSON.stringify(window.data));
+              if (E.restoreMediaIds) E.restoreMediaIds(saveData);
+              Promise.resolve(window.XenoSupabase.saveTour(slug, saveData)).then(function() {
+                S._isDirty = false;
+                doExport();
+              }).catch(function() {
+                // Save failed but still attempt export with whatever is persisted
+                doExport();
+              });
+            } else {
+              doExport();
+            }
           } else if (action === 'delete-project') {
             E.confirm('Delete project "' + title + '"?', 'Delete Project', true).then(function(ok) {
               if (ok) {
@@ -190,6 +210,8 @@
     return window.XenoSupabase.resolveMediaId(url).then(function(b) { return b || url; });
   }
 
+  var _placeholderSvg = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"/%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"/%3E%3Cpolyline points="21 15 16 10 5 21"/%3E%3C/svg%3E';
+
   function renderProjectGrid(tours, filterQuery) {
     var grid = document.getElementById('project-grid');
     var countEl = document.getElementById('project-count');
@@ -197,7 +219,6 @@
     if (!grid) return;
     grid.innerHTML = '';
 
-    // First pass: render all cards with a data-thumb attribute
     tours.forEach(function(tour) {
       var firstScene = (tour.data && tour.data.scenes && tour.data.scenes[0]) || null;
       var sceneCount = (tour.data && tour.data.scenes && tour.data.scenes.length) || 0;
@@ -207,16 +228,13 @@
       var projectThumb = (tour.data && tour.data.settings && tour.data.settings.thumbnailUrl) || null;
       var thumbUrl = projectThumb || (firstScene && (firstScene.thumbnailUrl || firstScene.mediaUrl)) || '';
 
-      // Use non-media-ID URLs directly; media IDs get resolved in the second pass
-      var initialSrc = (thumbUrl && !isMediaId(thumbUrl)) ? thumbUrl : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"/%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"/%3E%3Cpolyline points="21 15 16 10 5 21"/%3E%3C/svg%3E';
-      // Defensive: blob URLs don't persist — fall back to media_ ID if available
-      if (thumbUrl && thumbUrl.indexOf('blob:') === 0 && firstScene && firstScene._mediaId) {
-        card.dataset.thumbId = firstScene._mediaId;
-      }
+      // Use non-media-ID URLs directly; media IDs get resolved in the deferred pass
+      var thumbIsMediaId = thumbUrl && isMediaId(thumbUrl);
+      var initialSrc = (thumbUrl && !thumbIsMediaId) ? thumbUrl : _placeholderSvg;
 
       var card = document.createElement('div');
       card.className = 'project-card';
-      if (isMediaId(thumbUrl)) card.dataset.thumbId = thumbUrl;
+      if (thumbIsMediaId) card.dataset.thumbId = thumbUrl;
       var published = (tour.data && tour.data.settings && tour.data.settings.published) || false;
       var statusText = published ? 'Public' : '';
       var dateStr = tour.created_at ? new Date(tour.created_at).toLocaleDateString() : '';
@@ -238,6 +256,12 @@
         '<div class="project-card-actions">' +
           '<button class="btn-delete-project" title="Delete Project"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>' +
         '</div>';
+
+      // Fall back to placeholder SVG if the thumbnail image fails to load
+      var thumbImg = card.querySelector('.project-card-thumb');
+      if (thumbImg) {
+        thumbImg.onerror = function() { this.src = _placeholderSvg; this.onerror = null; };
+      }
 
       card.addEventListener('click', function() {
         window.location.search = '?project=' + encodeURIComponent(tour.slug);
@@ -271,13 +295,19 @@
       grid.appendChild(card);
     });
 
-    // Second pass: resolve media IDs and update thumbnails
-    var cards = grid.querySelectorAll('.project-card');
-    cards.forEach(function(card) {
-      var id = card.dataset.thumbId;
-      if (!id || !window.XenoSupabase) return;
-      window.XenoSupabase.resolveMediaId(id).then(function(b) {
-        if (b) { var img = card.querySelector('.project-card-thumb'); if (img) img.src = b; }
+    // Deferred pass: resolve media_xxx IDs to blob URLs once the browser is idle
+    var _scheduleIdle = window.requestIdleCallback
+      ? function(fn) { return window.requestIdleCallback(fn, { timeout: 500 }); }
+      : function(fn) { return setTimeout(fn, 150); };
+    _scheduleIdle(function() {
+      var cards = grid.querySelectorAll('.project-card[data-thumb-id]');
+      cards.forEach(function(card) {
+        var id = card.dataset.thumbId;
+        if (!id || !window.XenoSupabase) return;
+        delete card.dataset.thumbId;
+        window.XenoSupabase.resolveMediaId(id).then(function(b) {
+          if (b) { var img = card.querySelector('.project-card-thumb'); if (img) img.src = b; }
+        }).catch(function() {});
       });
     });
   }

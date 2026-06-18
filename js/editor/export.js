@@ -29,8 +29,21 @@
         var origText = pubBtn.innerHTML;
         pubBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Publishing...';
         pubBtn.disabled = true;
+        // Flush live editor state before export so publish always reflects current work
+        var flushPromise;
+        if (S.scenes && S.scenes.length && window.XenoSupabase) {
+          if (S.saveTimeout) clearTimeout(S.saveTimeout);
+          window.data.scenes = S.scenes.map(function(sc) { return JSON.parse(JSON.stringify(sc.data)); });
+          var saveData = JSON.parse(JSON.stringify(window.data));
+          if (E.restoreMediaIds) E.restoreMediaIds(saveData);
+          flushPromise = Promise.resolve(window.XenoSupabase.saveTour(S.projectSlug, saveData)).then(function() {
+            S._isDirty = false;
+          }).catch(function() { /* save failed, proceed with whatever is persisted */ });
+        } else {
+          flushPromise = Promise.resolve();
+        }
 
-        window.XenoSupabase.exportProject(S.projectSlug).then(function(bundle) {
+        flushPromise.then(function() { return window.XenoSupabase.exportProject(S.projectSlug); }).then(function(bundle) {
           var controller = new AbortController();
           var timeout = setTimeout(function() { controller.abort(); }, 30000);
           return fetch('/api/publish', {
@@ -266,7 +279,7 @@
 
       function bundleHotspotCustomIcons(hotspots, sceneId) {
         (hotspots || []).forEach(function(hs, idx) {
-          var src = hs.customIconUrl;
+          var src = hs.customIconUrl || hs._customIconId;
           if (!src || (src.indexOf('blob:') !== 0 && src.indexOf('media_') !== 0)) return;
           var p = resolveUrl(src).then(function(fetchUrl) {
             if (!fetchUrl) throw new Error('No blob found for custom icon');
@@ -280,6 +293,7 @@
               var path = 'media/' + name;
               if (!usedMedia[path]) { usedMedia[path] = true; zip.file(path, blob); }
               hs.customIconUrl = 'media/' + name;
+              if (hs._customIconId) delete hs._customIconId;
             });
           }).catch(function(err) {
             mediaFailures++;
@@ -324,14 +338,11 @@
         bundleHotspotMedia(sceneData.linkHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.infoHotspots, sceneData.id);
         bundleHotspotMedia(sceneData.mediaHotspots, sceneData.id);
-        // Scan all four hotspot arrays for narrator/ambient audio
+        // Scan all four hotspot arrays for narrator/ambient audio and custom icons
         var _allHS = [sceneData.hotspots, sceneData.linkHotspots, sceneData.infoHotspots, sceneData.mediaHotspots];
         _allHS.forEach(function(arr) { bundleHotspotAudio(arr, 'narratorAudio', sceneData.id); });
         _allHS.forEach(function(arr) { bundleHotspotAudio(arr, 'ambientAudio', sceneData.id); });
-        bundleHotspotCustomIcons(sceneData.hotspots, sceneData.id);
-        bundleHotspotCustomIcons(sceneData.linkHotspots, sceneData.id);
-        bundleHotspotCustomIcons(sceneData.infoHotspots, sceneData.id);
-        bundleHotspotCustomIcons(sceneData.mediaHotspots, sceneData.id);
+        _allHS.forEach(function(arr) { bundleHotspotCustomIcons(arr, sceneData.id); });
       });
 
       if (exportedData.floorplan && exportedData.floorplan.imageUrl) {

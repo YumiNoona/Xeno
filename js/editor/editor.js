@@ -136,6 +136,8 @@
     E.setupSceneManager();
     E.setupSceneSettings();
     E.setupMediaManager();
+    if (E.setupProjectSettings) E.setupProjectSettings();
+    if (E.setupColorPicker) E.setupColorPicker();
     E.setupUI();
     E.setupExport();
 

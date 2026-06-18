@@ -386,6 +386,16 @@
     return promise;
   }
 
+  function getMediaIdByBlobUrl(blobUrl) {
+    if (!blobUrl) return null;
+    for (var key in _blobUrls) {
+      if (_blobUrls[key] === blobUrl) {
+        return key;
+      }
+    }
+    return null;
+  }
+
   // ─── Export / Import ──────────────────────────────────
 
   function exportProject(slug) {
@@ -497,9 +507,11 @@
     renameAlbum: renameAlbum, deleteAlbum: deleteAlbum,
     renameMedia: renameMedia, deleteMedia: deleteMedia, moveMedia: moveMedia,
     resolveMediaId: resolveMediaId,
+    getMediaIdByBlobUrl: getMediaIdByBlobUrl,
     exportProject: exportProject, importProject: importProject,
     cleanOrphanBlobs: cleanOrphanBlobs,
-    clearBlobCache: clearBlobCache
+    clearBlobCache: clearBlobCache,
+    revokeBlobUrl: revokeBlobUrl
   };
 
 })();

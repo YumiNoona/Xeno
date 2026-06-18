@@ -385,8 +385,14 @@
     }
   }
 
+  E.setupColorPicker = function() {
+    if (E._colorPickerSetupDone) return;
+    E._colorPickerSetupDone = true;
+    wireSwatches();
+  };
+
   // Initialize after DOM is ready
   setTimeout(function() {
-    wireSwatches();
+    E.setupColorPicker();
   }, 500);
 })();

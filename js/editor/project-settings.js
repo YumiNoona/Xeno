@@ -221,8 +221,9 @@
     }
   }
 
-  // Wire up event listeners once DOM is ready
-  setTimeout(function () {
+  E.setupProjectSettings = function () {
+    if (E._projectSettingsSetupDone) return;
+    E._projectSettingsSetupDone = true;
 
     // Theme card click handler
     document.querySelectorAll('.theme-card').forEach(function(card) {
@@ -264,6 +265,11 @@
         E.openMediaModal();
       });
     }
+  };
+
+  // Wire up event listeners once DOM is ready
+  setTimeout(function () {
+    E.setupProjectSettings();
   }, 0);
 
 })();
