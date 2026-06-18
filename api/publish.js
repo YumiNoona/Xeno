@@ -6,8 +6,14 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  if (!req.body) {
+    return res.status(400).json({ error: 'Missing request body' });
+  }
+
   if (typeof req.body === 'string') {
-    try { req.body = JSON.parse(req.body); } catch(e) {}
+    try { req.body = JSON.parse(req.body); } catch(e) {
+      return res.status(400).json({ error: 'Invalid JSON body' });
+    }
   }
 
   try {
@@ -15,8 +21,8 @@ module.exports = async function handler(req, res) {
     var bundle = req.body.project || req.body;
     var expiry = req.body.expiry || 'forever';
 
-    if (!bundle || bundle.type !== 'xeno-project') {
-      return res.status(400).json({ error: 'Invalid project data' });
+    if (!bundle || bundle.type !== 'xeno-project' || !bundle.project) {
+      return res.status(400).json({ error: 'Invalid project data: missing type or project metadata' });
     }
 
     var expiresAt = null;

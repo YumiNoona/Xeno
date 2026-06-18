@@ -56,30 +56,7 @@
     var dragStartX = 0, dragStartY = 0, hasMoved = false;
     var DRAG_THRESHOLD = 5; // pixels before we consider it a drag
 
-    D.panoWrapper.addEventListener('mousedown', function(e) {
-      if (S.editorState.placeMode) return;
-      var target = e.target;
-      while (target && target !== D.panoWrapper) {
-        if (target.__marzipanoHotspot) {
-          S.isDragging = false; // not yet — wait for movement
-          hasMoved = false;
-          dragStartX = e.clientX;
-          dragStartY = e.clientY;
-          S.dragHsElement = target;
-          S.dragHsData = target.__hsData;
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-        target = target.parentElement;
-      }
-      // Clicked on empty pano — deselect
-      if (S.dragHsElement === null && !S.editorState.placeMode) {
-        // Do nothing on background click (don't close panel)
-      }
-    }, true);
-
-    window.addEventListener('mousemove', function(e) {
+    function onMouseMove(e) {
       if (!S.dragHsElement || !S.dragHsElement.__marzipanoHotspot) return;
       var dx = e.clientX - dragStartX;
       var dy = e.clientY - dragStartY;
@@ -95,9 +72,15 @@
         S.dragHsData.yaw = coords.yaw;
         S.dragHsData.pitch = coords.pitch;
       }
-    });
+    }
 
-    window.addEventListener('mouseup', function() {
+    function removeDragListeners() {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('blur', onBlur);
+    }
+
+    function onMouseUp() {
       if (S.dragHsElement) {
         if (!hasMoved) {
           // It was a click — open properties
@@ -125,17 +108,42 @@
         S.dragHsData = null;
         hasMoved = false;
       }
-    });
+      removeDragListeners();
+    }
 
-    // Cleanup drag state if window loses focus during drag (mouseup outside window)
-    window.addEventListener('blur', function() {
+    function onBlur() {
       if (S.dragHsElement || S.isDragging) {
         S.isDragging = false;
         S.dragHsElement = null;
         S.dragHsData = null;
         hasMoved = false;
       }
-    });
+      removeDragListeners();
+    }
+
+    D.panoWrapper.addEventListener('mousedown', function(e) {
+      if (S.editorState.placeMode) return;
+      var target = e.target;
+      while (target && target !== D.panoWrapper) {
+        if (target.__marzipanoHotspot) {
+          S.isDragging = false; // not yet — wait for movement
+          hasMoved = false;
+          dragStartX = e.clientX;
+          dragStartY = e.clientY;
+          S.dragHsElement = target;
+          S.dragHsData = target.__hsData;
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Attach listeners dynamically
+          window.addEventListener('mousemove', onMouseMove);
+          window.addEventListener('mouseup', onMouseUp);
+          window.addEventListener('blur', onBlur);
+          return;
+        }
+        target = target.parentElement;
+      }
+    }, true);
   };
 
   function handleToolClick(tool, btnEl) {

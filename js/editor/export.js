@@ -14,6 +14,11 @@
         if (!S.projectSlug) { alert('No project to publish.'); return; }
         if (_publishInProgress) return;
         _publishInProgress = true;
+        if (!window.XenoEditorPublish) {
+          alert('Publish module failed to load. Please refresh the page and try again.');
+          _publishInProgress = false;
+          return;
+        }
         XenoEditorPublish.showPublishExpiry(function(expiryValue) {
           doPublish(expiryValue);
         }, function() { _publishInProgress = false; });
@@ -105,7 +110,7 @@
         'css/lib/minimap.css', 'css/lib/hint.css',
         'js/lib/screenfull.js', 'js/lib/webvr-polyfill.js', 'js/engine/xeno.js',
         'js/engine/transitions.js', 'js/engine/VideoAsset.js', 'js/engine/DeviceOrientation.js',
-        'js/engine/colorEffects.js', 'js/hotspots/HotspotFactory.js',
+        'js/engine/colorEffects.js', 'js/engine/homography.js', 'js/hotspots/HotspotFactory.js',
         'js/hotspots/Builders-Nav.js', 'js/hotspots/Builders-Content.js',
         'js/ui/Minimap.js', 'js/ui/SceneList.js', 'js/vr/XenoVR.js',
         'js/viewer.js', 'js/viewer-theme.js', 'js/viewer-gaze.js', 'js/viewer-capture.js',
@@ -117,12 +122,18 @@
       ];
 
       var faviconPromises = ['public/logo.ico'].map(function(fav) {
-        return fetch(absUrl(fav), { method: 'HEAD' }).then(function(r) {
-          if (!r.ok) {
+        return fetch(absUrl(fav))
+          .then(function(r) {
+            if (!r.ok) throw new Error('Favicon not found');
+            return r.blob();
+          })
+          .then(function(blob) {
+            zip.file(fav, blob);
+          })
+          .catch(function() {
             bundleFailures++;
             zip.file(fav, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#e11d48"/><text x="16" y="23" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="22" fill="#fff">X</text></svg>');
-          }
-        }).catch(function() {});
+          });
       });
 
       var mediaRecords = JSON.parse(localStorage.getItem('xeno_media') || '[]');

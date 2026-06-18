@@ -38,7 +38,7 @@
   };
 
   var _hotspotGen = 0;
-  E._resetHotspotGen = function() { _hotspotGen = 0; };
+  E._resetHotspotGen = function() { _hotspotGen++; };
 
   E.renderSceneHotspots = function() {
     if (!S.currentSceneCtx) return;
@@ -71,14 +71,14 @@
         hs.content._srcId = hs.content.src;
         resolvePromises.push(window.XenoSupabase.resolveMediaId(src).then(function(blobUrl) {
           if (blobUrl) hs.content.src = blobUrl;
-        }));
+        }).catch(function() {}));
       }
       if (isMediaId(hs.customIconUrl) && window.XenoSupabase) {
         (function(capture) {
           hs._customIconId = capture;
           resolvePromises.push(window.XenoSupabase.resolveMediaId(capture).then(function(blobUrl) {
             if (blobUrl) hs.customIconUrl = blobUrl;
-          }));
+          }).catch(function() {}));
         })(hs.customIconUrl);
       }
     });
