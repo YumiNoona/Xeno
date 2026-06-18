@@ -49,6 +49,19 @@
       container.destroyHotspot(existing[i]);
     }
 
+    // Add loading indicator
+    var loadingEl = document.getElementById('hotspot-loading');
+    if (!loadingEl) {
+      loadingEl = document.createElement('div');
+      loadingEl.id = 'hotspot-loading';
+      loadingEl.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; color: var(--text-primary); font-family: var(--font-mono); font-size: 14px; padding: 12px 24px; background: var(--bg-panel); border: 2px solid var(--border); border-radius: 4px;';
+      loadingEl.textContent = 'Loading hotspots...';
+      document.body.appendChild(loadingEl);
+    }
+    loadingEl.style.display = 'block';
+    var originalPlaceMode = S.editorState.placeMode;
+    S.editorState.placeMode = false; // Disable place mode during loading
+
     var hotspots = (sceneCtx.data.hotspots || []).slice();
     // Legacy hotspot compatibility
     (sceneCtx.data.linkHotspots || []).forEach(function(h) {
@@ -97,6 +110,10 @@
           }
         });
       }
+    }).finally(function() {
+      // Hide loading indicator and restore place mode (if needed)
+      if (loadingEl) loadingEl.style.display = 'none';
+      S.editorState.placeMode = originalPlaceMode;
     });
   };
 
@@ -120,8 +137,8 @@
         var i = parseInt(this.getAttribute('data-index'));
         if (S.selectedHotspotData && S.selectedHotspotData.quadPoints) {
           S.selectedHotspotData.quadPoints.splice(i, 1);
-          E.renderQuadPoints(S.selectedHotspotData.quadPoints);
           E.renderSceneHotspots();
+          E.renderQuadPoints(S.selectedHotspotData.quadPoints);
           E.debouncedSave();
         }
       });

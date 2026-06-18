@@ -189,6 +189,42 @@
 
         D.mediaGridEl.appendChild(item);
       });
+      // Generate video thumbnails via a hidden <video> element + canvas
+      (function() {
+        var videoItems = D.mediaGridEl.querySelectorAll('.media-item');
+        videoItems.forEach(function(vitem) {
+          var vdata = vitem.__mediaData;
+          if (!vdata || !vdata.type || !vdata.type.startsWith('video') || !vdata._blobUrl) return;
+          var vidUrl = vdata._blobUrl;
+          var video = document.createElement('video');
+          video.muted = true;
+          video.playsInline = true;
+          video.preload = 'metadata';
+          video.onloadeddata = function() {
+            try {
+              var canvas = document.createElement('canvas');
+              canvas.width = video.videoWidth || 160;
+              canvas.height = video.videoHeight || 90;
+              var ctx = canvas.getContext('2d');
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              var dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+              var img = vitem.querySelector('img');
+              if (img) {
+                img.src = dataUrl;
+              } else {
+                var placeholder = vitem.querySelector('.media-thumb-placeholder');
+                if (placeholder) {
+                  placeholder.outerHTML = '<img src="' + dataUrl + '" alt="Video thumbnail">';
+                }
+              }
+            } catch(e) {}
+            video.remove();
+          };
+          video.onerror = function() { video.remove(); };
+          video.src = vidUrl;
+          video.load();
+        });
+      })();
     }).catch(function(err) {
       _loadPending = false;
       D.mediaGridEl.innerHTML = '<div class="media-error"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Error: ' + err.message + '</div>';
@@ -243,10 +279,11 @@
 
     if (uploadArea && fileInput) {
       uploadArea.addEventListener('click', function() { fileInput.click(); });
-      uploadArea.addEventListener('dragover', function(e) { e.preventDefault(); uploadArea.style.borderColor = '#e62e5a'; });
-      uploadArea.addEventListener('dragleave', function(e) { e.preventDefault(); uploadArea.style.borderColor = ''; });
+      uploadArea.addEventListener('dragenter', function(e) { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+      uploadArea.addEventListener('dragover', function(e) { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+      uploadArea.addEventListener('dragleave', function(e) { e.preventDefault(); uploadArea.classList.remove('drag-over'); });
       uploadArea.addEventListener('drop', function(e) {
-        e.preventDefault(); uploadArea.style.borderColor = '';
+        e.preventDefault(); uploadArea.classList.remove('drag-over');
         if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
       });
       fileInput.addEventListener('change', function() {

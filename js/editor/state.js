@@ -147,7 +147,7 @@
     if (_isRebuilding) return;
     if (_undoIndex <= 0 || !S.projectSlug || !S.viewer) return;
     _undoIndex--;
-    S._isDirty = true;
+    if (S.projectSlug) S._isDirty = true;
     refreshUndoButtons();
     var snap = _undoStack[_undoIndex];
     window.data = JSON.parse(JSON.stringify(snap));
@@ -158,7 +158,7 @@
     if (_isRebuilding) return;
     if (_undoIndex >= _undoStack.length - 1 || !S.projectSlug || !S.viewer) return;
     _undoIndex++;
-    S._isDirty = true;
+    if (S.projectSlug) S._isDirty = true;
     refreshUndoButtons();
     var snap = _undoStack[_undoIndex];
     window.data = JSON.parse(JSON.stringify(snap));
@@ -171,8 +171,9 @@
   function rebuildViewerFromData(data) {
     if (_isRebuilding) return;
     _isRebuilding = true;
-    // Capture the active scene ID before destroying
+    // Capture the active scene and hotspot IDs before destroying
     var prevSceneId = S.currentSceneCtx ? S.currentSceneCtx.data.id : null;
+    var prevSelectedHotspotId = S.selectedHotspotData ? S.selectedHotspotData.id : null;
     // Cancel running read loop before destroying viewer
     if (S.viewReadLoop) { cancelAnimationFrame(S.viewReadLoop); S.viewReadLoop = null; }
     // Clear stale hotspot references
@@ -234,16 +235,29 @@
           if (!targetScene) targetScene = S.scenes[0];
           S.currentSceneCtx = targetScene;
           targetScene.scene.switchTo({});
+          // Restore hotspot selection before renderSceneHotspots so it can re-find the DOM element
+          S.selectedHotspotData = null;
+          S.selectedHotspotElement = null;
+          if (prevSelectedHotspotId && targetScene.data) {
+            var allArrays = [targetScene.data.hotspots, targetScene.data.linkHotspots, targetScene.data.infoHotspots, targetScene.data.mediaHotspots];
+            for (var hi = 0; hi < allArrays.length; hi++) {
+              var found = (allArrays[hi] || []).find(function(h) { return h.id === prevSelectedHotspotId; });
+              if (found) { S.selectedHotspotData = found; break; }
+            }
+          }
           E.renderSceneGrid();
           E.renderSceneHotspots();
+          if (!S.selectedHotspotData) {
+            E.closePropertiesPanel();
+          }
         }
-        S.selectedHotspotData = null;
-        S.selectedHotspotElement = null;
-        E.closePropertiesPanel();
         if (E.startViewReadLoop) E.startViewReadLoop();
         E.debouncedSave();
         _isRebuilding = false;
         refreshUndoButtons();
+        if (_missingMediaCount > 0 && E.showToast) {
+          E.showToast(_missingMediaCount + ' scene(s) use media that was deleted and could not be restored.');
+        }
       })
       .catch(function(err) {
         console.warn('Failed during rebuild chain', err);
@@ -254,8 +268,11 @@
 
   var isMediaId = E.isMediaId;
 
+  var _missingMediaCount = 0;
+
   function resolveSnapshotMedia(data) {
     if (!data || !data.scenes) return Promise.resolve(data);
+    _missingMediaCount = 0;
     var clone = JSON.parse(JSON.stringify(data));
     var promises = [];
     clone.scenes.forEach(function(s) {
@@ -264,8 +281,8 @@
         var _placeholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="4000" height="2000"%3E%3Crect fill="%231a1a1a" width="4000" height="2000"/%3E%3Ctext fill="%23666" font-family="monospace" font-size="48" x="2000" y="1000" text-anchor="middle" dominant-baseline="middle"%3EMedia unavailable%3C/text%3E%3C/svg%3E';
         promises.push(
           window.XenoSupabase.resolveMediaId(s.mediaUrl).then(function(b) {
-            s.mediaUrl = b || _placeholder;
-          }).catch(function() { s.mediaUrl = _placeholder; })
+            if (b) { s.mediaUrl = b; } else { s.mediaUrl = _placeholder; _missingMediaCount++; }
+          }).catch(function() { s.mediaUrl = _placeholder; _missingMediaCount++; })
         );
       }
       if (isMediaId(s.thumbnailUrl) && s.thumbnailUrl !== s.mediaUrl && s.thumbnailUrl !== s._mediaId && window.XenoSupabase) {

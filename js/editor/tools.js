@@ -122,7 +122,18 @@
     }
 
     D.panoWrapper.addEventListener('mousedown', function(e) {
-      if (S.editorState.placeMode) return;
+      if (S.editorState.placeMode) {
+        // Check if click landed on an existing hotspot — show feedback instead of silent failure
+        var hitTarget = e.target;
+        while (hitTarget && hitTarget !== D.panoWrapper) {
+          if (hitTarget.__marzipanoHotspot) {
+            if (E.showToast) E.showToast('Click on the panorama to place a hotspot');
+            break;
+          }
+          hitTarget = hitTarget.parentElement;
+        }
+        return;
+      }
       var target = e.target;
       while (target && target !== D.panoWrapper) {
         if (target.__marzipanoHotspot) {

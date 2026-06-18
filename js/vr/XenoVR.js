@@ -79,13 +79,33 @@
     /* Sync the scene the user ended on back to Marzipano */
     if (currentVrSceneId) {
       if (window.XenoEditor && window.XenoEditor.switchSceneById) {
+        // First try to switch directly; if no-op, try fallback
+        var originalCurrentId = null;
+        if (window.XenoEditor.state && window.XenoEditor.state.currentSceneCtx) {
+          originalCurrentId = window.XenoEditor.state.currentSceneCtx.data.id;
+        }
         window.XenoEditor.switchSceneById(currentVrSceneId);
+        // If switch didn't change anything (scene not found), use fallback
+        if (window.XenoEditor.state && window.XenoEditor.state.scenes && window.XenoEditor.state.scenes.length > 0) {
+          var newCurrentId = window.XenoEditor.state.currentSceneCtx ? window.XenoEditor.state.currentSceneCtx.data.id : null;
+          if (newCurrentId === originalCurrentId) {
+            // No change, use fallback
+            var firstScene = window.XenoEditor.state.scenes.find(function(s) { return !s.data.hidden; }) || window.XenoEditor.state.scenes[0];
+            window.XenoEditor.switchSceneById(firstScene.data.id);
+          }
+        }
       } else if (window.xenoScenes) {
         var ctx = window.xenoScenes.find(function (s) {
           return s.data.id === currentVrSceneId;
         });
         if (ctx && window.xenoSwitchScene) {
           window.xenoSwitchScene(ctx, { transition: 'none' });
+        } else {
+          // Fallback to first visible or first scene
+          var firstCtx = window.xenoScenes.find(function(s) { return !s.data.hidden; }) || window.xenoScenes[0];
+          if (firstCtx && window.xenoSwitchScene) {
+            window.xenoSwitchScene(firstCtx, { transition: 'none' });
+          }
         }
       }
     }

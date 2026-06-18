@@ -18,20 +18,14 @@
     if (E._hotspotPropsSetupDone) return; E._hotspotPropsSetupDone = true;
     // ─── Open / Close ────────────────────────────────────
     E.openPropertiesPanel = function(hsData, opts) {
-      // Resolve to source object by ID so all writes go to live data, not a render clone
-      if (hsData && hsData.id) {
-        var src = findSourceHotspot(hsData.id);
-        if (src) hsData = src;
-      }
-      S.selectedHotspotData = hsData;
-      if (!(opts && opts.skipUndo)) E.pushUndo(); // Skip when caller already pushed undo (e.g., hotspot placement)
-      // Hide all non-hotspot sections
-      D.fieldsProjectSettings.style.display = 'none';
-      D.panelTitle.textContent = 'Hotspot Properties';
-      D.panelActionsHotspot.style.display = 'flex';
-      D.fieldsHotspotProperties.style.display = 'block';
-
-      D.propType.value = hsData.type || 'info';
+    // Resolve to source object by ID so all writes go to live data, not a render clone
+    if (hsData && hsData.id) {
+      var src = findSourceHotspot(hsData.id);
+      if (src) hsData = src;
+    }
+    // Check if we're re-selecting the same hotspot
+    if (S.selectedHotspotData && S.selectedHotspotData.id === hsData.id) {
+      // Just update values without rebuilding, preserve scroll
       D.propTitle.value = hsData.title || hsData.label || '';
       D.propAnimation.value = hsData.animation || 'none';
       D.propIconStyle.value = hsData.iconStyle || 'default';
@@ -63,15 +57,59 @@
       D.propSizeLabel.textContent = size + 'px';
 
       toggleCustomIconGroup();
-
-      populateTargetDropdowns();
       fillTypeFields(hsData);
-      showTypeFields(hsData.type);
+      return;
+    }
+    // New hotspot selected: reset everything
+    S.selectedHotspotData = hsData;
+    if (!(opts && opts.skipUndo)) E.pushUndo(); // Skip when caller already pushed undo (e.g., hotspot placement)
+    // Hide all non-hotspot sections
+    D.fieldsProjectSettings.style.display = 'none';
+    D.panelTitle.textContent = 'Hotspot Properties';
+    D.panelActionsHotspot.style.display = 'flex';
+    D.fieldsHotspotProperties.style.display = 'block';
 
-      D.propsPanel.classList.add('visible');
-      setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
-      E.startViewReadLoop();
-    };
+    D.propType.value = hsData.type || 'info';
+    D.propTitle.value = hsData.title || hsData.label || '';
+    D.propAnimation.value = hsData.animation || 'none';
+    D.propIconStyle.value = hsData.iconStyle || 'default';
+    D.propCustomIconUrl.value = hsData.customIconUrl || '';
+    D.propRingEnabled.checked = hsData.ringEnabled !== false;
+    var ringProps = document.getElementById('group-ring-props');
+    if (ringProps) ringProps.style.display = D.propRingEnabled.checked ? '' : 'none';
+    D.propIconColor.value = hsData.iconColor || '#ffffff';
+    D.propRingColor.value = hsData.ringColor || '#ffffff';
+    if (D.propIconColorHex) D.propIconColorHex.value = hsData.iconColor || '#ffffff';
+    if (D.propRingColorHex) D.propRingColorHex.value = hsData.ringColor || '#ffffff';
+    if (D.propIconColorSwatch) D.propIconColorSwatch.style.background = hsData.iconColor || '#ffffff';
+    if (D.propRingColorSwatch) D.propRingColorSwatch.style.background = hsData.ringColor || '#ffffff';
+
+    var rSize = hsData.ringSize || 2;
+    D.propRingSize.value = rSize;
+    D.propRingSizeLabel.textContent = rSize + 'px';
+
+    var rGap = hsData.ringGap || 6;
+    D.propRingGap.value = rGap;
+    D.propRingGapLabel.textContent = rGap + 'px';
+
+    var rCount = hsData.ringCount || 1;
+    if (D.propRingCount) D.propRingCount.value = rCount;
+    if (D.propRingCountLabel) D.propRingCountLabel.textContent = rCount;
+
+    var size = hsData.iconSize || 44;
+    D.propIconSize.value = size;
+    D.propSizeLabel.textContent = size + 'px';
+
+    toggleCustomIconGroup();
+
+    populateTargetDropdowns();
+    fillTypeFields(hsData);
+    showTypeFields(hsData.type);
+
+    D.propsPanel.classList.add('visible');
+    setTimeout(function() { if (S.viewer) S.viewer.updateSize(); }, 250);
+    E.startViewReadLoop();
+  };
 
     E.closePropertiesPanel = function() {
       S.selectedHotspotData = null;

@@ -7,7 +7,7 @@
 
 (function() {
 
-  var isEditor = window.location.pathname.indexOf('editor.html') !== -1;
+  var isEditor = window.isEditorMode === true;
 
   function getIconSvg(style) {
     var sw = 'stroke-width="1.8"';

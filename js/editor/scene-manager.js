@@ -324,10 +324,23 @@
           if (S.scenes.length <= 1) { E.alert('Cannot delete the only scene.', 'Operation Denied'); return; }
           E.confirm('Delete "' + S.contextTarget.data.name + '"?', 'Delete Scene', true).then(function(ok) {
             if (!ok) return;
+            var deletedId = S.contextTarget.data.id;
             E.pushUndo();
             var dIdx = S.scenes.indexOf(S.contextTarget);
             S.scenes.splice(dIdx, 1);
             window.data.scenes.splice(dIdx, 1);
+            // Null out navigate hotspot targets referencing the deleted scene
+            var allRemaining = (S.scenes || []).map(function(c) { return c.data; });
+            allRemaining.forEach(function(s) {
+              var allArrs = [s.hotspots, s.linkHotspots, s.infoHotspots, s.mediaHotspots];
+              allArrs.forEach(function(arr) {
+                (arr || []).forEach(function(h) {
+                  if (h.type === 'navigate' && (h.targetSceneId === deletedId || h.target === deletedId)) {
+                    h.targetSceneId = null; if (h.target) h.target = null;
+                  }
+                });
+              });
+            });
             if (S.currentSceneCtx === S.contextTarget) E.switchSceneById(S.scenes[0].data.id);
             E.renderSceneGrid();
             E.debouncedSave();
