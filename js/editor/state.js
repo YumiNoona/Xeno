@@ -12,6 +12,16 @@
       return url;
     };
 
+    // Project-level settings URLs (not in scene arrays)
+    if (data.settings) {
+      if (data.settings.thumbnailUrl) {
+        data.settings.thumbnailUrl = getMediaId(data.settings.thumbnailUrl);
+      }
+      if (data.settings.branding && data.settings.branding.logoUrl) {
+        data.settings.branding.logoUrl = getMediaId(data.settings.branding.logoUrl);
+      }
+    }
+
     (data.scenes || []).forEach(function(s) {
       if (s._mediaId) {
         s.mediaUrl = s._mediaId;

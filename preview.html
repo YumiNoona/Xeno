@@ -9,7 +9,35 @@
   <link rel="icon" type="image/x-icon" href="public/logo.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="public/logo-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="public/logo-16x16.png">
+  <link rel="apple-touch-icon" href="public/logo-32x32.png">
   <link rel="manifest" href="manifest.json"><!-- xeno-export-remove -->
+  <meta property="og:title" content="Xeno 360° Virtual Tour">
+  <meta property="og:description" content="Explore a 360° virtual tour created with Xeno.">
+  <meta property="og:image" content="public/logo-32x32.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Xeno 360° Virtual Tour">
+  <meta name="twitter:description" content="Explore a 360° virtual tour created with Xeno.">
+  <meta name="twitter:image" content="public/logo-32x32.png">
+  <script>
+    window.xenoUpdateMeta = function(d) {
+      if (!d) return;
+      var s = d.settings || {};
+      var title = s.name || s.title || '';
+      var desc = (s.intro && s.intro.subtitle) || '';
+      var img = '';
+      if (s.thumbnailUrl) img = s.thumbnailUrl;
+      else if (d.scenes && d.scenes[0]) img = d.scenes[0].thumbnailUrl || d.scenes[0].mediaUrl || '';
+      var setMeta = function(prop, content) {
+        if (!content) return;
+        var el = document.querySelector('meta[property="' + prop + '"], meta[name="' + prop + '"]');
+        if (el) el.content = content;
+      };
+      if (title) { setMeta('og:title', title); setMeta('twitter:title', title); document.title = title; }
+      if (desc) { setMeta('og:description', desc); setMeta('twitter:description', desc); }
+      if (img) { setMeta('og:image', img); setMeta('twitter:image', img); }
+    };
+  </script>
   <script>
     if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}<!-- xeno-export-remove -->
     (function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t)})();

@@ -45,6 +45,7 @@
         return XenoViewerMedia.preloadSceneImages(tourData);
       })
       .then(function(tourData) {
+        if (window.xenoUpdateMeta) window.xenoUpdateMeta(tourData);
         window.xenoInitViewer(tourData);
         var handleExit = function() {
           _blobUrlsToRevoke.forEach(function(url) { try { URL.revokeObjectURL(url); } catch(e) {} });
@@ -66,12 +67,14 @@
         return XenoViewerMedia.preloadSceneImages(tourData);
       })
       .then(function (tourData) {
+        if (window.xenoUpdateMeta) window.xenoUpdateMeta(tourData);
         window.xenoInitViewer(tourData);
       });
   } else {
     XenoViewerMedia.resolveAllMedia(window.data).then(function () {
       return XenoViewerMedia.preloadSceneImages(window.data);
     }).then(function () {
+      if (window.xenoUpdateMeta) window.xenoUpdateMeta(window.data);
       window.xenoInitViewer(window.data);
     });
   }
