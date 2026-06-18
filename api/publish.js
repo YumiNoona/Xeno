@@ -31,7 +31,9 @@ module.exports = async function handler(req, res) {
 
     bundle.expiresAt = expiresAt ? new Date(expiresAt).toISOString() : null;
 
-    const slug = bundle.project.slug || ('project-' + Date.now());
+    let slug = bundle.project.slug || ('project-' + Date.now());
+    slug = slug.replace(/[^a-zA-Z0-9\-_]/g, '');
+    if (!slug) slug = 'project-' + Date.now();
 
     // Preserve view count from previous publish
     try {

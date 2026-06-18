@@ -67,7 +67,7 @@
 
   function loadMedia(albumId) {
     currentAlbumId = albumId;
-    // BUG FIX #3: treat undefined album_id same as null for root view
+    // Treat undefined album_id same as null for root view
     var normalizedId = (albumId === undefined) ? null : albumId;
     currentAlbumId = normalizedId;
 
@@ -177,8 +177,7 @@
   E.loadMedia = loadMedia;
 
   // ─── Unified entry point (all callers use this) ────────
-  // BUG FIX #2: removed _loadPending guard that blocked re-opens;
-  // now uses _modalOpen flag which only blocks true duplicate simultaneous opens.
+  // Prevent duplicate simultaneous opens using _modalOpen flag
   E.openMediaModal = function() {
     if (_modalOpen) return;
     _modalOpen = true;
@@ -305,8 +304,7 @@
                 window.XenoSupabase.renameMedia(tm.id, n.trim()).then(function() { loadMedia(currentAlbumId); }).catch(function(err) { E.alert('Error: ' + err.message, 'Rename Error'); });
             });
           } else if (action === 'delete-media') {
-            // BUG FIX #1: was missing braces — _mediaDirty and deleteMedia both ran
-            // unconditionally even when user cancelled the confirm dialog.
+            // Confirm with user before deleting media
             E.confirm('Delete "' + tm.filename + '"?', 'Delete Media', true).then(function(ok) {
               if (ok) {
                 _mediaDirty = true;

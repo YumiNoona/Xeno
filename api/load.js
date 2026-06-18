@@ -9,6 +9,11 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Missing slug' });
   }
 
+  // Validate the slug format
+  if (typeof slug !== 'string' || !/^[a-zA-Z0-9\-_]+$/.test(slug)) {
+    return res.status(400).json({ error: 'Invalid slug format' });
+  }
+
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   try {

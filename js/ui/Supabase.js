@@ -313,7 +313,7 @@
     });
     return Promise.all(blobPromises).then(function() {
       var f = list.filter(function(m) {
-        // BUG FIX: treat undefined album_id same as null so imported/legacy
+        // Treat undefined album_id same as null so imported/legacy
         // records (which may have album_id: undefined) appear in root view.
         var mid = m.album_id == null ? null : m.album_id;
         return albumId ? mid === albumId : mid === null;

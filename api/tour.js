@@ -7,10 +7,12 @@ module.exports = async function handler(req, res) {
     ? req.query.slug
     : new URL(req.url, 'https://' + (req.headers.host || 'localhost')).searchParams.get('slug');
   if (!slug) {
-
-(Showing lines 5-9 of api/tour.js. Use offset=0 to continue.)
-
     return res.status(400).send('Missing slug');
+  }
+
+  // Validate the slug to prevent XSS and path traversal
+  if (typeof slug !== 'string' || !/^[a-zA-Z0-9\-_]+$/.test(slug)) {
+    return res.status(400).send('Invalid slug format');
   }
 
   try {
@@ -21,7 +23,7 @@ module.exports = async function handler(req, res) {
     html = html.split('\n').filter(function(l) { return l.indexOf('xeno-export-remove') === -1; }).join('\n');
 
     // Inject the load URL before the viewer.js script loads
-    const injectScript = '<script>window.XENO_LOAD_URL="/api/load?slug=' + slug + '";</script>';
+    const injectScript = '<script>window.XENO_LOAD_URL="/api/load?slug=' + encodeURIComponent(slug) + '";</script>';
     html = html.replace('</head>', injectScript + '\n</head>');
 
     res.setHeader('Content-Type', 'text/html');
