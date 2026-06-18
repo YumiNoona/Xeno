@@ -471,9 +471,8 @@
     renameAlbum: renameAlbum, deleteAlbum: deleteAlbum,
     renameMedia: renameMedia, deleteMedia: deleteMedia, moveMedia: moveMedia,
     resolveMediaId: resolveMediaId,
-    exportProject: exportProject, importProject: importProject
+    exportProject: exportProject, importProject: importProject,
+    cleanOrphanBlobs: cleanOrphanBlobs
   };
 
-  // Cleanup orphaned IndexedDB blobs (media records deleted but blobs remain)
-  setTimeout(function() { cleanOrphanBlobs(); }, 3000);
 })();

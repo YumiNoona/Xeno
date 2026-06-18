@@ -49,7 +49,7 @@
         setTimeout(function() {
           _blobUrlsToRevoke.forEach(function(url) { try { URL.revokeObjectURL(url); } catch(e) {} });
           _blobUrlsToRevoke = [];
-        }, 30000);
+        }, 600000); // 10 minutes — 30s was too short for multi-scene tours
       })
       .catch(function(err) {
         alert('Failed to load shared project: ' + err.message);

@@ -37,7 +37,8 @@
     selectedSceneIds: new Set(),
     lastClickedSceneIndex: null,
     dragIsMulti: false,
-    dragSourceIndex: null
+    dragSourceIndex: null,
+    _isDirty: false
   };
   var S = E.state;
 
@@ -46,6 +47,7 @@
     if (S.saveTimeout) clearTimeout(S.saveTimeout);
     S.saveTimeout = setTimeout(function() {
       if (_isRebuilding || (S.isRebuilding && S.isRebuilding())) return;
+      if (!S._isDirty) return;
       if (S.projectSlug && window.XenoSupabase) {
         if (S.scenes && S.scenes.length) {
           window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
@@ -53,6 +55,7 @@
         var saveData = JSON.parse(JSON.stringify(window.data));
         E.restoreMediaIds(saveData);
         Promise.resolve(window.XenoSupabase.saveTour(S.projectSlug, saveData)).then(function() {
+          S._isDirty = false;
           flashSaveIndicator(true);
         }).catch(function(e) {
           console.error('Save failed:', e);
@@ -85,6 +88,7 @@
 
   E.pushUndo = function() {
     if (!S.projectSlug) return;
+    S._isDirty = true;
     var snapshot = JSON.parse(JSON.stringify(window.data));
     E.restoreMediaIds(snapshot);
     _undoIndex++;
@@ -97,6 +101,7 @@
   E.performUndo = function() {
     if (_undoIndex <= 0 || !S.projectSlug || !S.viewer) return;
     _undoIndex--;
+    S._isDirty = true;
     refreshUndoButtons();
     var snap = _undoStack[_undoIndex];
     window.data = JSON.parse(JSON.stringify(snap));
@@ -106,6 +111,7 @@
   E.performRedo = function() {
     if (_undoIndex >= _undoStack.length - 1 || !S.projectSlug || !S.viewer) return;
     _undoIndex++;
+    S._isDirty = true;
     refreshUndoButtons();
     var snap = _undoStack[_undoIndex];
     window.data = JSON.parse(JSON.stringify(snap));
@@ -179,8 +185,10 @@
       if (E.startViewReadLoop) E.startViewReadLoop();
       E.debouncedSave();
       _isRebuilding = false;
+      refreshUndoButtons();
     }).catch(function() {
       _isRebuilding = false;
+      refreshUndoButtons();
     });
   }
 
@@ -214,8 +222,8 @@
     return Promise.all(promises).then(function() {
       clone.scenes.forEach(function(s) {
         if (s._mediaId && s.thumbnailUrl === s._mediaId) {
-          // Only sync if mediaUrl was actually resolved (not a placeholder)
-          s.thumbnailUrl = s.mediaUrl && s.mediaUrl.indexOf('data:image/svg') === 0 ? '' : s.mediaUrl;
+          // Keep thumbnailUrl as media_xxx ID for persistence; scene grid
+          // resolves it separately via resolveSceneThumbs(data-thumb-id).
         }
       });
       return clone;
@@ -235,8 +243,9 @@
   function refreshUndoButtons() {
     var undoBtn = document.getElementById('btn-undo');
     var redoBtn = document.getElementById('btn-redo');
-    if (undoBtn) undoBtn.disabled = _undoIndex <= 0;
-    if (redoBtn) redoBtn.disabled = _undoIndex >= _undoStack.length - 1;
+    var rebuilding = _isRebuilding || (S.isRebuilding && S.isRebuilding());
+    if (undoBtn) undoBtn.disabled = rebuilding || _undoIndex <= 0;
+    if (redoBtn) redoBtn.disabled = rebuilding || _undoIndex >= _undoStack.length - 1;
   }
   E.refreshUndoButtons = refreshUndoButtons;
 
@@ -249,6 +258,12 @@
         window.data.scenes = S.scenes.map(function(s) { return JSON.parse(JSON.stringify(s.data)); });
         var saveData = JSON.parse(JSON.stringify(window.data));
         E.restoreMediaIds(saveData);
+        
+        var hasBlobs = JSON.stringify(saveData).indexOf('blob:') !== -1;
+        if (hasBlobs) {
+          console.warn('Emergency save contains unsynced blob URLs that may not load correctly.');
+        }
+
         // Synchronous localStorage only — beforeunload cannot await async saveTour
         localStorage.setItem('xeno_emergency_' + S.projectSlug, JSON.stringify({ data: saveData, savedAt: Date.now() }));
       } catch(e) { console.error('Emergency save failed', e); }

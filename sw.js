@@ -1,6 +1,6 @@
 // Auto-bumped cache key — new timestamp on each SW activation invalidates old caches
-// Auto-bumped daily — new date invalidates stale caches without per-load thrashing
-var CACHE = 'xeno-' + new Date().toISOString().slice(0, 10);
+// Use a static version string instead of daily rotation to prevent unexpected cache misses
+var CACHE = 'xeno-v1.0.0';
 var PRECACHE = [
   '/', '/editor.html', '/preview.html', '/index.html', '/data.js',
   '/css/tokens.css',

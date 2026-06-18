@@ -18,7 +18,7 @@
       S.scenes.forEach(function(s, index) {
         var card = document.createElement('div');
         card.className = 'scene-card';
-        card.__sceneData = s.data;
+        card.dataset.sceneId = s.data.id;
         if (s.data.hidden) card.classList.add('hidden-scene');
         if (S.currentSceneCtx && S.currentSceneCtx.data.id === s.data.id) card.classList.add('active');
 
@@ -29,7 +29,7 @@
 
         var thumb = s.data.thumbnailUrl || s.data.mediaUrl || '';
         var thumbIsMediaId = thumb && thumb.indexOf('media_') === 0;
-        var thumbSrc = thumbIsMediaId ? '' : thumb;
+        var thumbSrc = thumbIsMediaId ? (E._thumbCache && E._thumbCache[thumb] ? E._thumbCache[thumb] : '') : thumb;
         var imgHtml = thumbSrc
           ? '<img class="scene-card-thumb" src="' + thumbSrc + '">'
           : '<div class="scene-thumb-placeholder" data-thumb-id="' + (thumbIsMediaId ? thumb : '') + '">Scene</div>';
@@ -146,12 +146,15 @@
       clearTimeout(_thumbTimerId);
       _thumbTimerId = setTimeout(function() {
         if (!window.XenoSupabase || !window.XenoSupabase.resolveMediaId) return;
+        E._thumbCache = E._thumbCache || {};
         container.querySelectorAll('[data-thumb-id]').forEach(function(el) {
           var id = el.getAttribute('data-thumb-id');
           if (!id) return;
           el.removeAttribute('data-thumb-id');
           window.XenoSupabase.resolveMediaId(id).then(function(b) {
             if (!b) return;
+            E._thumbCache[id] = b;
+            if (!el.parentNode) return;
             var img = document.createElement('img');
             img.className = 'scene-card-thumb';
             img.src = b;
@@ -174,7 +177,7 @@
     // ─── Scene selection sync ────────────────────────────
     function syncSceneSelection() {
       D.sceneGridEl.querySelectorAll('.scene-card').forEach(function(card) {
-        var sid = card.__sceneData ? card.__sceneData.id : null;
+        var sid = card.dataset.sceneId || null;
         if (sid && S.selectedSceneIds.has(sid)) card.classList.add('scene-selected');
         else card.classList.remove('scene-selected');
       });

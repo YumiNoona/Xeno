@@ -147,5 +147,9 @@
     }
     E.pushUndo(); // Capture initial clean state as undo entry 0
     if (E.refreshUndoButtons) E.refreshUndoButtons();
+
+    if (window.XenoSupabase && window.XenoSupabase.cleanOrphanBlobs) {
+      window.XenoSupabase.cleanOrphanBlobs();
+    }
   }
 })();

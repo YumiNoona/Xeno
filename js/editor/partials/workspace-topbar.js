@@ -13,7 +13,7 @@
     <button class="btn-icon" id="btn-undo" title="Undo (Ctrl+Z)" disabled>
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
     </button>
-    <button class="btn-icon" id="btn-redo" title="Redo (Ctrl+Shift+Z / Ctrl+Y)" disabled>
+    <button class="btn-icon" id="btn-redo" title="Redo (Ctrl+Shift+Z / Ctrl+Y)&#10;Note: Redo history clears if you make a new edit." disabled>
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
     </button>
     <div class="topbar-sep"></div>

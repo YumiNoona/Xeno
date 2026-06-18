@@ -541,7 +541,8 @@
         };
         setTimeout(checkReady, 100);
       } else {
-        setTimeout(function() { loader.classList.add('hide'); }, 200);
+        loader.innerHTML = '<div style="color:#fff;font-family:monospace;font-size:16px;text-align:center;">Project not found or contains no valid scenes.<br><br><a href="/" style="color:var(--accent,#e62e5a);text-decoration:none;">Return Home</a></div>';
+        loader.style.background = 'rgba(0,0,0,0.9)';
       }
     }
   }

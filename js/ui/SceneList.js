@@ -48,6 +48,11 @@
       img.classList.add('scene-thumb');
       if (thumbUrl.indexOf('media_') === 0) {
         img.src = placeholderSvg;
+        if (window.XenoViewerMedia) {
+          window.XenoViewerMedia.resolveMediaIdOrUrl(thumbUrl).then(function(res) {
+            if (res) img.src = res;
+          });
+        }
       } else {
         img.src = thumbUrl;
         img.onerror = function() { this.src = placeholderSvg; };

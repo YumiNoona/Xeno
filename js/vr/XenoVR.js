@@ -77,12 +77,16 @@
     }
 
     /* Sync the scene the user ended on back to Marzipano */
-    if (currentVrSceneId && window.xenoScenes) {
-      var ctx = window.xenoScenes.find(function (s) {
-        return s.data.id === currentVrSceneId;
-      });
-      if (ctx && window.xenoSwitchScene) {
-        window.xenoSwitchScene(ctx, { transition: 'none' });
+    if (currentVrSceneId) {
+      if (window.XenoEditor && window.XenoEditor.switchSceneById) {
+        window.XenoEditor.switchSceneById(currentVrSceneId);
+      } else if (window.xenoScenes) {
+        var ctx = window.xenoScenes.find(function (s) {
+          return s.data.id === currentVrSceneId;
+        });
+        if (ctx && window.xenoSwitchScene) {
+          window.xenoSwitchScene(ctx, { transition: 'none' });
+        }
       }
     }
 

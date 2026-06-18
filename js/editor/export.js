@@ -112,7 +112,7 @@
       ];
 
       var imagesToBundle = [
-        'public/logo.ico', 'public/logo-16x16.png', 'public/logo-32x32.png'
+        'public/logo-16x16.png', 'public/logo-32x32.png'
       ];
 
       var faviconPromises = ['public/logo.ico'].map(function(fav) {
@@ -186,7 +186,7 @@
               var orig = src.indexOf('media_') === 0 ? getOriginalName(src, null) : null;
               var name = uniqueName(orig || ('hs_' + sceneId + '_' + idx + '.' + ext));
               var path = 'media/' + name;
-              zip.file(path, blob);
+              if (!usedMedia[path]) { usedMedia[path] = true; zip.file(path, blob); }
               hs.content.src = path;
             });
           }).catch(function(err) {
@@ -210,7 +210,7 @@
               var orig = src.indexOf('media_') === 0 ? getOriginalName(src, null) : null;
               var name = uniqueName(orig || ('audio_' + sceneId + '_' + idx + '.' + ext));
               var path = 'media/' + name;
-              zip.file(path, blob);
+              if (!usedMedia[path]) { usedMedia[path] = true; zip.file(path, blob); }
               hs[field] = path;
             });
           }).catch(function(err) {
@@ -236,7 +236,7 @@
             var orig = mediaId ? getOriginalName(mediaId, null) : null;
             var name = uniqueName(orig || ('scene_' + sceneData.id + '.' + ext));
             var path = 'media/' + name;
-            zip.file(path, blob);
+            if (!usedMedia[path]) { usedMedia[path] = true; zip.file(path, blob); }
             sceneData.mediaUrl = path;
             if (sceneData.thumbnailUrl && (sceneData.thumbnailUrl.indexOf('blob:') === 0 || sceneData.thumbnailUrl === origUrl || sceneData.thumbnailUrl === mediaId)) {
               sceneData.thumbnailUrl = path;
@@ -265,7 +265,8 @@
               var ext = extFromMime(blob.type) || 'png';
               var orig = src.indexOf('media_') === 0 ? getOriginalName(src, null) : null;
               var name = uniqueName(orig || ('icon_' + sceneId + '_' + idx + '.' + ext));
-              zip.file('media/' + name, blob);
+              var path = 'media/' + name;
+              if (!usedMedia[path]) { usedMedia[path] = true; zip.file(path, blob); }
               hs.customIconUrl = 'media/' + name;
             });
           }).catch(function(err) {

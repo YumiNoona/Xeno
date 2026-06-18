@@ -199,6 +199,7 @@
       btnClose.addEventListener('click', function() {
         _loadPending = false;
         _modalOpen = false;
+        S.mediaPickerCallback = null;
         D.mediaModal.classList.remove('visible');
       });
     }
@@ -263,7 +264,7 @@
     }
 
     // ─── Dismiss context menus on outside click ─────────
-    document.addEventListener('click', function(e) {
+    function dismissContextMenus(e) {
       if (D.mediaFolderCtx && D.mediaFolderCtx.style.display !== 'none') {
         if (!D.mediaFolderCtx.contains(e.target)) {
           D.mediaFolderCtx.style.display = 'none';
@@ -286,7 +287,9 @@
           D.projectCtx.style.display = 'none';
         }
       }
-    });
+    }
+    document.addEventListener('click', dismissContextMenus);
+    document.addEventListener('contextmenu', dismissContextMenus, true);
 
     // ─── Media Context Menu ────────────────────────────
     if (D.mediaItemCtx) {

@@ -126,20 +126,32 @@
         hasMoved = false;
       }
     });
+
+    // Cleanup drag state if window loses focus during drag (mouseup outside window)
+    window.addEventListener('blur', function() {
+      if (S.dragHsElement || S.isDragging) {
+        S.isDragging = false;
+        S.dragHsElement = null;
+        S.dragHsData = null;
+        hasMoved = false;
+      }
+    });
   };
 
   function handleToolClick(tool, btnEl) {
+    if (tool === S.editorState.activeTool && tool !== 'move') return;
     if (E.HOTSPOT_TOOLS.indexOf(tool) !== -1) {
       setActiveTool(tool);
       S.editorState.placeMode = true;
       D.panoWrapper.classList.add('crosshair-mode');
       showModeBadge('Place: ' + tool);
+      if (E.closePropertiesPanel) E.closePropertiesPanel();
     } else if (tool === 'select') {
       setActiveTool('select');
       S.editorState.placeMode = false;
       D.panoWrapper.classList.remove('crosshair-mode');
       hideModeBadge();
-      E.closePropertiesPanel();
+      if (E.closePropertiesPanel) E.closePropertiesPanel();
     } else if (tool === 'move') {
       btnEl.classList.toggle('active');
       if (btnEl.classList.contains('active')) {
