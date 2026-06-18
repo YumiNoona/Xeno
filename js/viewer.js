@@ -23,7 +23,11 @@
 
     if (window.matchMedia) {
       if (_mqlListener) {
-        _mqlListener.mql.removeEventListener('change', _mqlListener.fn);
+        if (_mqlListener.mql.removeEventListener) {
+          _mqlListener.mql.removeEventListener('change', _mqlListener.fn);
+        } else if (_mqlListener.mql.removeListener) {
+          _mqlListener.mql.removeListener(_mqlListener.fn);
+        }
         _mqlListener = null;
       }
       var setMode = function () {
@@ -37,7 +41,11 @@
       };
       var mql = matchMedia("(max-width: 500px), (max-height: 500px)");
       setMode();
-      mql.addEventListener('change', setMode);
+      if (mql.addEventListener) {
+        mql.addEventListener('change', setMode);
+      } else if (mql.addListener) {
+        mql.addListener(setMode);
+      }
       _mqlListener = { mql: mql, fn: setMode };
     } else {
       document.body.classList.add('desktop');

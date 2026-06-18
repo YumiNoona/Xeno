@@ -1,5 +1,6 @@
 build
 engine/demos
+engine/src
 node_modules
 schema.sql
 *.log

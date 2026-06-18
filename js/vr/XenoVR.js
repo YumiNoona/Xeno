@@ -113,26 +113,51 @@
      A-Frame lazy loader
   ───────────────────────────────────────────────────────── */
   var aframeLoaded    = false;
+  var vrScriptsLoading = false;
   var aframeCallbacks = [];
 
   function ensureAFrame(cb) {
     if (aframeLoaded) { cb(); return; }
     aframeCallbacks.push(cb);
-    if (document.querySelector('script[data-xenovr-aframe]')) return;
+    if (vrScriptsLoading) return;
+    vrScriptsLoading = true;
 
-    var s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/aframe/1.5.0/aframe.min.js';
-    s.setAttribute('data-xenovr-aframe', '1');
-    s.onload = function () {
-      aframeLoaded = true;
-      registerComponents();
-      aframeCallbacks.forEach(function (fn) { fn(); });
-      aframeCallbacks = [];
-    };
-    s.onerror = function () {
-      showToast('Could not load VR engine. Check your internet connection.');
-    };
-    document.head.appendChild(s);
+    function loadScript(src, onload, onerror) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = onload;
+      s.onerror = onerror;
+      document.head.appendChild(s);
+    }
+
+    loadScript('js/lib/webvr-polyfill.js', function () {
+      loadScript('js/viewer-gaze.js', function () {
+        if (window.XenoViewerGaze && window.xenoScenes) {
+          window.XenoViewerGaze.init(window.xenoScenes);
+        }
+        var s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/aframe/1.5.0/aframe.min.js';
+        s.setAttribute('data-xenovr-aframe', '1');
+        s.onload = function () {
+          aframeLoaded = true;
+          vrScriptsLoading = false;
+          registerComponents();
+          aframeCallbacks.forEach(function (fn) { fn(); });
+          aframeCallbacks = [];
+        };
+        s.onerror = function () {
+          vrScriptsLoading = false;
+          showToast('Could not load VR engine (A-Frame). Check your internet connection.');
+        };
+        document.head.appendChild(s);
+      }, function () {
+        vrScriptsLoading = false;
+        showToast('Could not load VR gaze controls.');
+      });
+    }, function () {
+      vrScriptsLoading = false;
+      showToast('Could not load WebVR Polyfill.');
+    });
   }
 
   /* ─────────────────────────────────────────────────────────

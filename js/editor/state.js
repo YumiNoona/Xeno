@@ -264,7 +264,12 @@
           console.warn('Emergency save contains unsynced blob URLs that may not load correctly.');
         }
 
-        // Synchronous localStorage only — beforeunload cannot await async saveTour
+        // Synchronous save to the main tour store
+        if (window.XenoSupabase.saveTourSync) {
+          window.XenoSupabase.saveTourSync(S.projectSlug, saveData);
+        }
+
+        // Synchronous localStorage emergency recovery fallback
         localStorage.setItem('xeno_emergency_' + S.projectSlug, JSON.stringify({ data: saveData, savedAt: Date.now() }));
       } catch(e) { console.error('Emergency save failed', e); }
     }

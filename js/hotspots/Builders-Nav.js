@@ -232,7 +232,7 @@
         return { x: screenCoords.x, y: screenCoords.y };
       });
 
-      var transformMatrix = window.Homography.getTransform(srcPoints, dstPoints);
+      var transformMatrix = window.Homography ? window.Homography.getTransform(srcPoints, dstPoints) : '';
       content.style.transform = transformMatrix;
       content.style.transformOrigin = '0 0';
     }

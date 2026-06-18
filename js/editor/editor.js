@@ -28,7 +28,7 @@
 
   window.XenoSupabase.loadTour(projectSlug)
     .then(function(savedData) {
-      if (projectSlug === 'sample-tour' && !savedData) {
+      if (projectSlug === 'sample-tour' && !savedData && window.data) {
         savedData = JSON.parse(JSON.stringify(window.data));
         window.XenoSupabase.saveTour('sample-tour', savedData);
       }

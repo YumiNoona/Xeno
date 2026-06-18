@@ -93,6 +93,16 @@
     }
   }
 
+  function clearBlobCache() {
+    for (var key in _blobUrls) {
+      if (Object.prototype.hasOwnProperty.call(_blobUrls, key)) {
+        URL.revokeObjectURL(_blobUrls[key]);
+      }
+    }
+    _blobUrls = {};
+    _inflightBlobs = {};
+  }
+
   function createBlobUrl(key) {
     if (_blobUrls[key]) return Promise.resolve(_blobUrls[key]);
     return blobGet(key).then(function(blob) {
@@ -248,6 +258,22 @@
       }
     }
     return Promise.resolve();
+  }
+
+  function saveTourSync(slug, tourData) {
+    tourData._savedAt = Date.now();
+    var raw = localStorage.getItem(LOCAL_STORAGE_PREFIX + slug);
+    var existing = raw ? JSON.parse(raw) : {};
+    var payload = {
+      data: tourData,
+      created_at: existing.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    try {
+      localStorage.setItem(LOCAL_STORAGE_PREFIX + slug, JSON.stringify(payload));
+    } catch(e) {
+      console.error('saveTourSync failed', e);
+    }
   }
 
   function deleteTour(slug) {
@@ -463,7 +489,7 @@
 
   window.XenoSupabase = {
     init: init, isConfigured: isConfigured,
-    loadTour: loadTour, saveTour: saveTour,
+    loadTour: loadTour, saveTour: saveTour, saveTourSync: saveTourSync,
     fetchTours: fetchTours, deleteTour: deleteTour,
     downloadAsFile: downloadAsFile,
     fetchAlbums: fetchAlbums, createAlbum: createAlbum,
@@ -472,7 +498,8 @@
     renameMedia: renameMedia, deleteMedia: deleteMedia, moveMedia: moveMedia,
     resolveMediaId: resolveMediaId,
     exportProject: exportProject, importProject: importProject,
-    cleanOrphanBlobs: cleanOrphanBlobs
+    cleanOrphanBlobs: cleanOrphanBlobs,
+    clearBlobCache: clearBlobCache
   };
 
 })();
