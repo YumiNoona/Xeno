@@ -34,9 +34,11 @@ var PRECACHE = [
   '/js/editor/export-publish.js', '/js/editor/export-templates.js',
   '/js/editor/partials/dashboard.js', '/js/editor/partials/workspace-topbar.js',
   '/js/editor/partials/viewport.js', '/js/editor/partials/properties-panel.js',
+  '/js/editor/partials/properties-hotspot-fields.js', '/js/editor/partials/properties-project-settings.js',
+  '/js/editor/partials/properties-color-picker.js',
   '/js/editor/partials/context-menus.js', '/js/editor/partials/media-modal.js',
   '/manifest.json',
-  '/public/logo.ico', '/public/logo-16x16.png', '/public/logo-32x32.png'
+  '/public/logo.ico', '/public/logo-16x16.png', '/public/logo-32x32.png', '/public/Donate.jpeg'
 ];
 
 // Install: activate immediately without waiting for precache
